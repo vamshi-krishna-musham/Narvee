@@ -19,6 +19,7 @@ import lombok.Data;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public class AuditModel implements Serializable {
+	private static final long serialVersionUID = 1L;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
 	@Column(name = "createddate", nullable = false, updatable = false)

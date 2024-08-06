@@ -22,6 +22,7 @@ import com.narvee.commons.AuditModel;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Table
@@ -29,7 +30,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class Task extends AuditModel {
+	
+	private static final long serialVersionUID = 1L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long taskid;
@@ -42,7 +47,7 @@ public class Task extends AuditModel {
 	private Long addedby;
 
 	private Long updatedby;
-
+	
 	private String status;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
@@ -50,16 +55,20 @@ public class Task extends AuditModel {
 
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "taskid", nullable = false)
-	private List<TicketTracker> track = new ArrayList();
+	private List<TicketTracker> track = new ArrayList<TicketTracker>();
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinTable(name = "task_users", joinColumns = { @JoinColumn(name = "taskid") }, inverseJoinColumns = {
 			@JoinColumn(name = "assignedto") })
-	private List<AssignedUsers> assignedto = new ArrayList();
+	private List<AssignedUsers> assignedto = new ArrayList<AssignedUsers>();
 
 	private Long maxnum;
 	private String ticketid;
-	
+
 	private String department;
+
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JoinColumn(name = "task_id")
+	private List<SubTask> subTasks= new ArrayList<>();
 
 }
