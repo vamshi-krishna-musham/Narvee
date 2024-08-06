@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.transaction.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -36,7 +38,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
 	@Query(value = "select tt.trackid, tt.status  ,tt.duration, tt.description ,t.targetdate, tt.fromdate, tt.todate,tt.ftime ,tt.ttime , t.ticketid , t.taskname , t.taskid ,u.fullname from ticket_tracker tt , task t  ,users u where t.taskid= tt.taskid and u.userid=tt.updatedby and tt.updatedby= :userid order by tt.trackid desc", nativeQuery = true)
 	public List<TaskTrackerDTO> trackerByUser(Long userid);
-	// clean and refreshh
 
 	@Query(value = "SELECT distinct\r\n"
 			+ "    CASE \r\n"
@@ -114,5 +115,62 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 			+ "" , nativeQuery = true)
 	public List<TaskTrackerDTO> taskReportsByDepartment( @Param("fromDate") LocalDate fromDate , @Param("toDate") LocalDate toDate ,@Param("dept") String dept);
 	
+
+	@Query(value = "select t.ticketid, u.pseudoname as pseudoname, t.createddate, u.pseudoname as createdby, t.targetdate, au.userstatus as status, au.userstatus as austatus from task t join task_users tu on t.taskid = tu.taskid  join assigned_users au  on au.assignid=tu.assignedto "
+			+ "join users u on u.userid= au.userid and t.taskid = :taskid",nativeQuery = true)
+	public Page<TaskAssignDTO> taskAssignInfoWithSortingAndFiltering(Pageable pageable, @Param("taskid")Long taskid);
+	
+	
+	@Query(value = "select t.ticketid, u.pseudoname as pseudoname, t.createddate, u.pseudoname as createdby, t.targetdate, au.userstatus as status, au.userstatus as austatus from task t join task_users tu on t.taskid = tu.taskid  join assigned_users au  on au.assignid=tu.assignedto "
+			+ "join users u on u.userid= au.userid and t.taskid = :taskid",nativeQuery = true)
+	public List<TaskAssignDTO> taskAssignInfoWithSortingAndFiltering(@Param("taskid")Long taskid);
+	
+
+	
+	@Query(value = "SELECT tt.trackid,tt.status,tt.duration,tt.description,t.targetdate as targetdate,tt.fromdate,tt.todate,tt.ftime,tt.ttime, ticketid as ticketid, taskname as taskname, t.taskid as taskid, fullname as fullname FROM ticket_tracker tt, task t, users u "
+			+ "WHERE t.taskid = tt.taskid AND u.userid = tt.updatedby AND tt.updatedby = :userid ",nativeQuery = true)
+	public Page<TaskTrackerDTO> trackerByUserWithSortingAndPagination(Pageable pageable, @Param("userid") Long userid);  //48
+	
+	
+	
+	@Query(value = "SELECT tt.trackid,tt.status,tt.duration,tt.description,t.targetdate as targetdate,tt.fromdate,tt.todate,tt.ftime,tt.ttime, ticketid as ticketid, taskname as taskname, t.taskid as taskid, fullname as fullname FROM ticket_tracker tt, task t, users u "
+			+ "WHERE t.taskid = tt.taskid AND u.userid = tt.updatedby AND tt.updatedby = :userid ",nativeQuery = true)
+	public List<TaskTrackerDTO> trackerByUserWithSortingAndPagination( @Param("userid") Long userid);
+	
+	
+	@Query(value = "SELECT t.taskid, t.ticketid, t.taskname, t.createddate, t.targetdate, tt.trackid as trackid, t.status,t.description as taskdescription, tt.fromdate as fromdate, tt.todate as todate,u.pseudoname as pseudoname FROM task t LEFT JOIN ticket_tracker tt ON t.taskid = tt.taskid "
+			+ "	LEFT JOIN task_users tu ON tu.taskid = t.taskid LEFT JOIN assigned_users au ON au.assignid = tu.assignedto LEFT JOIN users u ON u.userid = au.userid "
+			+ "WHERE DATE(t.createddate) >=:fromDate AND t.targetdate <=:toDate AND t.department=:dept", nativeQuery = true)
+	public Page<TaskTrackerDTO> taskReportsByDepartmentWithSortingAndPagination(Pageable pageable, @Param("fromDate") LocalDate fromDate , @Param("toDate") LocalDate toDate ,@Param("dept") String dept);
+	
+	
+	@Query(value = "SELECT t.taskid, t.ticketid, t.taskname, t.createddate, t.targetdate, tt.trackid as trackid, t.status,t.description as taskdescription, tt.fromdate as fromdate, tt.todate as todate,u.pseudoname as pseudoname FROM task t LEFT JOIN ticket_tracker tt ON t.taskid = tt.taskid "
+			+ "	LEFT JOIN task_users tu ON tu.taskid = t.taskid LEFT JOIN assigned_users au ON au.assignid = tu.assignedto LEFT JOIN users u ON u.userid = au.userid "
+			+ "WHERE DATE(t.createddate) >=:fromDate AND t.targetdate <=:toDate AND t.department=:dept", nativeQuery = true)
+	public List<TaskTrackerDTO> taskReportsByDepartmentWithSortingAndPagination( @Param("fromDate") LocalDate fromDate , @Param("toDate") LocalDate toDate ,@Param("dept") String dept);
+	
+	
+
+	@Query(value = "SELECT t.taskid, t.ticketid, t.taskname, t.createddate, t.targetdate, tt.trackid as trackid, t.status, t.description as taskdescription, tt.fromdate as fromdate, tt.todate as todate,u.pseudoname as pseudoname FROM task t LEFT JOIN ticket_tracker tt ON t.taskid = tt.taskid "
+			+ " LEFT JOIN task_users tu ON tu.taskid = t.taskid LEFT JOIN assigned_users au ON au.assignid = tu.assignedto LEFT JOIN users u ON u.userid = au.userid WHERE DATE(t.createddate) >=:fromDate AND t.targetdate <=:toDate",nativeQuery = true)
+	public Page<TaskTrackerDTO> taskReportsWithSortingAndPagination(Pageable pageable, @Param("fromDate") LocalDate fromDate , @Param("toDate") LocalDate toDate);
+	
+
+	
+	@Query(value = "SELECT t.taskid, t.ticketid, t.taskname, t.createddate, t.targetdate, tt.trackid as trackid, t.status, t.description as taskdescription, tt.fromdate as fromdate, tt.todate as todate,u.pseudoname as pseudoname FROM task t LEFT JOIN ticket_tracker tt ON t.taskid = tt.taskid "
+			+ " LEFT JOIN task_users tu ON tu.taskid = t.taskid LEFT JOIN assigned_users au ON au.assignid = tu.assignedto LEFT JOIN users u ON u.userid = au.userid WHERE DATE(t.createddate) >=:fromDate AND t.targetdate <=:toDate",nativeQuery = true)
+	public List<TaskTrackerDTO> taskReportsWithSortingAndPagination(@Param("fromDate") LocalDate fromDate , @Param("toDate") LocalDate toDate);
+	
+
+	@Query(value = "SELECT DISTINCT CASE WHEN tt.trackid IS NULL THEN ass.pseudoname ELSE u.pseudoname END AS fpseudoname, CASE WHEN tt.trackid IS NULL THEN t.status ELSE tt.status END AS fstatus,tt.trackid as trackid, "
+			+ "t.createddate, tt.fromdate as fromdate ,tt.todate as todate, tt.ftime as ftime, tt.ttime as ttime, t.ticketid, t.taskname, t.taskid, t.targetdate, t.description as taskdescription, u.fullname as fullname FROM task t LEFT JOIN ticket_tracker tt ON t.taskid = tt.taskid "
+			+ "LEFT JOIN users u ON u.userid = tt.updatedby JOIN task_users tu ON t.taskid = tu.taskid JOIN assigned_users au ON au.assignid = tu.assignedto JOIN users ass ON ass.userid = au.userid", nativeQuery = true)
+	public Page<TaskTrackerDTO> allTasksRecordsWithSortingAndPagination(Pageable pageable);
+	
+	
+	@Query(value = "SELECT DISTINCT CASE WHEN tt.trackid IS NULL THEN ass.pseudoname ELSE u.pseudoname END AS fpseudoname, CASE WHEN tt.trackid IS NULL THEN t.status ELSE tt.status END AS fstatus,tt.trackid as trackid, "
+			+ "t.createddate, tt.fromdate as fromdate ,tt.todate as todate, tt.ftime as ftime, tt.ttime as ttime, t.ticketid, t.taskname, t.taskid, t.targetdate, t.description as taskdescription, u.fullname as fullname FROM task t LEFT JOIN ticket_tracker tt ON t.taskid = tt.taskid "
+			+ "LEFT JOIN users u ON u.userid = tt.updatedby JOIN task_users tu ON t.taskid = tu.taskid JOIN assigned_users au ON au.assignid = tu.assignedto JOIN users ass ON ass.userid = au.userid", nativeQuery = true)
+	public List<TaskTrackerDTO> allTasksRecordsWithSortingAndPagination();
 
 }

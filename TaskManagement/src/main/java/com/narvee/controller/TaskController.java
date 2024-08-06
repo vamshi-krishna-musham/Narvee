@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.narvee.commons.RestAPIResponse;
 import com.narvee.dto.DateSearchDTO;
+import com.narvee.dto.RequestResponseDTO;
+import com.narvee.dto.TaskReportsDTO;
+import com.narvee.dto.TicketTrackerSortDTO;
+import com.narvee.dto.TrackerByUserDTO;
 import com.narvee.dto.UpdateTask;
 import com.narvee.dto.UserDTO;
 import com.narvee.entity.Task;
@@ -27,10 +32,12 @@ import com.narvee.repository.TaskRepository;
 import com.narvee.service.service.TaskService;
 
 @RestController
+@CrossOrigin(origins="*")
 public class TaskController {
 	private static final Logger logger = LoggerFactory.getLogger(TaskController.class);
-	@Autowired
-	private UserClient client;
+	
+	 @Autowired private UserClient client;
+	
 
 	@Autowired
 	private TaskService service;
@@ -64,8 +71,12 @@ public class TaskController {
 	@PostMapping("/updateTask")
 	public ResponseEntity<RestAPIResponse> updateTask(@RequestBody UpdateTask updateTask) {
 		logger.info("!!! inside class: TaskController , !! method: updateTask");
-		service.updateTask(updateTask);
+		Boolean flag = service.updateTask(updateTask);
+		if(flag == true)
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Updated successfully"),
+				HttpStatus.OK);
+		else
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("Task fail", "Task Not Found"),
 				HttpStatus.OK);
 	}
 
@@ -113,9 +124,9 @@ public class TaskController {
 
 	@DeleteMapping("/delete/{taskid}")
 	public ResponseEntity<RestAPIResponse> deleteTaskById(@PathVariable Long taskid) {
-		logger.info("!!! inside class: TaskController , !! method: getByAsignUserIdandtaskId");
+		logger.info("!!! inside class: TaskController , !! method: deleteTaskById");
 		service.deleteTask(taskid);
-		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched successfully"),
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "deleted successfully"),
 				HttpStatus.OK);
 
 	}
@@ -127,12 +138,64 @@ public class TaskController {
 				new RestAPIResponse("success", "Fetched successfully", service.allTasksRecords()), HttpStatus.OK);
 
 	}
-	
+
 	@RequestMapping(value = "/getTaskReports", method = RequestMethod.POST, produces = "application/json")
-	public ResponseEntity<RestAPIResponse> TaskReports(@RequestBody DateSearchDTO dateSearch){
+	public ResponseEntity<RestAPIResponse> TaskReports(@RequestBody DateSearchDTO dateSearch) {
 		logger.info("!!! inside class: TaskController , !! method: TaskReports");
 		return new ResponseEntity<RestAPIResponse>(
-				new RestAPIResponse("success", "Reports Fetched successfully", service.taskReports(dateSearch)), HttpStatus.OK);
+				new RestAPIResponse("success", "Reports Fetched successfully", service.taskReports(dateSearch)),
+				HttpStatus.OK);
 	}
 
+	//PrashanthMadishetti
+	@PostMapping("/getAllTasks")
+	public ResponseEntity<RestAPIResponse> getAllTasksWithSortingAndPagination(
+			@RequestBody RequestResponseDTO requestresponsedto) {
+		logger.info("!!! inside class: TaskController , !! method: getAllTasksWithSortingAndPagination");
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched all Tasks successfully",
+				service.findAllTasks(requestresponsedto)), HttpStatus.OK);
+	}
+
+	@PostMapping("/trackByUserWithSortingAndPagination")
+	public ResponseEntity<RestAPIResponse> trackerByUserWithSortingAndPagination(
+			@RequestBody TrackerByUserDTO trackerbyuserdto) {
+		logger.info("!!! inside class: TaskController , !! method: trackerByUserWithSortingAndPagination");
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched successfully",
+				service.trackerByUserWithSortingAndPagination(trackerbyuserdto)), HttpStatus.OK);
+
+	}
+
+	@PostMapping("/taskAssinInfo")
+	public ResponseEntity<RestAPIResponse> taskAssinInfoWithSortingAndPagination(
+			@RequestBody TicketTrackerSortDTO tickettrackersortdto) {
+		logger.info("!!! inside class: TaskController , !! method: taskAssinInfoWithSortingAndPagination");
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched  task info successfully",
+				service.taskAssignInfoWithSortingAndPagination(tickettrackersortdto)), HttpStatus.OK);
+
+	}
+
+	@RequestMapping(value = "/getTaskReportsWithSorting", method = RequestMethod.POST, produces = "application/json")
+	public ResponseEntity<RestAPIResponse> TaskReportsWithSortingAndPagination(
+			@RequestBody TaskReportsDTO taskreportsdto) {
+		logger.info("!!! inside class: TaskController , !! method: TaskReportsWithSortingAndPagination");
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Reports Fetched successfully",
+				service.taskReportsByDepartmentWithSortingAndPagination(taskreportsdto)), HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/getAllTasksRecordsWithSorting", method = RequestMethod.POST, produces = "application/json")
+	public ResponseEntity<RestAPIResponse> allTasksRecordsWithSortingAndPaginaion(
+			@RequestBody RequestResponseDTO requestresponsedto) {
+		logger.info("!!! inside class: TaskController , !! method: allTasksRecordsWithSortingAndPaginaion");
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched successfully",
+				service.allTasksRecordsWithSortingAndPagination(requestresponsedto)), HttpStatus.OK);
+	}
+	
+	@PostMapping("/findAllTasks")
+	public ResponseEntity<RestAPIResponse> findAllTasks(
+			@RequestBody RequestResponseDTO requestresponsedto) {
+		logger.info("!!! inside class: TaskController , !! method: findAllTasks");
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched all Tasks successfully",
+				service.findAllTasks(requestresponsedto)), HttpStatus.OK);
+	}
+	
 }

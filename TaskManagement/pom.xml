@@ -110,6 +110,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<finalName>taskmanagement</finalName>
 	</build>
 
 </project>

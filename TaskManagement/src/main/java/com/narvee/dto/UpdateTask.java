@@ -2,13 +2,10 @@ package com.narvee.dto;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
 
 import javax.persistence.Column;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.google.common.base.Ticker;
-import com.narvee.entity.TicketTracker;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
