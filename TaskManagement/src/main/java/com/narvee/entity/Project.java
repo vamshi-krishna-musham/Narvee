@@ -34,18 +34,21 @@ public class Project extends AuditModel {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name ="projectid" )
-	private Long projectId;
+	@Column(name ="pid" )
+	private Long pId;
+	@Column(name ="projectid",nullable = false)
+	private String projectid;
 	@Column(name = "projectname")
 	private String projectName;
 	@Column(name ="addedby" )
 	private Long addedBy;
 	@Column(name ="updatedby")
 	private Long updatedBy;
+	private Long pmaxnum;
+	private String status="toDo";
 	@Column(name = "projectdescription", columnDefinition = "MEDIUMTEXT")
 	private String description;
 	@OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-	@JoinColumn(name = "project_id")
+	@JoinColumn(name = "pid")
     private List<Task> tasks = new ArrayList<>();
-
 }
