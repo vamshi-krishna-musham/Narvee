@@ -16,6 +16,9 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 	@Query(value = "Select p.projectid, p.projectname, p.projectdescription, u.fullname as addedby from project p, users u where u.userid = p.addedby", nativeQuery = true)
 	 public Page<ProjectUserDTO> getProjectUser(Pageable pageable);
 	
+	@Query(value = "select max(pmaxnum) as max from project", nativeQuery = true)
+	public Long pmaxNumber();
+
 	
 	 @Query(value = "Select p.projectid, p.projectname, p.projectdescription, u.fullname as addedby from project p, users u where u.userid = p.addedby "
 	 		+ "AND (p.projectname LIKE CONCAT('%', :keyword, '%')  or p.projectdescription LIKE CONCAT('%', :keyword, '%') OR u.fullname LIKE CONCAT('%', :keyword, '%'))", nativeQuery = true)
