@@ -38,17 +38,17 @@ public class ProjectController {
 				HttpStatus.CREATED);
 	}
 
-	@GetMapping("/getbyProjectId/{projectid}")
-	public ResponseEntity<RestAPIResponse> findByProjectId(@PathVariable Long projectid) {
+	@GetMapping("/getbyProjectId/{pid}")
+	public ResponseEntity<RestAPIResponse> findByProjectId(@PathVariable Long pid) {
 		logger.info("!!! inside class: ProjectController , !! method: findByprojectid");
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched  Project successfully",
-				projectservice.findByprojectId(projectid)), HttpStatus.OK);
+				projectservice.findByprojectId(pid)), HttpStatus.OK);
 	}
 
-	@DeleteMapping("/delete/{projectid}")
-	public ResponseEntity<RestAPIResponse> deleteProjectById(@PathVariable Long projectid) {
+	@DeleteMapping("/delete/{pid}")
+	public ResponseEntity<RestAPIResponse> deleteProjectById(@PathVariable Long pid) {
 		logger.info("!!! inside class: ProjectController , !! method: deleteProjectById");
-		projectservice.deleteProject(projectid);
+		projectservice.deleteProject(pid);
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Deleted successfully"),
 				HttpStatus.OK);
 	}

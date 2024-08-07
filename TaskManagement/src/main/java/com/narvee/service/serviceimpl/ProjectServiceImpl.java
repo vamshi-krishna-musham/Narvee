@@ -1,5 +1,6 @@
 package com.narvee.service.serviceimpl;
 
+
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -24,18 +25,28 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Autowired
 	private ProjectRepository projectrepository;
-
+	  private static final int DIGIT_PADDING =4; 
+	    
+	    
 	@Override
 	public Project saveproject(Project project) {
-		logger.info("!!! inside class: ProjectServiceImpl , !! method: saveproject");
-		Project projectservice = projectrepository.save(project);
-		return projectservice;
+		  logger.info("!!! inside class: ProjectServiceImpl , !! method: saveProject");
+		    Long pmaxnumber = projectrepository.pmaxNumber();
+		    if (pmaxnumber == null) {
+		        pmaxnumber = 0L;
+		    }
+		    String valueWithPadding = String.format("%0" + DIGIT_PADDING + "d", pmaxnumber + 1);
+		    String value = "PROJ" + valueWithPadding;
+		    project.setProjectid(value);
+		    projectrepository.save(project);
+		    project.setPmaxnum(pmaxnumber + 1);
+		    return project;
 	}
-
+	
 	@Override
-	public Project findByprojectId(Long projectid) {
+	public Project findByprojectId(Long pid) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: findByprojectId");
-		Optional<Project> optional = projectrepository.findById(projectid);
+		Optional<Project> optional = projectrepository.findById(pid);
 		if (optional.isPresent()) {
 			return optional.get();
 		} else
@@ -44,16 +55,16 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 
 	@Override
-	public void deleteProject(Long projectid) {
+	public void deleteProject(Long pid) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: deleteProject");
-		projectrepository.deleteById(projectid);
+		projectrepository.deleteById(pid);
 
 	}
 
 	@Override
 	public boolean updateproject(Project updateproject) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: updateproject");
-		Optional<Project> optionalProject = projectrepository.findById(updateproject.getProjectId());
+		Optional<Project> optionalProject = projectrepository.findById(updateproject.getPId());
 		if (optionalProject.isPresent()) {
 			Project project = optionalProject.get();
 			project.setProjectName(updateproject.getProjectName());
