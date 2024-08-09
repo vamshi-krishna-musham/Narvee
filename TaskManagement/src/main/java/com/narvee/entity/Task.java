@@ -68,8 +68,6 @@ public class Task extends AuditModel {
 
 	private String department;
 
-	@Column(name = "projectid")
-    private String projectid;
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "task_id")
 	private List<SubTask> subTasks= new ArrayList<>();
