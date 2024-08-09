@@ -26,6 +26,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
 	@Query(value = "select * from ticket_tracker where taskid=?", nativeQuery = true)
 	public List<TaskTrackerDTO> ticketTracker(Long taskid);
+	
+	
 
 	@Modifying
 	@Query(value = "update  assigned_users set completed= :completed where userid= :userid and assignid= :assignid", nativeQuery = true)
@@ -172,5 +174,14 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 			+ "t.createddate, tt.fromdate as fromdate ,tt.todate as todate, tt.ftime as ftime, tt.ttime as ttime, t.ticketid, t.taskname, t.taskid, t.targetdate, t.description as taskdescription, u.fullname as fullname FROM task t LEFT JOIN ticket_tracker tt ON t.taskid = tt.taskid "
 			+ "LEFT JOIN users u ON u.userid = tt.updatedby JOIN task_users tu ON t.taskid = tu.taskid JOIN assigned_users au ON au.assignid = tu.assignedto JOIN users ass ON ass.userid = au.userid", nativeQuery = true)
 	public List<TaskTrackerDTO> allTasksRecordsWithSortingAndPagination();
+	
+	@Query(value = "SELECT t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,t.projectid,t.pid "
+			+ "FROM Task t JOIN Project p ON t.pid = p.pid WHERE t.projectid=:projectid ", nativeQuery = true)
+	public Page<TaskTrackerDTO> getTaskByProjectid(Pageable pageable,String projectid);
+	
+	@Query(value = "SELECT t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,t.projectid,t.pid\r\n"
+			+ "FROM Task t JOIN Project p ON t.pid = p.pid WHERE t.projectid=:projectid AND (t.ticketid LIKE CONCAT('%',:keyword, '%') OR t.taskname LIKE CONCAT('%',:keyword, '%') OR t.description LIKE CONCAT('%',:keyword,  '%') OR t.targetdate LIKE CONCAT('%',:keyword,  '%') "
+			+ "OR t.status LIKE CONCAT('%',:keyword, '%'))", nativeQuery = true)
+	public Page<TaskTrackerDTO> getTaskByProjectIdWithsearching(Pageable pageable,@Param("projectid") String projectid,@Param("keyword") String keyword);
 
 }

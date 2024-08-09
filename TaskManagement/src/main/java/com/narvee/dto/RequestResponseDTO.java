@@ -13,6 +13,7 @@ public class RequestResponseDTO {
 	private Integer pageSize;
 	private String sortOrder;
 	private String sortField;
+	private String projectid;
 	private String keyword;
  
 }

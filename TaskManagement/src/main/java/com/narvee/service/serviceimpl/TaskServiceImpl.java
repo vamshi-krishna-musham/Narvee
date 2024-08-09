@@ -525,4 +525,37 @@ public class TaskServiceImpl implements TaskService {
 
 	}
 
+	@Override
+	public Page<TaskTrackerDTO> getTaskByProjectid(RequestResponseDTO requestresponsedto) {
+		logger.info("!!! inside class: TaskServiceImpl , !! method: getTaskByProjectid");
+		String sortfield = requestresponsedto.getSortField();
+		String sortorder = requestresponsedto.getSortOrder();
+		String keyword = requestresponsedto.getKeyword();
+		Integer pageNo = requestresponsedto.getPageNumber();
+		Integer pageSize = requestresponsedto.getPageSize();
+		String projectid=requestresponsedto.getProjectid();
+	 if (sortfield.equalsIgnoreCase("ticketid"))
+			sortfield = "ticketid";
+		else if (sortfield.equalsIgnoreCase("taskname"))
+			sortfield = "taskname";
+		else if (sortfield.equalsIgnoreCase("description"))
+			sortfield = "description";
+		else if (sortfield.equalsIgnoreCase("targetdate"))
+			sortfield = "targetdate";
+		else if (sortfield.equalsIgnoreCase("status"))
+			sortfield = "status";
+		Sort.Direction sortDirection = Sort.Direction.ASC;
+
+		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
+			sortDirection = Sort.Direction.DESC;
+		}
+		Sort sort = Sort.by(sortDirection, sortfield);
+		Pageable pageable = PageRequest.of(requestresponsedto.getPageNumber() - 1, requestresponsedto.getPageSize(),
+				sort);
+		if (keyword.equalsIgnoreCase("empty")) {
+			return taskRepo.getTaskByProjectid(pageable, projectid);
+		} else {
+			return taskRepo.getTaskByProjectIdWithsearching(pageable, projectid, keyword);
+		}
+	}
 }
