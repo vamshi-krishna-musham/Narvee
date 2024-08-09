@@ -38,7 +38,7 @@ public class Task extends AuditModel {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long taskid;
-
+	 
 	private String taskname;
 
 	@Column(name = "description", columnDefinition = "TEXT")
@@ -56,6 +56,7 @@ public class Task extends AuditModel {
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "taskid", nullable = false)
 	private List<TicketTracker> track = new ArrayList<TicketTracker>();
+	
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinTable(name = "task_users", joinColumns = { @JoinColumn(name = "taskid") }, inverseJoinColumns = {

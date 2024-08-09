@@ -198,4 +198,11 @@ public class TaskController {
 				service.findAllTasks(requestresponsedto)), HttpStatus.OK);
 	}
 	
+	@RequestMapping(value ="/taskByprojectid",method = RequestMethod.POST,produces = "application/json")
+	public ResponseEntity<RestAPIResponse> getTaskbyProjectId(@RequestBody RequestResponseDTO requestResponseDTO ){
+		logger.info("!!! inside class: TaskController , !! method: getTaskbyProjectId");
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "fetched taskByProjectid", service.getTaskByProjectid(requestResponseDTO)), HttpStatus.OK);
+		
+	}
+	
 }

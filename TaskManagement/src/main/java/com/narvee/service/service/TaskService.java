@@ -43,5 +43,7 @@ public interface TaskService {
 	
 	public Page<Task> findAllTasks(RequestResponseDTO requestresponsedto);
 	
+	public Page<TaskTrackerDTO> getTaskByProjectid(RequestResponseDTO requestresponsedto);
+	
 
 }
