@@ -13,6 +13,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+
+import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.TaskAssignDTO;
 import com.narvee.dto.TaskTrackerDTO;
 import com.narvee.entity.Task;
@@ -184,7 +186,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 			+ "OR t.status LIKE CONCAT('%',:keyword, '%'))", nativeQuery = true)
 	public Page<TaskTrackerDTO> getTaskByProjectIdWithsearching(Pageable pageable,@Param("projectid") String projectid,@Param("keyword") String keyword);
 	
-	@Query( value = "select u.userid ,u.fullname FROM users u where u.department=:department",nativeQuery = true)
-	public Object[] findDepartmentWiseUsers(String department);
+	@Query( value = "select u.userid ,u.pseudoname,u.fullname FROM users u where u.department=:department",nativeQuery = true)
+	public List<GetUsersDTO> findDepartmentWiseUsers(String department);
+	
 	
 }
