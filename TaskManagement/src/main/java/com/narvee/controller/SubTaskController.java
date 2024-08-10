@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +21,6 @@ import com.narvee.service.service.SubTaskService;
 
 @RequestMapping
 @RestController()
-@CrossOrigin(origins="*")
 public class SubTaskController {
 
 	private static final Logger logger = LoggerFactory.getLogger(SubTaskController.class);
@@ -30,23 +28,24 @@ public class SubTaskController {
 	@Autowired
 	private SubTaskService subtaskservice;
 
-	@PostMapping("/savesubtask")
+	@PostMapping("/saveSubTask")
 	public ResponseEntity<RestAPIResponse> createSubTask(@RequestBody SubTask subtask) {
+		logger.info("!!! inside class: SubTaskController , !! method: findBySubTaskId");
 		subtaskservice.createSubTask(subtask);
 		return new ResponseEntity<RestAPIResponse>(
-				new RestAPIResponse("success", " SubTask created successfully", subtaskservice.createSubTask(subtask)),
+				new RestAPIResponse("success", "SubTask created successfully", subtaskservice.createSubTask(subtask)), 
 				HttpStatus.CREATED);
 
 	}
 
-	@GetMapping("/getbysubtaskId/{subtaskid}")
+	@GetMapping("/getBySubTaskId/{subtaskid}")
 	public ResponseEntity<RestAPIResponse> findBySubTaskId(@PathVariable Long subtaskid) {
 		logger.info("!!! inside class: SubTaskController , !! method: findBySubTaskId");
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched  SubTask successfully",
 				subtaskservice.findBySubTaskId(subtaskid)), HttpStatus.OK);
 	}
 
-	@DeleteMapping("/deletesubtask/{subtaskid}")
+	@DeleteMapping("/deleteSubTask/{subtaskid}")
 	public ResponseEntity<RestAPIResponse> deleteSubTaskById(@PathVariable Long subtaskid) {
 		logger.info("!!! inside class: SubTaskController , !! method: deleteSubTaskById");
 		subtaskservice.deleteSubTask(subtaskid);

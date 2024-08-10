@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,7 +31,6 @@ import com.narvee.repository.TaskRepository;
 import com.narvee.service.service.TaskService;
 
 @RestController
-@CrossOrigin(origins="*")
 public class TaskController {
 	private static final Logger logger = LoggerFactory.getLogger(TaskController.class);
 	
@@ -51,10 +49,10 @@ public class TaskController {
 		return client.getUsers(token);
 	}
 
-	@GetMapping("/findByUserid/{userid}")
+	@GetMapping("/findByUserId/{userid}")
 	public ResponseEntity<RestAPIResponse> findByUserid(@RequestHeader("AUTHORIZATION") String token,
 			@PathVariable Long userid) {
-		logger.info("!!! inside class: TaskController , !! method: getuser");
+		logger.info("!!! inside class: TaskController , !! method: findByUserid");
 		return new ResponseEntity<RestAPIResponse>(
 				new RestAPIResponse("success", "Fetched all tasks successfully", client.FindByUserid(token, userid)),
 				HttpStatus.OK);
@@ -147,7 +145,6 @@ public class TaskController {
 				HttpStatus.OK);
 	}
 
-	//PrashanthMadishetti
 	@PostMapping("/getAllTasks")
 	public ResponseEntity<RestAPIResponse> getAllTasksWithSortingAndPagination(
 			@RequestBody RequestResponseDTO requestresponsedto) {
@@ -198,7 +195,7 @@ public class TaskController {
 				service.findAllTasks(requestresponsedto)), HttpStatus.OK);
 	}
 	
-	@RequestMapping(value ="/taskByprojectid",method = RequestMethod.POST,produces = "application/json")
+	@RequestMapping(value ="/tasksByProjectId",method = RequestMethod.POST,produces = "application/json")
 	public ResponseEntity<RestAPIResponse> getTaskbyProjectId(@RequestBody RequestResponseDTO requestResponseDTO ){
 		logger.info("!!! inside class: TaskController , !! method: getTaskbyProjectId");
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "fetched taskByProjectid", service.getTaskByProjectid(requestResponseDTO)), HttpStatus.OK);

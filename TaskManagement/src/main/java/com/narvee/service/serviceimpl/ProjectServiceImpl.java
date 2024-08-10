@@ -56,7 +56,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public void deleteProject(Long pid) {
-		logger.info("!!! inside class: ProjectServiceImpl , !! method: deleteProject");
+		logger.info("!!! inside class: ProjectSe                                                                                                                                                                                                    rviceImpl , !! method: deleteProject");
 		projectrepository.deleteById(pid);
 
 	}
@@ -104,9 +104,10 @@ public class ProjectServiceImpl implements ProjectService {
 		Pageable pageable = PageRequest.of(requestresponsedto.getPageNumber() - 1, requestresponsedto.getPageSize(),
 				sort);
 		if (requestresponsedto.getKeyword().equals("empty")) {
+			logger.info("!!! inside class: ProjectServiceImpl , !! method: getProjectUser, Empty");
 			return projectrepository.getProjectUser(pageable);
 		} else {
-			
+			logger.info("!!! inside class: ProjectServiceImpl , !! method: getProjectUser, getProjectUserFiltering");
 			return projectrepository.getProjectUserFiltering(pageable, requestresponsedto.getKeyword());
 
 		}
@@ -138,12 +139,14 @@ public class ProjectServiceImpl implements ProjectService {
 			sortDirection = Sort.Direction.DESC;
 		}
 		Sort sort = Sort.by(sortDirection, sortfield);
-		Pageable pageable = PageRequest.of(requestresponsedto.getPageNumber() - 1, requestresponsedto.getPageSize(),
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize,
 				sort);
 
 		if (keyword.equalsIgnoreCase("empty")) {
+			logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects, Empty");
 			return projectrepository.findAll(pageable);
 		} else {
+			logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects, Filter");
 		   return projectrepository.findAllProjectWithFiltering(pageable, keyword);
 			
 		}
