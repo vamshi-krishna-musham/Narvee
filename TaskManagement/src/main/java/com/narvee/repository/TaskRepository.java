@@ -183,5 +183,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 			+ "FROM Task t JOIN Project p ON t.pid = p.pid WHERE p.projectid=:projectid AND (t.ticketid LIKE CONCAT('%',:keyword, '%') OR t.taskname LIKE CONCAT('%',:keyword, '%') OR t.description LIKE CONCAT('%',:keyword,  '%') OR t.targetdate LIKE CONCAT('%',:keyword,  '%') "
 			+ "OR t.status LIKE CONCAT('%',:keyword, '%'))", nativeQuery = true)
 	public Page<TaskTrackerDTO> getTaskByProjectIdWithsearching(Pageable pageable,@Param("projectid") String projectid,@Param("keyword") String keyword);
-
+	
+	@Query( value = "select u.userid ,u.fullname FROM users u where u.department=:department",nativeQuery = true)
+	public Object[] findDepartmentWiseUsers(String department);
+	
 }

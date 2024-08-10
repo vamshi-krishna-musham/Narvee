@@ -558,4 +558,9 @@ public class TaskServiceImpl implements TaskService {
 			return taskRepo.getTaskByProjectIdWithsearching(pageable, projectid, keyword);
 		}
 	}
+
+	@Override
+	public Object[] getUsersByDepartment(String department) {
+		return taskRepo.findDepartmentWiseUsers(department);
+	}
 }

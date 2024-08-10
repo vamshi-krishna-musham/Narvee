@@ -45,5 +45,6 @@ public interface TaskService {
 	
 	public Page<TaskTrackerDTO> getTaskByProjectid(RequestResponseDTO requestresponsedto);
 	
+	public Object[] getUsersByDepartment(String department);
 
 }
