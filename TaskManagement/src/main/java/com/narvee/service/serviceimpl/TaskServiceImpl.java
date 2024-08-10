@@ -22,6 +22,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.narvee.dto.DateSearchDTO;
+import com.narvee.dto.GetAssignUsers;
+import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.RequestResponseDTO;
 import com.narvee.dto.TaskAssignDTO;
 import com.narvee.dto.TaskReportsDTO;
@@ -560,7 +562,7 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public Object[] getUsersByDepartment(String department) {
+	public List<GetUsersDTO> getUsersByDepartment(String department) {
 		return taskRepo.findDepartmentWiseUsers(department);
 	}
 }
