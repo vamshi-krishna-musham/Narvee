@@ -202,4 +202,11 @@ public class TaskController {
 		
 	}
 	
+	@RequestMapping(value ="/user/{department}",method = RequestMethod.GET,produces = "application/json")
+	public ResponseEntity<RestAPIResponse> findBydeparatmentWiseUsers(@PathVariable String department){
+		logger.info("!!! inside class: TaskController , !! method: findBydeparatmentWiseUsers");
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "fetched by deparatmentWise users  successfully", service.getUsersByDepartment(department)), HttpStatus.OK);
+		
+	}
+	
 }
