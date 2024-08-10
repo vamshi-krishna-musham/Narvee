@@ -105,8 +105,8 @@ public class SubTaskServiceImpl implements SubTaskService {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: getAllSubTasks");
 		String sortorder = requestresponsedto.getSortOrder();
 		String sortfield = requestresponsedto.getSortField();
-		Integer PageNo = requestresponsedto.getPageNumber();
-		Integer PageSize = requestresponsedto.getPageSize();
+		Integer pageNo = requestresponsedto.getPageNumber();
+		Integer pageSize = requestresponsedto.getPageSize();
 		String keyword = requestresponsedto.getKeyword();
 
 		if (sortfield.equalsIgnoreCase("subTaskId"))
@@ -126,7 +126,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 			sortDirection = Sort.Direction.DESC;
 		}
 		Sort sort = Sort.by(sortDirection, sortfield);
-		Pageable pageable = PageRequest.of(requestresponsedto.getPageNumber() - 1, requestresponsedto.getPageSize(),
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize,
 				sort);
 
 		if (keyword.equalsIgnoreCase("empty")) {

@@ -176,7 +176,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 	public List<TaskTrackerDTO> allTasksRecordsWithSortingAndPagination();
 	
 	@Query(value = "SELECT t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,p.projectid,t.pid "
-			+ "FROM Task t JOIN Project p ON t.pid = p.pid WHERE p.projectid=:projectid ", nativeQuery = true)
+			+ "FROM task t JOIN project p ON t.pid = p.pid WHERE p.projectid=:projectid ", nativeQuery = true)
 	public Page<TaskTrackerDTO> getTaskByProjectid(Pageable pageable,String projectid);
 	
 	@Query(value = "SELECT t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,p.projectid,t.pid\r\n"
