@@ -14,10 +14,13 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.narvee.commons.AuditModel;
 
 import lombok.AllArgsConstructor;
@@ -32,13 +35,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Task extends AuditModel {
-	
+
 	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long taskid;
-	 
+
 	private String taskname;
 
 	@Column(name = "description", columnDefinition = "TEXT")
@@ -47,8 +50,11 @@ public class Task extends AuditModel {
 	private Long addedby;
 
 	private Long updatedby;
-	
+
 	private String status;
+
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	private LocalDate startDate;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private LocalDate targetdate;
@@ -56,7 +62,6 @@ public class Task extends AuditModel {
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "taskid", nullable = false)
 	private List<TicketTracker> track = new ArrayList<TicketTracker>();
-	
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinTable(name = "task_users", joinColumns = { @JoinColumn(name = "taskid") }, inverseJoinColumns = {
@@ -68,8 +73,14 @@ public class Task extends AuditModel {
 
 	private String department;
 
+	@JsonBackReference
+	@ManyToOne
+	@JoinColumn(name = "pid")
+	private Project project;
+
+	@JsonManagedReference
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "task_id")
-	private List<SubTask> subTasks= new ArrayList<>();
+	private List<SubTask> subTasks = new ArrayList<>();
 
 }

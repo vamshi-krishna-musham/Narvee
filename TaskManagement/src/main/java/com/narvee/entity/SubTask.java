@@ -7,7 +7,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.narvee.commons.AuditModel;
 
@@ -42,5 +45,10 @@ public class SubTask extends AuditModel {
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@Column(name = "targetdate")
 	private LocalDate targetDate;
+	
+	@JsonBackReference
+	@ManyToOne
+	@JoinColumn(name = "taskid")
+	private Task task ;
 
 }
