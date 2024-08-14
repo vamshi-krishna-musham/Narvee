@@ -203,5 +203,12 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 			+ "FROM Task t JOIN Project p ON t.pid = p.pid WHERE p.projectid =:projectid AND (t.ticketid LIKE CONCAT('%',:keyword, '%') OR t.taskname LIKE CONCAT('%',:keyword, '%') OR t.description LIKE CONCAT('%',:keyword,  '%') OR t.targetdate LIKE CONCAT('%',:keyword,  '%') "
 			+ "OR t.status LIKE CONCAT('%',:keyword, '%'))", nativeQuery = true)
 	public Page<TaskTrackerDTO> findTaskByProjectIdWithSearching(Pageable pageable,@Param("projectid") String projectid,@Param("keyword") String keyword);
+	
+	
+	@Query(value = "select null as createdby,email, pseudoname from users where userid in (:auserid) union "
+			+ "select pseudoname as createdby,email, pseudoname from users where userid = :userid ", nativeQuery = true)
+	public List<GetUsersDTO> getTaskAssinedUsersAndCreatedBy(long userid, List<Long> auserid );
+	
+	
 }
 
