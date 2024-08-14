@@ -603,7 +603,7 @@ public class TaskServiceImpl implements TaskService {
 			sortDirection = Sort.Direction.DESC;
 		}
 		Sort sort = Sort.by(sortDirection, sortfield);
-		Pageable pageable = PageRequest.of(requestresponsedto.getPageNumber() - 1, requestresponsedto.getPageSize(),
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize,
 				sort);
 		if (keyword.equalsIgnoreCase("empty")) {
 			return taskRepo.findTaskByProjectid(pageable, projectid);

@@ -210,11 +210,13 @@ public class TaskController {
 	
 	@RequestMapping(value ="update/{taskid}/{status}",method =RequestMethod.PUT,produces = "application/json")
 	public ResponseEntity<RestAPIResponse> updateTaskStatus(@PathVariable Long taskid,@PathVariable String status){
+		logger.info("!!! inside class: TaskController , !! method: updateTaskStatus");
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Updated status  successfully", service.updateTaskStatus(taskid, status)), HttpStatus.OK);
 	}
 	
-	@RequestMapping(value ="/findProjectid",method = RequestMethod.POST,produces = "application/json")
+	@RequestMapping(value ="/findProjectId",method = RequestMethod.POST,produces = "application/json")
     public ResponseEntity<RestAPIResponse> findTaskByProjectId(@RequestBody RequestResponseDTO requestResponseDTO ){
+		logger.info("!!! inside class: TaskController , !! method: findTaskByProjectId");
 	return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "fetched tasks", service.findTaskByProjectid(requestResponseDTO)), HttpStatus.OK);
 }
 }
