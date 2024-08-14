@@ -14,6 +14,7 @@ public class RequestResponseDTO {
 	private String sortOrder;
 	private String sortField;
 	private String projectid;
+	private String status;
 	private String keyword;
  
 }
