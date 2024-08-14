@@ -18,6 +18,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
+import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.UserDTO;
 import com.narvee.entity.Task;
 import com.narvee.feignclient.UserClient;
@@ -43,7 +44,7 @@ public class EmailServiceIml {
 	@Value("${ccmail}")
 	private String[] ccmail;
 
-	public void TaskAssigningEmail(Task task, List<UserDTO> userdetails)
+	public void TaskAssigningEmail(Task task, List<GetUsersDTO> userdetails)
 			throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: TaskEmailServiceIml, !! method: TaskAssigningEmail");
 		StringBuilder createdBy = new StringBuilder();
@@ -51,7 +52,7 @@ public class EmailServiceIml {
 		int i = 0;
 		String emails[] = new String[userdetails.size()];
 		
-		for (UserDTO userDTO : userdetails) {
+		for (GetUsersDTO userDTO : userdetails) {
 			if (userDTO.getCreatedby() != null) {
 				createdBy.append(userDTO.getCreatedby());
 			} else {

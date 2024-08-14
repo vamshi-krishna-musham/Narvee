@@ -2,6 +2,7 @@ package com.narvee.service.service;
 
 import org.springframework.data.domain.Page;
 
+import com.narvee.dto.ProjectDTO;
 import com.narvee.dto.ProjectUserDTO;
 import com.narvee.dto.RequestResponseDTO;
 import com.narvee.entity.Project;
@@ -18,6 +19,6 @@ public interface ProjectService {
 	
 	public Page<ProjectUserDTO> getProjectUser(RequestResponseDTO requestresponsedto);
 	
-	public Page<Project> findAllProjects(RequestResponseDTO requestresponsedto);
+	public Page<ProjectDTO> findAllProjects(RequestResponseDTO requestresponsedto);
 
 }

@@ -1,6 +1,5 @@
 package com.narvee.service.serviceimpl;
 
-
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -12,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.narvee.dto.ProjectDTO;
 import com.narvee.dto.ProjectUserDTO;
 import com.narvee.dto.RequestResponseDTO;
 import com.narvee.entity.Project;
@@ -25,24 +25,23 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Autowired
 	private ProjectRepository projectrepository;
-	  private static final int DIGIT_PADDING =4; 
-	    
-	    
+	private static final int DIGIT_PADDING = 4;
+
 	@Override
 	public Project saveproject(Project project) {
-		  logger.info("!!! inside class: ProjectServiceImpl , !! method: saveProject");
-		    Long pmaxnumber = projectrepository.pmaxNumber();
-		    if (pmaxnumber == null) {
-		        pmaxnumber = 0L;
-		    }
-		    String valueWithPadding = String.format("%0" + DIGIT_PADDING + "d", pmaxnumber + 1);
-		    String value = "PROJ" + valueWithPadding;
-		    project.setProjectid(value);
-		    projectrepository.save(project);
-		    project.setPmaxnum(pmaxnumber + 1);
-		    return project;
+		logger.info("!!! inside class: ProjectServiceImpl , !! method: saveProject");
+		Long pmaxnumber = projectrepository.pmaxNumber();
+		if (pmaxnumber == null) {
+			pmaxnumber = 0L;
+		}
+		String valueWithPadding = String.format("%0" + DIGIT_PADDING + "d", pmaxnumber + 1);
+		String value = "PROJ" + valueWithPadding;
+		project.setProjectid(value);
+		projectrepository.save(project);
+		project.setPmaxnum(pmaxnumber + 1);
+		return project;
 	}
-	
+
 	@Override
 	public Project findByprojectId(Long pid) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: findByprojectId");
@@ -114,7 +113,7 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 
 	@Override
-	public Page<Project> findAllProjects(RequestResponseDTO requestresponsedto) {
+	public Page<ProjectDTO> findAllProjects(RequestResponseDTO requestresponsedto) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects");
 		String sortorder = requestresponsedto.getSortOrder();
 		String sortfield = requestresponsedto.getSortField();
@@ -130,25 +129,24 @@ public class ProjectServiceImpl implements ProjectService {
 			sortfield = "description";
 		else if (sortfield.equalsIgnoreCase("addedBy"))
 			sortfield = "addedBy";
-		else sortfield = "updateddate";
-		
-		System.out.println(sortfield);
+		else
+			sortfield = "updateddate";
+
 
 		Sort.Direction sortDirection = Sort.Direction.ASC;
 		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
 			sortDirection = Sort.Direction.DESC;
 		}
 		Sort sort = Sort.by(sortDirection, sortfield);
-		Pageable pageable = PageRequest.of(pageNo - 1, pageSize,
-				sort);
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
 
 		if (keyword.equalsIgnoreCase("empty")) {
 			logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects, Empty");
-			return projectrepository.findAll(pageable);
+			return projectrepository.findAllProjects(pageable, keyword);
 		} else {
 			logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects, Filter");
-		   return projectrepository.findAllProjectWithFiltering(pageable, keyword);
-			
+			return projectrepository.findAllProjectWithFiltering(pageable, keyword);
+
 		}
 
 	}

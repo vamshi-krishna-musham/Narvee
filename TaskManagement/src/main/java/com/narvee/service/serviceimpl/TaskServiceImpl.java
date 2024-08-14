@@ -1,6 +1,7 @@
 package com.narvee.service.serviceimpl;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ public class TaskServiceImpl implements TaskService {
 		String value = "T" + formattedDateTime1 + valueWithPadding;
 		task.setTicketid(value);
 		task.setMaxnum(maxnumber + 1);
-		task.setStatus("Assigned");
+		task.setStatus("To Do");
 //		AssignedUsers asg = new AssignedUsers();
 //		asg.setUserid(task.getAddedby());
 //		List<AssignedUsers> assignedUsers = new ArrayList();
@@ -82,7 +83,8 @@ public class TaskServiceImpl implements TaskService {
 		// assignid=null, userid=28, completed=false
 		List<Long> usersids = addedByToAssignedUsers.stream().map(AssignedUsers::getUserid)
 				.collect(Collectors.toList());
-		List<UserDTO> user = userClient.getTaskAssinedUsersAndCreatedBy(token, task.getAddedby(), usersids);
+		
+		List<GetUsersDTO> user =taskRepo.getTaskAssinedUsersAndCreatedBy(task.getAddedby(), usersids);
 		try {
 			emailService.TaskAssigningEmail(task, user);
 		} catch (UnsupportedEncodingException | MessagingException e) {
@@ -97,6 +99,10 @@ public class TaskServiceImpl implements TaskService {
 		List<TicketTracker> listTicketTracker = new ArrayList<>();
 		TicketTracker ticketTracker = new TicketTracker();
 		Task task = taskRepo.findById(updateTask.getTaskid()).get();
+		
+		if(task.getStartDate()==null) {
+			task.setStartDate(LocalDate.now());
+		}
 
 		List<AssignedUsers> asigned = task.getAssignedto();
 		for (AssignedUsers assignedUsers : asigned) {
@@ -113,16 +119,12 @@ public class TaskServiceImpl implements TaskService {
 			ticketTracker.setUpdatedby(updateTask.getUpdatedby());
 			ticketTracker.setFromdate(updateTask.getFromdate());
 			ticketTracker.setTodate(updateTask.getTodate());
-			ticketTracker.setFtime(updateTask.getFtime());
-			ticketTracker.setTtime(updateTask.getTtime());
-			ticketTracker.setDuration(updateTask.getDuration());
 			listTicketTracker.add(ticketTracker);
 			task.setTrack(listTicketTracker);
 			taskRepo.save(task);
 			return true;
-		} else {
-			return false;
 		}
+		return false; 
 	}
 
 	@Override
@@ -601,7 +603,7 @@ public class TaskServiceImpl implements TaskService {
 			sortDirection = Sort.Direction.DESC;
 		}
 		Sort sort = Sort.by(sortDirection, sortfield);
-		Pageable pageable = PageRequest.of(requestresponsedto.getPageNumber() - 1, requestresponsedto.getPageSize(),
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize,
 				sort);
 		if (keyword.equalsIgnoreCase("empty")) {
 			return taskRepo.findTaskByProjectid(pageable, projectid);

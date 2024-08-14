@@ -3,10 +3,8 @@ package com.narvee.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -14,6 +12,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.narvee.commons.AuditModel;
 
 import lombok.AllArgsConstructor;
@@ -45,10 +44,11 @@ public class Project extends AuditModel {
 	@Column(name ="updatedby")
 	private Long updatedBy;
 	private Long pmaxnum;
-	private String status="toDo";
+	private String status="To Do";
 	@Column(name = "projectdescription", columnDefinition = "MEDIUMTEXT")
 	private String description;
-	@OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+	@OneToMany
+	@JsonManagedReference
 	@JoinColumn(name = "pid")
     private List<Task> tasks = new ArrayList<>();
 }

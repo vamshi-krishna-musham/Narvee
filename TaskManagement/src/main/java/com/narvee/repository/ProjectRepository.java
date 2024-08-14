@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.narvee.dto.ProjectDTO;
 import com.narvee.dto.ProjectUserDTO;
 import com.narvee.entity.Project;
 
@@ -24,8 +25,14 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 	 		+ "AND (p.projectname LIKE CONCAT('%', :keyword, '%')  or p.projectdescription LIKE CONCAT('%', :keyword, '%') OR u.fullname LIKE CONCAT('%', :keyword, '%'))", nativeQuery = true)
 	 public Page<ProjectUserDTO> getProjectUserFiltering(Pageable pageable,@Param("keyword") String keyword);
 	 
-	 @Query(value = "SELECT * FROM project p WHERE (p.projectname LIKE CONCAT('%', :keyword, '%') OR p.projectdescription LIKE CONCAT('%', :keyword, '%') or p.addedby LIKE CONCAT('%', :keyword, '%'))", nativeQuery = true)
-	 public Page<Project> findAllProjectWithFiltering(Pageable pageable,@Param("keyword") String keyword);
+	 @Query(value = "SELECT p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid FROM project p WHERE (p.projectname LIKE CONCAT('%', :keyword, '%') OR p.projectdescription LIKE CONCAT('%', :keyword, '%') or p.addedby LIKE CONCAT('%', :keyword, '%'))", nativeQuery = true)
+	 public Page<ProjectDTO> findAllProjectWithFiltering(Pageable pageable,@Param("keyword") String keyword);
+	 
+	 @Query(value = "SELECT  p.pid , p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid FROM project p ", nativeQuery = true)
+	 public Page<ProjectDTO> findAllProjects(Pageable pageable,@Param("keyword") String keyword);
+	 
+	 @Query(value = "SELECT  p.pid , p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid FROM project p where p.pid= :pid ", nativeQuery = true)
+	 public ProjectDTO getByProjectId(Long pid);
 	 
 	 
 }
