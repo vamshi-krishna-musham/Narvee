@@ -536,6 +536,7 @@ public class TaskServiceImpl implements TaskService {
 		Integer pageNo = requestresponsedto.getPageNumber();
 		Integer pageSize = requestresponsedto.getPageSize();
 		String projectid=requestresponsedto.getProjectid();
+		String status=requestresponsedto.getStatus();
 	 if (sortfield.equalsIgnoreCase("ticketid"))
 			sortfield = "ticketid";
 		else if (sortfield.equalsIgnoreCase("taskname"))
@@ -555,14 +556,57 @@ public class TaskServiceImpl implements TaskService {
 		Pageable pageable = PageRequest.of(requestresponsedto.getPageNumber() - 1, requestresponsedto.getPageSize(),
 				sort);
 		if (keyword.equalsIgnoreCase("empty")) {
-			return taskRepo.getTaskByProjectid(pageable, projectid);
+			return taskRepo.getTaskByProjectid(pageable, projectid, status);
 		} else {
-			return taskRepo.getTaskByProjectIdWithsearching(pageable, projectid, keyword);
+			return taskRepo.getTaskByProjectIdWithsearching(pageable, projectid, status, keyword);
 		}
 	}
 
 	@Override
 	public List<GetUsersDTO> getUsersByDepartment(String department) {
+		logger.info("!!! inside class: TaskServiceImpl , !! method: getUsersByDepartment");
 		return taskRepo.findDepartmentWiseUsers(department);
 	}
+
+	@Override
+	public boolean updateTaskStatus(Long taskid, String status) {
+		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTaskStatus");
+		taskRepo.updateTaskStatus(taskid, status);
+		return false;
+		
+	}
+
+	@Override
+	public Page<TaskTrackerDTO> findTaskByProjectid(RequestResponseDTO requestresponsedto) {
+		logger.info("!!! inside class: TaskServiceImpl , !! method: getTaskByProjectid");
+		String sortfield = requestresponsedto.getSortField();
+		String sortorder = requestresponsedto.getSortOrder();
+		Integer pageNo = requestresponsedto.getPageNumber();
+		Integer pageSize = requestresponsedto.getPageSize();
+		String projectid=requestresponsedto.getProjectid();
+		String keyword = requestresponsedto.getKeyword();
+	 if (sortfield.equalsIgnoreCase("ticketid"))
+			sortfield = "ticketid";
+		else if (sortfield.equalsIgnoreCase("taskname"))
+			sortfield = "taskname";
+		else if (sortfield.equalsIgnoreCase("description"))
+			sortfield = "description";
+		else if (sortfield.equalsIgnoreCase("targetdate"))
+			sortfield = "targetdate";
+		else if (sortfield.equalsIgnoreCase("status"))
+			sortfield = "status";
+		Sort.Direction sortDirection = Sort.Direction.ASC;
+
+		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
+			sortDirection = Sort.Direction.DESC;
+		}
+		Sort sort = Sort.by(sortDirection, sortfield);
+		Pageable pageable = PageRequest.of(requestresponsedto.getPageNumber() - 1, requestresponsedto.getPageSize(),
+				sort);
+		if (keyword.equalsIgnoreCase("empty")) {
+			return taskRepo.findTaskByProjectid(pageable, projectid);
+		} else {
+			return taskRepo.findTaskByProjectIdWithSearching(pageable, projectid, keyword);
+		}
+}
 }
