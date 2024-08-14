@@ -199,14 +199,19 @@ public class TaskController {
 	public ResponseEntity<RestAPIResponse> getTaskbyProjectId(@RequestBody RequestResponseDTO requestResponseDTO ){
 		logger.info("!!! inside class: TaskController , !! method: getTaskbyProjectId");
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "fetched taskByProjectid", service.getTaskByProjectid(requestResponseDTO)), HttpStatus.OK);
-		
+
 	}
-	
 	@RequestMapping(value ="/user/{department}",method = RequestMethod.GET,produces = "application/json")
 	public ResponseEntity<RestAPIResponse> findBydeparatmentWiseUsers(@PathVariable String department){
 		logger.info("!!! inside class: TaskController , !! method: findBydeparatmentWiseUsers");
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "fetched by deparatmentWise users successfully", service.getUsersByDepartment(department)), HttpStatus.OK);
-		
 	}	
-	
+	@RequestMapping(value ="update/{taskid}/{status}",method =RequestMethod.PUT,produces = "application/json")
+	public ResponseEntity<RestAPIResponse> updateTaskStatus(@PathVariable Long taskid,@PathVariable String status){
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Updated status  successfully", service.updateTaskStatus(taskid, status)), HttpStatus.OK);
+	}
+	@RequestMapping(value ="/findProjectid",method = RequestMethod.POST,produces = "application/json")
+    public ResponseEntity<RestAPIResponse> findTaskByProjectId(@RequestBody RequestResponseDTO requestResponseDTO ){
+	return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "fetched tasks", service.findTaskByProjectid(requestResponseDTO)), HttpStatus.OK);
+}
 }

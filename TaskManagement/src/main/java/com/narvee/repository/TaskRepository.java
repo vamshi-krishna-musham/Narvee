@@ -177,17 +177,31 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 			+ "LEFT JOIN users u ON u.userid = tt.updatedby JOIN task_users tu ON t.taskid = tu.taskid JOIN assigned_users au ON au.assignid = tu.assignedto JOIN users ass ON ass.userid = au.userid", nativeQuery = true)
 	public List<TaskTrackerDTO> allTasksRecordsWithSortingAndPagination();
 	
-	@Query(value = "SELECT t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,p.projectid,t.pid "
-			+ "FROM task t JOIN project p ON t.pid = p.pid WHERE p.projectid=:projectid ", nativeQuery = true)
-	public Page<TaskTrackerDTO> getTaskByProjectid(Pageable pageable,String projectid);
+	@Query(value = "SELECT t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,t.projectid,t.pid"
+			+ "FROM Task t JOIN Project p ON t.pid = p.pid WHERE p.projectid =:projectid AND  t.status=:status ", nativeQuery = true)
+	public Page<TaskTrackerDTO> getTaskByProjectid(Pageable pageable,@Param("projectid") String projectid, @Param("status") String status);
 	
-	@Query(value = "SELECT t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,p.projectid,t.pid\r\n"
-			+ "FROM Task t JOIN Project p ON t.pid = p.pid WHERE p.projectid=:projectid AND (t.ticketid LIKE CONCAT('%',:keyword, '%') OR t.taskname LIKE CONCAT('%',:keyword, '%') OR t.description LIKE CONCAT('%',:keyword,  '%') OR t.targetdate LIKE CONCAT('%',:keyword,  '%') "
+	@Query(value = "SELECT t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,t.projectid,t.pid "
+			+ "FROM Task t JOIN Project p ON t.pid = p.pid WHERE p.projectid =:projectid AND  t.status=:status AND (t.ticketid LIKE CONCAT('%',:keyword, '%') OR t.taskname LIKE CONCAT('%',:keyword, '%') OR t.description LIKE CONCAT('%',:keyword,  '%') OR t.targetdate LIKE CONCAT('%',:keyword,  '%') "
 			+ "OR t.status LIKE CONCAT('%',:keyword, '%'))", nativeQuery = true)
-	public Page<TaskTrackerDTO> getTaskByProjectIdWithsearching(Pageable pageable,@Param("projectid") String projectid,@Param("keyword") String keyword);
+	public Page<TaskTrackerDTO> getTaskByProjectIdWithsearching(Pageable pageable,@Param("projectid") String projectid, @Param("status") String status,@Param("keyword") String keyword);
 	
 	@Query( value = "select u.userid ,u.pseudoname,u.fullname FROM users u where u.department=:department",nativeQuery = true)
 	public List<GetUsersDTO> findDepartmentWiseUsers(String department);
 	
+	@Modifying
+	@Transactional
+	@Query(value ="UPDATE Task SET status=:status WHERE taskid =:taskid ",nativeQuery = true)
+	public int updateTaskStatus(@Param("taskid") Long taskid,@Param("status") String status);
 	
+	
+	@Query(value ="SELECT t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,t.projectid,t.pid "
+			+ "FROM Task t JOIN Project p ON t.pid = p.pid WHERE p.projectid =:projectid ",nativeQuery = true)
+	public Page<TaskTrackerDTO> findTaskByProjectid(Pageable pageable,@Param("projectid") String projectid);
+	
+	@Query(value = "SELECT t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,t.projectid,t.pid "
+			+ "FROM Task t JOIN Project p ON t.pid = p.pid WHERE p.projectid =:projectid AND (t.ticketid LIKE CONCAT('%',:keyword, '%') OR t.taskname LIKE CONCAT('%',:keyword, '%') OR t.description LIKE CONCAT('%',:keyword,  '%') OR t.targetdate LIKE CONCAT('%',:keyword,  '%') "
+			+ "OR t.status LIKE CONCAT('%',:keyword, '%'))", nativeQuery = true)
+	public Page<TaskTrackerDTO> findTaskByProjectIdWithSearching(Pageable pageable,@Param("projectid") String projectid,@Param("keyword") String keyword);
 }
+

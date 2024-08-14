@@ -49,4 +49,8 @@ public interface TaskService {
 	
 	public List<GetUsersDTO> getUsersByDepartment(String department);
 
+	public boolean updateTaskStatus(Long taskid, String status);
+	
+	public Page<TaskTrackerDTO> findTaskByProjectid(RequestResponseDTO requestresponsedto);
+	
 }
