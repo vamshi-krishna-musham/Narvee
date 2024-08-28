@@ -13,6 +13,9 @@ public class UserDTO {
 	private String pseudoname;
 	private String email;
 	private String department;
-	public String createdby;
+	private String createdby;
+	private String taskid;
+	
+	
 
 }

@@ -82,5 +82,7 @@ public class Task extends AuditModel {
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "task_id")
 	private List<SubTask> subTasks = new ArrayList<>();
+	
+	
 
 }

@@ -12,8 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.narvee.dto.ProjectDTO;
-import com.narvee.dto.ProjectUserDTO;
-import com.narvee.dto.RequestResponseDTO;
+import com.narvee.dto.RequestDTO;
 import com.narvee.entity.Project;
 import com.narvee.repository.ProjectRepository;
 import com.narvee.service.service.ProjectService;
@@ -70,6 +69,7 @@ public class ProjectServiceImpl implements ProjectService {
 			project.setAddedBy(updateproject.getAddedBy());
 			project.setUpdatedBy(updateproject.getUpdatedBy());
 			project.setDescription(updateproject.getDescription());
+			project.setStatus(updateproject.getStatus());
 			project.setTasks(updateproject.getTasks());
 			projectrepository.save(project);
 			return true;
@@ -79,41 +79,9 @@ public class ProjectServiceImpl implements ProjectService {
 
 	}
 
-	@Override
-	public Page<ProjectUserDTO> getProjectUser(RequestResponseDTO requestresponsedto) {
-		logger.info("!!! inside class: ProjectServiceImpl , !! method: getProjectUser");
-
-		String sortfield = requestresponsedto.getSortField();
-		String sortorder = requestresponsedto.getSortOrder();
-
-		if (sortfield.equalsIgnoreCase("projectid"))
-			sortfield = "projectid";
-		else if (sortfield.equalsIgnoreCase("projectname"))
-			sortfield = "projectname";
-		else if (sortfield.equalsIgnoreCase("description"))
-			sortfield = "projectdescription";
-		else if (sortfield.equalsIgnoreCase("addedby"))
-			sortfield = "fullname";
-
-		Sort.Direction sortDirection = Sort.Direction.ASC;
-		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
-			sortDirection = Sort.Direction.DESC;
-		}
-		Sort sort = Sort.by(sortDirection, sortfield);
-		Pageable pageable = PageRequest.of(requestresponsedto.getPageNumber() - 1, requestresponsedto.getPageSize(),
-				sort);
-		if (requestresponsedto.getKeyword().equals("empty")) {
-			logger.info("!!! inside class: ProjectServiceImpl , !! method: getProjectUser, Empty");
-			return projectrepository.getProjectUser(pageable);
-		} else {
-			logger.info("!!! inside class: ProjectServiceImpl , !! method: getProjectUser, getProjectUserFiltering");
-			return projectrepository.getProjectUserFiltering(pageable, requestresponsedto.getKeyword());
-
-		}
-	}
 
 	@Override
-	public Page<ProjectDTO> findAllProjects(RequestResponseDTO requestresponsedto) {
+	public Page<ProjectDTO> findAllProjects(RequestDTO requestresponsedto) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects");
 		String sortorder = requestresponsedto.getSortOrder();
 		String sortfield = requestresponsedto.getSortField();
@@ -131,7 +99,6 @@ public class ProjectServiceImpl implements ProjectService {
 			sortfield = "addedBy";
 		else
 			sortfield = "updateddate";
-
 
 		Sort.Direction sortDirection = Sort.Direction.ASC;
 		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {

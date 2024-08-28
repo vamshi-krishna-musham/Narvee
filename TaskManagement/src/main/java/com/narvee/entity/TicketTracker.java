@@ -1,7 +1,5 @@
 package com.narvee.entity;
 
-import java.time.LocalDate;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -9,7 +7,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.narvee.commons.AuditModel;
 
 import lombok.AllArgsConstructor;
@@ -34,14 +31,10 @@ public class TicketTracker extends AuditModel {
 	private String status;
 
 	private Long updatedby;
+	
 	@Column(name = "description", columnDefinition = "MEDIUMTEXT")
-	private String description;
+	private String comments;
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	private LocalDate fromdate;
-
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	private LocalDate todate;
 
 
 }
