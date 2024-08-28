@@ -2,7 +2,6 @@ package com.narvee.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -11,6 +10,10 @@ public interface TaskTrackerDTO {
 	public Long getTrackid();
 
 	public Long getTaskid();
+	
+	public Long getUpdatedby();
+	
+	public Long getPid();
 
 	public String getStatus();
 
@@ -21,18 +24,6 @@ public interface TaskTrackerDTO {
 	public String getTaskName();
 
 	public String getDescription();
-
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	public LocalDate getFromdate();
-
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	public LocalDate getTodate();
-
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
-	public LocalTime getFtime();
-
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
-	public LocalTime getTtime();
 	
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
 	public LocalDateTime getCreateddate();

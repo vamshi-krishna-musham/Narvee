@@ -31,7 +31,7 @@ public class AuditModel implements Serializable {
 
 	@PrePersist
 	public void setCreateddate() {
-		ZoneId newYork = ZoneId.of("America/Chicago");
+		ZoneId newYork = ZoneId.of("Asia/Kolkata");
 		LocalDateTime now = LocalDateTime.now(newYork);
 		this.createddate = now;
 		this.updateddate = now;
@@ -39,7 +39,7 @@ public class AuditModel implements Serializable {
 
 	@PreUpdate
 	public void setUpdateddate() {
-		ZoneId newYork = ZoneId.of("America/Chicago");
+		ZoneId newYork = ZoneId.of("Asia/Kolkata");
 		LocalDateTime now = LocalDateTime.now(newYork);
 		this.updateddate = now;
 	}

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestResponseDTO {
+public class RequestDTO {
 	
 	private Integer pageNumber;
 	private Integer pageSize;

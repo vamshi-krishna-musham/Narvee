@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.narvee.commons.RestAPIResponse;
-import com.narvee.dto.RequestResponseDTO;
+import com.narvee.dto.RequestDTO;
 import com.narvee.entity.Project;
 import com.narvee.service.service.ProjectService;
 
@@ -65,16 +65,10 @@ public class ProjectController {
 
 	}
 
-	@PostMapping("/getProjectUser")
-	public ResponseEntity<RestAPIResponse> getProjectUser(@RequestBody RequestResponseDTO requestresponsedto) {
-		logger.info("!!! inside class: ProjectController , !! method: getProjectUser");
-		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched all projects successfully",
-				projectservice.getProjectUser(requestresponsedto)), HttpStatus.OK);
-	}
 	
 	@PostMapping("/findAllProjects")
 	public ResponseEntity<RestAPIResponse> getAllProjects(
-			@RequestBody RequestResponseDTO requestresponsedto) {
+			@RequestBody RequestDTO requestresponsedto) {
 		logger.info("!!! inside class: ProjectController , !! method: getAllProjects");
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched all projects successfully",
 				projectservice.findAllProjects(requestresponsedto)), HttpStatus.OK);

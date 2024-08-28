@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Transient;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,5 +21,12 @@ public class AssignedUsers {
 	private Long assignid;
 	private Long userid;
 	private boolean completed ;
-	private String userstatus ="Assigned";
+	private String userstatus ="To Do";
+	
+	@Transient
+	private String fullname;
+	
+	@Transient
+	private String pseudoname;
+	
 }
