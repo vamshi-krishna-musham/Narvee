@@ -1,7 +1,14 @@
 package com.narvee.service.serviceimpl;
 
+import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.mail.MessagingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +25,7 @@ import com.narvee.dto.SubTaskResponse;
 import com.narvee.dto.SubTaskUserDTO;
 import com.narvee.entity.AssignedUsers;
 import com.narvee.entity.SubTask;
+import com.narvee.entity.Task;
 import com.narvee.repository.SubTaskRepository;
 import com.narvee.repository.TaskRepository;
 import com.narvee.service.service.SubTaskService;
@@ -29,17 +37,32 @@ public class SubTaskServiceImpl implements SubTaskService {
 
 	@Autowired
 	private SubTaskRepository subtaskrepository;
+	
+	@Autowired
+	private EmailServiceIml emailService;
 
 	@Autowired
 	private TaskRepository repository;
-
+	
 	@Override
 	public SubTask createSubTask(SubTask subtask) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: createSubTask");
-		return subtaskrepository.save(subtask);
-
+	List<AssignedUsers> addedByToAssignedUsers = subtask.getAssignedto();
+		List<Long> usersids = addedByToAssignedUsers.stream().map(AssignedUsers::getUserid)
+				.collect(Collectors.toList());
+		List<GetUsersDTO> user = repository.getTaskAssinedUsersAndCreatedBy(subtask.getAddedBy(), usersids);
+for (GetUsersDTO getUsersDTO : user) {
+	System.err.println( getUsersDTO.getEmail() );
+	
+}
+     SubTask subtasks=subtaskrepository.save(subtask);
+		try {
+		emailService.SubTaskAssigningEmail(subtasks, user);
+		} catch (UnsupportedEncodingException | MessagingException e) {
+		e.printStackTrace();
 	}
-
+		return subtaskrepository.save(subtasks);
+	}
 	@Override
 	public SubTask findBySubTaskId(Long subtaskid) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: findBySubTaskId");
@@ -51,7 +74,6 @@ public class SubTaskServiceImpl implements SubTaskService {
 		}
 		return subtask;
 	}
-
 	@Override
 	public void deleteSubTask(Long subtaskid) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: deleteSubTask");
@@ -173,9 +195,24 @@ public class SubTaskServiceImpl implements SubTaskService {
 	}
 
 	@Override
-	public boolean updateSubTaskStatus(Long subTaskId, String staus) {
+	public boolean updateSubTaskStatus(Long subTaskId, String staus,Long updatedby) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskStatus");
-		subtaskrepository.updateTaskStatus(subTaskId, staus);
+	
+		SubTask subtasks = subtaskrepository.findById(subTaskId).get();
+		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
+        LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
+
+		try {
+			
+			subtaskrepository.updateTaskStatus(subTaskId, staus, updatedby, indiaDateTime);
+			emailService.sendSubtaskEmail(subtasks);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (MessagingException e) {
+			subtaskrepository.updateTaskStatus(subTaskId, staus, updatedby, indiaDateTime);
+		}
+
 		return true;
+
 	}
 }

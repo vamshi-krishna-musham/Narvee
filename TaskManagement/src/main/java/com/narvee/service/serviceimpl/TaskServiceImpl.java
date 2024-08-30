@@ -3,6 +3,7 @@ package com.narvee.service.serviceimpl;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +48,6 @@ public class TaskServiceImpl implements TaskService {
 	@Autowired
 	private UserClient userClient;
 
-
 	@Override
 	public Task createTask(Task task, String token) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: createTask");
@@ -89,7 +89,7 @@ public class TaskServiceImpl implements TaskService {
 
 	@Override
 	public boolean updateTask(UpdateTask updateTask) {
-		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTask  ");
+		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTask");
 		List<TicketTracker> listTicketTracker = new ArrayList<>();
 		TicketTracker ticketTracker = new TicketTracker();
 		Task task = taskRepo.findById(updateTask.getTaskid()).get();
@@ -173,8 +173,6 @@ public class TaskServiceImpl implements TaskService {
 		}
 	}
 
-	
-
 	@Override
 	public Page<TaskTrackerDTO> getTaskByProjectid(RequestDTO requestresponsedto) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: getTaskByProjectid");
@@ -216,9 +214,21 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public boolean updateTaskStatus(Long taskid, String status) {
+	public boolean updateTaskStatus(Long taskid, String status,String updatedby) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTaskStatus");
-		taskRepo.updateTaskStatus(taskid, status);
+		Task taskInfo = taskRepo.findById(taskid).get();
+		   ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
+	        LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
+
+		try {
+			emailService.sendStatusUpdateEmail(taskInfo);
+			taskRepo.updateTaskStatus(taskid, status, updatedby, indiaDateTime);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (MessagingException e) {
+			taskRepo.updateTaskStatus(taskid, status, updatedby,indiaDateTime);
+		}
+
 		return true;
 
 	}
@@ -325,7 +335,5 @@ public class TaskServiceImpl implements TaskService {
 		update.setUpdatedby(task.getUpdatedby());
 		return taskRepo.save(update);
 	}
-
-
 
 }

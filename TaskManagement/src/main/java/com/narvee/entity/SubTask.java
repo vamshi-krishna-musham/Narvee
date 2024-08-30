@@ -23,6 +23,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Data
@@ -52,6 +53,7 @@ public class SubTask extends AuditModel {
 	private LocalDate targetDate;
 
 	@JsonBackReference
+	@ToString.Exclude
 	@ManyToOne
 	@JoinColumn(name = "taskid")
 	private Task task;
