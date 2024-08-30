@@ -27,6 +27,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Table
 @Entity
@@ -74,6 +75,7 @@ public class Task extends AuditModel {
 	private String department;
 
 	@JsonBackReference
+	@ToString.Exclude
 	@ManyToOne
 	@JoinColumn(name = "pid")
 	private Project project;

@@ -8,6 +8,10 @@ public interface GetUsersDTO {
 	public String getEmail();
 	public String getCreatedby();
 	public String getTaskid();
+	public String getProjectname();
+	public String getTaskname();
+	public String getTicketid();
+	public String getUpdatedby();
 	
 	
 	

@@ -86,12 +86,12 @@ public class SubTaskController {
 				subtaskservice.getAllSubTasks(requestresponsedto)), HttpStatus.OK);
 	}
 
-	@RequestMapping(value = "/updateSubTaskStatus/{subTaskid}/{status}", method = RequestMethod.GET, produces = "application/json")
+	@RequestMapping(value = "/updateSubTaskStatus/{subTaskid}/{status}/{updatedby}", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<RestAPIResponse> updateSubTaskStatus(@PathVariable Long subTaskid,
-			@PathVariable String status) {
+			@PathVariable String status,@PathVariable Long updatedby) {
 		logger.info("!!! inside class: SubTaskController , !! method: updateSubTaskStatus");
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Updated status  successfully",
-				subtaskservice.updateSubTaskStatus(subTaskid, status)), HttpStatus.OK);
+				subtaskservice.updateSubTaskStatus(subTaskid, status, updatedby)), HttpStatus.OK);
 	}
 
 }

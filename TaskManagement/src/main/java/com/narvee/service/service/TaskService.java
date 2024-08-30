@@ -41,7 +41,7 @@ public interface TaskService {
 	
 	public List<GetUsersDTO> getUsersByDepartment(String department);
 
-	public boolean updateTaskStatus(Long taskid, String status);
+	public boolean updateTaskStatus(Long taskid, String status,String updatedby);
 	
 	public TaskResponse findTaskByProjectid(RequestDTO requestresponsedto);
 	

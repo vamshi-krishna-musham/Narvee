@@ -23,6 +23,6 @@ public interface SubTaskService {
 	
 	public Page<SubTask> getAllSubTasks(RequestDTO requestresponsedto);
 	
-	public boolean updateSubTaskStatus(Long subTaskId , String staus);
+	public boolean updateSubTaskStatus(Long subTaskId , String staus,Long updatedby);
 
 }

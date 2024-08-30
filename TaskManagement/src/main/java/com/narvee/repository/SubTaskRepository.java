@@ -1,5 +1,6 @@
 package com.narvee.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -37,10 +38,20 @@ public interface SubTaskRepository extends JpaRepository<SubTask, Long> {
 
 	@Modifying
 	@Transactional
-	@Query(value = "UPDATE sub_task SET status=:status WHERE subtaskid =:subTaskId ", nativeQuery = true)
-	public int updateTaskStatus(@Param("subTaskId") Long subTaskId, @Param("status") String status);
+	@Query(value = "UPDATE sub_task SET status=:status , updatedby=:updatedby, updateddate = :updateddate WHERE subtaskid =:subTaskId ", nativeQuery = true)
+	public int updateTaskStatus(@Param("subTaskId") Long subTaskId, @Param("status") String status,@Param("updatedby") Long updatedby,LocalDateTime updateddate);
 
 	@Query(value = "SELECT taskid FROM task WHERE ticketid= :ticketid" , nativeQuery = true)
 	public Long findTaskId(String ticketid);
+	
+    @Query(value =" select projectname , taskname , ticketid FROM task t , project p , sub_task st WHERE  p.pid= t.pid AND t.taskid =st.taskid AND st.subtaskid=:subtaskid",nativeQuery = true)
+    public GetUsersDTO GetPorjectNameAndTaskName(Long subtaskid);
+
+	@Query(value = "select st.subtaskid ,u.fullname , u.pseudoname from sub_task st , assigned_users au , users u  ,task t where st.subtaskid =au.subtaskid and t.taskid=st.taskid AND\r\n"
+			+ "			  au.userid =u.userid and st.subtaskid= :subTaskId", nativeQuery = true)
+	public List<GetUsersDTO> getAssignUsers(Long subTaskId);
+
+	@Query(value = "select u.fullname , u.pseudoname  from users u where u.userid = :userid ", nativeQuery = true)
+	public GetUsersDTO getUser(Long userid);
 
 }
