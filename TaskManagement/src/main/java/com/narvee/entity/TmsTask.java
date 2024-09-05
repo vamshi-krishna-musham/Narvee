@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -65,9 +67,9 @@ public class TmsTask extends AuditModel {
 	private List<TmsTicketTracker> track = new ArrayList<TmsTicketTracker>();
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinTable(name = "task_users", joinColumns = { @JoinColumn(name = "taskid") }, inverseJoinColumns = {
+	@JoinTable(name = "tms_task_users", joinColumns = { @JoinColumn(name = "taskid") }, inverseJoinColumns = {
 			@JoinColumn(name = "assignedto") })
-	private List<TmsAssignedUsers> assignedto = new ArrayList<TmsAssignedUsers>();
+	private Set<TmsAssignedUsers> assignedto ;
 
 	private Long maxnum;
 	private String ticketid;

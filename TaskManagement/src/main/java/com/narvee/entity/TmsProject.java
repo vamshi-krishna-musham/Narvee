@@ -50,12 +50,17 @@ public class TmsProject extends AuditModel {
 	private String status="To Do";
 	@Column(name = "projectdescription", columnDefinition = "MEDIUMTEXT")
 	private String description;
+
+	private String department;
+	
 	@OneToMany
 	@JsonManagedReference
 	@JoinColumn(name = "pid")
     private List<TmsTask> tasks = new ArrayList<>();
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
 	@JoinColumn(name = "pid")
-	private Set<TmsAssignedUsers> assignedto;
+    private Set<TmsAssignedUsers> assignedto;
+	
+
 }

@@ -192,4 +192,16 @@ public class TaskController {
 				new RestAPIResponse("success", "fetched tasks", service.findTaskByProjectid(requestResponseDTO)),
 				HttpStatus.OK);
 	}
+	
+	
+	
+	@RequestMapping(value = "/getProjectUsers/{projectId}", method = RequestMethod.GET, produces = "application/json")
+	public ResponseEntity<RestAPIResponse> getProjectUsers(@PathVariable String projectId) {
+		logger.info("!!! inside class: TaskController , !! method: getProjectUsers");
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success",
+				"fetched by deparatmentWise users successfully", service.getProjectUsers(projectId)),
+				HttpStatus.OK);
+	}
+	
+	
 }

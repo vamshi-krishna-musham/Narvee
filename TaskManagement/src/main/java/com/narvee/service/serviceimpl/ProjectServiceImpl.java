@@ -40,7 +40,11 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Autowired
 	private ProjectRepository projectrepository;
+	
 	private static final int DIGIT_PADDING = 4;
+	
+	@Autowired
+	private TaskRepository repository;
 
 	@Override
 	public TmsProject saveproject(TmsProject project) {
@@ -73,17 +77,20 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public TmsProject findByprojectId(Long pid) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: findByprojectId");
-		Optional<TmsProject> optional = projectrepository.findById(pid);
-		if (optional.isPresent()) {
-			return optional.get();
-		} else
-			return null;
+		TmsProject project = projectrepository.findById(pid).get();
+		for (TmsAssignedUsers aUser : project.getAssignedto()) {
+			GetUsersDTO user = repository.getUser(aUser.getUserid());
+			aUser.setFullname(user.getFullname());
+			aUser.setPseudoname(user.getPseudoname());
+		}
+		return project;
 
 	}
 
 	@Override
 	public void deleteProject(Long pid) {
-		logger.info("!!! inside class: ProjectSe                                                                                                                                                                                                    rviceImpl , !! method: deleteProject");
+		logger.info(
+				"!!! inside class: ProjectSe                                                                                                                                                                                                    rviceImpl , !! method: deleteProject");
 		projectrepository.deleteById(pid);
 
 	}
@@ -100,6 +107,7 @@ public class ProjectServiceImpl implements ProjectService {
 			project.setDescription(updateproject.getDescription());
 			project.setStatus(updateproject.getStatus());
 			project.setTasks(updateproject.getTasks());
+			project.setAssignedto(updateproject.getAssignedto());
 			projectrepository.save(project);
 			
 			Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
@@ -119,7 +127,6 @@ public class ProjectServiceImpl implements ProjectService {
 
 	}
 
-
 	@Override
 	public Page<ProjectDTO> findAllProjects(RequestDTO requestresponsedto) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects");
@@ -128,13 +135,15 @@ public class ProjectServiceImpl implements ProjectService {
 		String keyword = requestresponsedto.getKeyword();
 		Integer pageNo = requestresponsedto.getPageNumber();
 		Integer pageSize = requestresponsedto.getPageSize();
+		Long userid = requestresponsedto.getUserid();
+		String access=requestresponsedto.getAccess();
 
 		if (sortfield.equalsIgnoreCase("projectid"))
 			sortfield = "projectId";
 		else if (sortfield.equalsIgnoreCase("projectname"))
 			sortfield = "projectName";
-		else if (sortfield.equalsIgnoreCase("description"))
-			sortfield = "description";
+		else if (sortfield.equalsIgnoreCase("status"))
+			sortfield = "status";
 		else if (sortfield.equalsIgnoreCase("addedBy"))
 			sortfield = "addedBy";
 		else
@@ -147,13 +156,26 @@ public class ProjectServiceImpl implements ProjectService {
 		Sort sort = Sort.by(sortDirection, sortfield);
 		Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
 
-		if (keyword.equalsIgnoreCase("empty")) {
-			logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects, Empty");
-			return projectrepository.findAllProjects(pageable, keyword);
-		} else {
-			logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects, Filter");
-			return projectrepository.findAllProjectWithFiltering(pageable, keyword);
+		if (access.equalsIgnoreCase("Super Administrator")) {
+			if (keyword.equalsIgnoreCase("empty")) {
+				logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects, Empty");
+				return projectrepository.findAllProjects(pageable, keyword);
+			} else {
+				logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects, Filter");
+				return projectrepository.findAllProjectWithFiltering(pageable, keyword);
 
+			}
+
+		} else {
+
+			if (keyword.equalsIgnoreCase("empty")) {
+				logger.info("!!! inside class: ProjectServiceImpl , !! method: getAllProjectsByUser, Empty");
+				return projectrepository.getAllProjectsByUser(userid, pageable);
+			} else {
+				logger.info("!!! inside class: ProjectServiceImpl , !! method: getAllProjectsByUserFilter, Filter");
+				return projectrepository.getAllProjectsByUserFilter(pageable, keyword, userid);
+
+			}
 		}
 
 	}

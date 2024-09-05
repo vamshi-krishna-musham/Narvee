@@ -40,6 +40,8 @@ public interface TaskService {
 	public Page<TaskTrackerDTO> getTaskByProjectid(RequestDTO requestresponsedto);
 	
 	public List<GetUsersDTO> getUsersByDepartment(String department);
+	
+	public List<GetUsersDTO> getProjectUsers(String projectID);
 
 	public boolean updateTaskStatus(Long taskid, String status,String updatedby);
 	

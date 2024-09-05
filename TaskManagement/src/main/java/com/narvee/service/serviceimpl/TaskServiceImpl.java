@@ -7,6 +7,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.mail.MessagingException;
@@ -45,8 +46,7 @@ public class TaskServiceImpl implements TaskService {
 	@Autowired
 	private EmailServiceIml emailService;
 
-	@Autowired
-	private UserClient userClient;
+	
 
 	@Override
 	public TmsTask createTask(TmsTask task, String token) {
@@ -73,7 +73,8 @@ public class TaskServiceImpl implements TaskService {
 //		List<AssignedUsers> addedByToAssignedUsers = task.getAssignedto();
 //		addedByToAssignedUsers.addAll(assignedUsers);
 		taskRepo.save(task);
-		List<TmsAssignedUsers> addedByToAssignedUsers = task.getAssignedto();
+
+		Set<TmsAssignedUsers> addedByToAssignedUsers = task.getAssignedto();
 		// assignid=null, userid=28, completed=false
 		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getUserid)
 				.collect(Collectors.toList());
@@ -97,8 +98,7 @@ public class TaskServiceImpl implements TaskService {
 		if (task.getStartDate() == null) {
 			task.setStartDate(LocalDate.now());
 		}
-
-		List<TmsAssignedUsers> asigned = task.getAssignedto();
+		Set<TmsAssignedUsers> asigned = task.getAssignedto();
 		for (TmsAssignedUsers assignedUsers : asigned) {
 			if (updateTask.getUpdatedby() == assignedUsers.getUserid()) {
 				assignedUsers.setUserstatus(updateTask.getStatus());
@@ -222,18 +222,20 @@ public class TaskServiceImpl implements TaskService {
 	@Override
 	public boolean updateTaskStatus(Long taskid, String status,String updatedby) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTaskStatus");
+
 		TmsTask taskInfo = taskRepo.findById(taskid).get();
+
 		   ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
 	        LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
 
 		try {
-			emailService.sendStatusUpdateEmail(taskInfo);
 			taskRepo.updateTaskStatus(taskid, status, updatedby, indiaDateTime);
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		} catch (MessagingException e) {
-			taskRepo.updateTaskStatus(taskid, status, updatedby,indiaDateTime);
-		}
+			TmsTask taskInfo = taskRepo.findById(taskid).get();
+			emailService.sendStatusUpdateEmail(taskInfo);
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+		} 
 
 		return true;
 
@@ -340,6 +342,12 @@ public class TaskServiceImpl implements TaskService {
 		update.setAssignedto(task.getAssignedto());
 		update.setUpdatedby(task.getUpdatedby());
 		return taskRepo.save(update);
+	}
+
+	@Override
+	public List<GetUsersDTO> getProjectUsers(String projectID) {
+		logger.info("!!! inside class: TaskServiceImpl , !! method: ticketTracker");
+		return taskRepo.getProjectUsers(projectID);
 	}
 
 }

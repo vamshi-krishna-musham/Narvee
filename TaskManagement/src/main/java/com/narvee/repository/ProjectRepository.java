@@ -11,23 +11,31 @@ import org.springframework.stereotype.Repository;
 
 import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.ProjectDTO;
+
 import com.narvee.entity.TmsAssignedUsers;
 import com.narvee.entity.TmsProject;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
 
-	@Query(value = "select max(pmaxnum) as max from project", nativeQuery = true)
+	@Query(value = "select max(pmaxnum) as max from tms_project", nativeQuery = true)
 	public Long pmaxNumber();
 
-	@Query(value = "SELECT p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid FROM project p WHERE (p.projectname LIKE CONCAT('%', :keyword, '%') OR p.projectdescription LIKE CONCAT('%', :keyword, '%') or p.addedby LIKE CONCAT('%', :keyword, '%'))", nativeQuery = true)
+	@Query(value = "SELECT p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid , p.createddate , p.department FROM tms_tms_project WHERE (p.projectname LIKE CONCAT('%', :keyword, '%') OR p.projectdescription LIKE CONCAT('%', :keyword, '%') or p.addedby LIKE CONCAT('%', :keyword, '%'))", nativeQuery = true)
 	public Page<ProjectDTO> findAllProjectWithFiltering(Pageable pageable, @Param("keyword") String keyword);
 
-	@Query(value = "SELECT  p.pid , p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid FROM project p ", nativeQuery = true)
+	@Query(value = "SELECT  p.pid , p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid  , p.createddate , p.department FROM tms_project p ", nativeQuery = true)
 	public Page<ProjectDTO> findAllProjects(Pageable pageable, @Param("keyword") String keyword);
 
-	@Query(value = "SELECT  p.pid , p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid FROM project p where p.pid= :pid ", nativeQuery = true)
+	@Query(value = "SELECT  p.pid , p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid , p.createddate , p.department  FROM tms_project p where p.pid= :pid ", nativeQuery = true)
 	public ProjectDTO getByProjectId(Long pid);
+	
+	@Query(value = "SELECT  p.pid , p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid , p.department ,p.createddate FROM   tms_project p , tms_assigned_users au where au.pid= p.pid AND au.userid=:userid", nativeQuery = true)
+	public Page<ProjectDTO> getAllProjectsByUser(Long userid,Pageable pageable );
+	
+	@Query(value = "SELECT  p.pid , p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid , p.createddate , p.department FROM tms_project p  , tms_assigned_users au where au.pid= p.pid AND"
+			+ " au.userid=:userid AND (p.projectname LIKE CONCAT('%', :keyword, '%') OR p.projectdescription LIKE CONCAT('%', :keyword, '%') or p.addedby LIKE CONCAT('%', :keyword, '%'))", nativeQuery = true)
+	public Page<ProjectDTO> getAllProjectsByUserFilter(Pageable pageable, @Param("keyword") String keyword , Long userid);
 
 
 }

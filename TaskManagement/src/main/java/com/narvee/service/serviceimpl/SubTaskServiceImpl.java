@@ -3,9 +3,9 @@ package com.narvee.service.serviceimpl;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.mail.MessagingException;
@@ -25,7 +25,9 @@ import com.narvee.dto.SubTaskResponse;
 import com.narvee.dto.SubTaskUserDTO;
 import com.narvee.entity.TmsAssignedUsers;
 import com.narvee.entity.TmsSubTask;
+
 import com.narvee.entity.TmsTask;
+
 import com.narvee.repository.SubTaskRepository;
 import com.narvee.repository.TaskRepository;
 import com.narvee.service.service.SubTaskService;
@@ -37,32 +39,30 @@ public class SubTaskServiceImpl implements SubTaskService {
 
 	@Autowired
 	private SubTaskRepository subtaskrepository;
-	
+
 	@Autowired
 	private EmailServiceIml emailService;
 
 	@Autowired
 	private TaskRepository repository;
-	
+
 	@Override
 	public TmsSubTask createSubTask(TmsSubTask subtask) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: createSubTask");
-	List<TmsAssignedUsers> addedByToAssignedUsers = subtask.getAssignedto();
+		Set<TmsAssignedUsers> addedByToAssignedUsers = subtask.getAssignedto();
 		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getUserid)
 				.collect(Collectors.toList());
-		List<GetUsersDTO> user = repository.getTaskAssinedUsersAndCreatedBy(subtask.getAddedBy(), usersids);
-for (GetUsersDTO getUsersDTO : user) {
-	System.err.println( getUsersDTO.getEmail() );
-	
-}
-     TmsSubTask subtasks=subtaskrepository.save(subtask);
+		List<GetUsersDTO> user = repository.getTaskAssinedUsersAndCreatedBy(subtask.getAddedby(), usersids);
+		TmsSubTask subtasks = subtaskrepository.save(subtask);
+    
 		try {
-		emailService.SubTaskAssigningEmail(subtasks, user);
+			emailService.SubTaskAssigningEmail(subtasks, user);
 		} catch (UnsupportedEncodingException | MessagingException e) {
-		e.printStackTrace();
-	}
+			e.printStackTrace();
+		}
 		return subtaskrepository.save(subtasks);
 	}
+
 	@Override
 	public TmsSubTask findBySubTaskId(Long subtaskid) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: findBySubTaskId");
@@ -74,6 +74,7 @@ for (GetUsersDTO getUsersDTO : user) {
 		}
 		return subtask;
 	}
+
 	@Override
 	public void deleteSubTask(Long subtaskid) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: deleteSubTask");
@@ -89,12 +90,12 @@ for (GetUsersDTO getUsersDTO : user) {
 			TmsSubTask subtask = optional.get();
 			subtask.setSubTaskName(updatesubtask.getSubTaskName());
 			subtask.setSubTaskDescription(updatesubtask.getSubTaskDescription());
-			subtask.setAddedBy(updatesubtask.getAddedBy());
+			subtask.setAddedby(updatesubtask.getAddedby());
 			subtask.setUpdatedBy(updatesubtask.getUpdatedBy());
 			subtask.setStatus(updatesubtask.getStatus());
 			subtask.setTargetDate(updatesubtask.getTargetDate());
 			subtask.setAssignedto(updatesubtask.getAssignedto());
-			
+
 			subtaskrepository.save(subtask);
 			return true;
 		} else {
@@ -195,16 +196,16 @@ for (GetUsersDTO getUsersDTO : user) {
 	}
 
 	@Override
-	public boolean updateSubTaskStatus(Long subTaskId, String staus,Long updatedby) {
+	public boolean updateSubTaskStatus(Long subTaskId, String staus, Long updatedby) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskStatus");
-	
 		TmsSubTask subtasks = subtaskrepository.findById(subTaskId).get();
+
 		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
-        LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
+		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
 
 		try {
-			
 			subtaskrepository.updateTaskStatus(subTaskId, staus, updatedby, indiaDateTime);
+			TmsSubTask subtasks = subtaskrepository.findById(subTaskId).get();
 			emailService.sendSubtaskEmail(subtasks);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();

@@ -20,6 +20,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import com.narvee.dto.GetUsersDTO;
+
 import com.narvee.dto.UpdateTask;
 import com.narvee.entity.TmsProject;
 import com.narvee.entity.TmsSubTask;
@@ -96,10 +97,10 @@ public class EmailServiceIml {
 		DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 		MimeMessage message = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message);
-		// helper.setCc(ccmail);
+		 helper.setCc(ccmail);
 		// helper.setBcc(emails);
 
-		helper.setCc(emails);
+		helper.setTo(emails);
 
 		helper.setFrom(narveemail, shortMessage);
 		String subject = "Assigned Task Info ";
@@ -122,7 +123,7 @@ public class EmailServiceIml {
 				.append("<td>" + task.getTargetdate() + "</td>").append("<td>" + task.getStatus() + "</td>")
 				.append("</tr>").append("<tr> <th colspan=\"8\" class=\"description\">Description</th> </tr>")
 				.append("<tr><td colspan=\"8\">").append("<pre>").append(task.getDescription()).append("</pre>")
-				.append("</td></tr>").append("</table>").append(url).append("</body>").append("</html>");
+				.append("</td></tr>").append("</table>").append("</body>").append("</html>");
 
 		helper.setSubject(subject);
 		helper.setText(stringBuilder.toString(), true);
@@ -170,10 +171,10 @@ public class EmailServiceIml {
 		DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 		MimeMessage message = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message);
-		// helper.setCc(ccmail);
+		 helper.setCc(ccmail);
 		// helper.setBcc(emails);
 
-		helper.setCc(emails);
+		helper.setTo(emails);
 
 		helper.setFrom(narveemail, shortMessage);
 		String subject = "Assigned SubTask Info ";
@@ -200,7 +201,7 @@ public class EmailServiceIml {
 				.append("<td>" + subTask.getStatus() + "</td>").append("</tr>")
 				.append("<tr> <th colspan=\"9\" class=\"description\">Description</th> </tr>")
 				.append("<tr><td colspan=\"9\">").append("<pre>").append(subTask.getSubTaskDescription())
-				.append("</pre>").append("</td></tr>").append("</table>").append(url).append("</body>")
+				.append("</pre>").append("</td></tr>").append("</table>").append("</body>")
 				.append("</html>");
 
 		helper.setSubject(subject);
@@ -235,6 +236,7 @@ public class EmailServiceIml {
 		MimeMessage message = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message);
 		helper.setTo(uniqueEmails);
+		helper.setCc(ccmail);
 		helper.setFrom(narveemail, shortMessage);
 
 		String subject = "Task Status Updated: " + task.getTaskname();
@@ -271,13 +273,13 @@ public class EmailServiceIml {
 
 		Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
 
-
 		String[] uniqueEmails = emailSet.toArray(new String[0]);
 
 		MimeMessage message = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message);
-		helper.setTo(uniqueEmails);
 		helper.setFrom(narveemail, shortMessage);
+		helper.setTo(uniqueEmails);
+		helper.setCc(ccmail);
 
 		String subject = "SubTask Status Updated: " + subTask.getSubTaskName();
 		String body = "<html><body>" + "<div>Hi " + users + ",</div>" + "<div>The status of the task <strong>"
@@ -287,6 +289,7 @@ public class EmailServiceIml {
 				+ "</strong></div>" + "<div>Best Regards,</div>"+"<div> Narvee Technologies </div>" + "</body></html>";
 		helper.setSubject(subject);
 		helper.setText(body, true);
+		
 		mailSender.send(message);
 		logger.info("!!! inside class: EmailServiceIml, !! method: End sendSubtaskEmail");
 	}

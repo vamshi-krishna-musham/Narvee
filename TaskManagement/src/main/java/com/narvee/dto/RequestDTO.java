@@ -16,5 +16,8 @@ public class RequestDTO {
 	private String projectid;
 	private String status;
 	private String keyword;
+	private String access;
+	private Long userid;
+	
  
 }
