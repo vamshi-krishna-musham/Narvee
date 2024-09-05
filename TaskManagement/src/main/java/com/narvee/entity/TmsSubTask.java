@@ -1,6 +1,7 @@
 package com.narvee.entity;
 
 import java.time.LocalDate;
+
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -60,8 +61,9 @@ public class TmsSubTask extends AuditModel {
 
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "subtaskid")
-	private Set<TmsAssignedUsers> assignedto;
 
+	private Set<TmsAssignedUsers> assignedto;
+  
 	@Transient
 	private Long taskId;
 }

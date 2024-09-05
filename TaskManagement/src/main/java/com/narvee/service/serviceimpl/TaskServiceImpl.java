@@ -73,6 +73,7 @@ public class TaskServiceImpl implements TaskService {
 //		List<AssignedUsers> addedByToAssignedUsers = task.getAssignedto();
 //		addedByToAssignedUsers.addAll(assignedUsers);
 		taskRepo.save(task);
+
 		Set<TmsAssignedUsers> addedByToAssignedUsers = task.getAssignedto();
 		// assignid=null, userid=28, completed=false
 		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getUserid)
@@ -97,7 +98,6 @@ public class TaskServiceImpl implements TaskService {
 		if (task.getStartDate() == null) {
 			task.setStartDate(LocalDate.now());
 		}
-
 		Set<TmsAssignedUsers> asigned = task.getAssignedto();
 		for (TmsAssignedUsers assignedUsers : asigned) {
 			if (updateTask.getUpdatedby() == assignedUsers.getUserid()) {
@@ -114,6 +114,12 @@ public class TaskServiceImpl implements TaskService {
 			listTicketTracker.add(ticketTracker);
 			task.setTrack(listTicketTracker);
 			taskRepo.save(task);
+			try {
+				emailService.sendCommentEmail(updateTask);
+		    } catch (MessagingException | UnsupportedEncodingException e) {
+		    	e.printStackTrace();
+		    }
+
 			return true;
 		}
 		return false;
@@ -216,7 +222,9 @@ public class TaskServiceImpl implements TaskService {
 	@Override
 	public boolean updateTaskStatus(Long taskid, String status,String updatedby) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTaskStatus");
-		
+
+		TmsTask taskInfo = taskRepo.findById(taskid).get();
+
 		   ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
 	        LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
 

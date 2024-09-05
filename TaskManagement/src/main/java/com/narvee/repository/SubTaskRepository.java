@@ -32,6 +32,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 
 	public List<TmsSubTask> findByTaskTicketid(String ticketid);
 
+
 	@Query(value = "select st.subtaskid ,u.fullname , u.pseudoname from tms_sub_task st , tms_assigned_users au , users u , tms_task t where st.subtaskid =au.subtaskid and t.taskid=st.taskid AND\r\n"
 			+ "			  au.userid =u.userid and t.ticketid= :ticketid", nativeQuery = true)
 	public List<GetUsersDTO> getAssignUsers(String ticketid);

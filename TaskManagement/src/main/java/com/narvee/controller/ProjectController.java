@@ -64,7 +64,6 @@ public class ProjectController {
 
 	}
 
-	
 	@PostMapping("/findAllProjects")
 	public ResponseEntity<RestAPIResponse> getAllProjects(@RequestBody RequestDTO requestresponsedto) {
 		logger.info("!!! inside class: ProjectController , !! method: getAllProjects");

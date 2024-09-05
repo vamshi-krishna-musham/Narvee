@@ -50,7 +50,7 @@ public class TmsProject extends AuditModel {
 	private String status="To Do";
 	@Column(name = "projectdescription", columnDefinition = "MEDIUMTEXT")
 	private String description;
-	
+
 	private String department;
 	
 	@OneToMany
@@ -62,4 +62,5 @@ public class TmsProject extends AuditModel {
 	@JoinColumn(name = "pid")
     private Set<TmsAssignedUsers> assignedto;
 	
+
 }

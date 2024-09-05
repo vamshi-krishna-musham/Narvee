@@ -25,6 +25,9 @@ import com.narvee.dto.SubTaskResponse;
 import com.narvee.dto.SubTaskUserDTO;
 import com.narvee.entity.TmsAssignedUsers;
 import com.narvee.entity.TmsSubTask;
+
+import com.narvee.entity.TmsTask;
+
 import com.narvee.repository.SubTaskRepository;
 import com.narvee.repository.TaskRepository;
 import com.narvee.service.service.SubTaskService;
@@ -50,8 +53,8 @@ public class SubTaskServiceImpl implements SubTaskService {
 		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getUserid)
 				.collect(Collectors.toList());
 		List<GetUsersDTO> user = repository.getTaskAssinedUsersAndCreatedBy(subtask.getAddedby(), usersids);
-
 		TmsSubTask subtasks = subtaskrepository.save(subtask);
+    
 		try {
 			emailService.SubTaskAssigningEmail(subtasks, user);
 		} catch (UnsupportedEncodingException | MessagingException e) {
@@ -195,8 +198,8 @@ public class SubTaskServiceImpl implements SubTaskService {
 	@Override
 	public boolean updateSubTaskStatus(Long subTaskId, String staus, Long updatedby) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskStatus");
+		TmsSubTask subtasks = subtaskrepository.findById(subTaskId).get();
 
-		
 		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
 		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
 

@@ -17,6 +17,9 @@ import org.springframework.stereotype.Repository;
 import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.TaskAssignDTO;
 import com.narvee.dto.TaskTrackerDTO;
+
+import com.narvee.entity.TmsAssignedUsers;
+
 import com.narvee.entity.TmsTask;
 
 @Repository
@@ -130,6 +133,12 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	public List<GetUsersDTO> getProjectUsers(String projectId);
 	
 	
+
+	
+
+//	@Query(value = "select t.taskid ,u.fullname , u.pseudoname,u.email from task t , task_users tu , assigned_users au , users u where t.taskid = tu.taskid and  "
+//			+ "tu.assignedto= au.assignid and au.userid =u.userid and t.ticketid=:ticketid", nativeQuery = true)
+//	public List<GetUsersDTO> getAssignUsers(String ticketid);
 
 }
 
