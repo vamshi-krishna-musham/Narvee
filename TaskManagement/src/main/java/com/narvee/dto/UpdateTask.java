@@ -14,12 +14,11 @@ import lombok.NoArgsConstructor;
 public class UpdateTask {
 
 	private Long taskid;
-
+	private String ticketid;
 	private Long updatedby;
 	private String status;
 	private String comments;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private LocalDate startDate;
-	
 
 }

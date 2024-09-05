@@ -43,8 +43,6 @@ public class ProjectServiceImpl implements ProjectService {
 	
 	private static final int DIGIT_PADDING = 4;
 	
-	@Autowired
-	private TaskRepository repository;
 
 	@Override
 	public TmsProject saveproject(TmsProject project) {

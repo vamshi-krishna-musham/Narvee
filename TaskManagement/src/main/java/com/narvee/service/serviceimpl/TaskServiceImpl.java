@@ -222,9 +222,7 @@ public class TaskServiceImpl implements TaskService {
 	@Override
 	public boolean updateTaskStatus(Long taskid, String status,String updatedby) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTaskStatus");
-
-		TmsTask taskInfo = taskRepo.findById(taskid).get();
-
+		
 		   ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
 	        LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
 

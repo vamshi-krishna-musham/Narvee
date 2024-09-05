@@ -198,8 +198,6 @@ public class SubTaskServiceImpl implements SubTaskService {
 	@Override
 	public boolean updateSubTaskStatus(Long subTaskId, String staus, Long updatedby) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskStatus");
-		TmsSubTask subtasks = subtaskrepository.findById(subTaskId).get();
-
 		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
 		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
 
