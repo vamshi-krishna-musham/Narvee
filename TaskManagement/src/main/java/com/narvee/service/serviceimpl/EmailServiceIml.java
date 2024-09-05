@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -19,8 +20,10 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import com.narvee.dto.GetUsersDTO;
-import com.narvee.entity.SubTask;
-import com.narvee.entity.Task;
+import com.narvee.dto.UpdateTask;
+import com.narvee.entity.TmsProject;
+import com.narvee.entity.TmsSubTask;
+import com.narvee.entity.TmsTask;
 import com.narvee.feignclient.UserClient;
 import com.narvee.repository.SubTaskRepository;
 import com.narvee.repository.TaskRepository;
@@ -53,7 +56,7 @@ public class EmailServiceIml {
 	@Value("${ccmail}")
 	private String[] ccmail;
 
-	public void TaskAssigningEmail(Task task, List<GetUsersDTO> userdetails)
+	public void TaskAssigningEmail(TmsTask task, List<GetUsersDTO> userdetails)
 			throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: TaskEmailServiceIml, !! method: TaskAssigningEmail");
 
@@ -127,13 +130,10 @@ public class EmailServiceIml {
 		logger.info("!!! inside class: TaskEmailServiceIml, !! method: End TaskAssigningEmail");
 	}
 
-	public void SubTaskAssigningEmail(SubTask subTask, List<GetUsersDTO> userdetails)
+	public void SubTaskAssigningEmail(TmsSubTask subTask, List<GetUsersDTO> userdetails)
 			throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: SubTaskServiceImpl, !! method: SubTaskAssigningEmail");
-		System.err.println(subTask);
-
 		GetUsersDTO projectname = subTaskRepository.GetPorjectNameAndTaskName(subTask.getSubTaskId());
-
 		StringBuilder createdBy = new StringBuilder();
 		StringBuilder users = new StringBuilder();
 		int i = 0;
@@ -210,14 +210,10 @@ public class EmailServiceIml {
 
 	}
 
-	public void sendStatusUpdateEmail(Task task) throws MessagingException, UnsupportedEncodingException {
+	public void sendStatusUpdateEmail(TmsTask task) throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: TaskEmailServiceIml, !! method: sendStatusUpdateEmail");
-		System.err.println("taskdetails" + task.getTaskid());
 
 		List<GetUsersDTO> userdetails = taskRepository.getAssignUsers(task.getTaskid());
-
-		System.err.println(" user details " + userdetails);
-
 		GetUsersDTO getUsersDTO = taskRepository.getUser(task.getUpdatedby());
 
 		StringBuilder users = new StringBuilder();
@@ -225,7 +221,6 @@ public class EmailServiceIml {
 		String emails[] = new String[userdetails.size()];
 
 		for (GetUsersDTO userDTO : userdetails) {
-			System.err.println(userDTO.getEmail());
 			if (i != 0) {
 				users.append(", ");
 			}
@@ -243,20 +238,21 @@ public class EmailServiceIml {
 		helper.setFrom(narveemail, shortMessage);
 
 		String subject = "Task Status Updated: " + task.getTaskname();
-		String body = "<html><body>" + "<p>Hi " + users + ",</p>" + "<p>The status of the task <strong>"
+		String body = "<html><body>" + "<div>Hi " + users + ",</div>" + "<div>The status of the task <strong>"
 				+ task.getTaskname() + "</strong> has been updated to: <strong>" + task.getStatus()
-				+ "</strong> by <strong>" + getUsersDTO.getFullname() + "</strong></p>" + "<p>  Task ID: <strong>"
-				+ task.getTicketid() + " </strong> </p>" + "<p>Task Name: <strong>" + task.getTaskname()
-				+ "</strong> </p>" + "<p>Best Regards,</p>" + "</body></html>";
+				+ "</strong> by <strong>" + getUsersDTO.getFullname() + "</strong></div>" + "<div>  Task ID: <strong>"
+				+ task.getTicketid() + " </strong> </div>" + "<div>Task Name: <strong>" + task.getTaskname()
+				+ "</strong></div>" + "<div>Best Regards,</div>" + "</body></html>";
 		helper.setSubject(subject);
 		helper.setText(body, true);
 		mailSender.send(message);
 		logger.info("!!! inside class: TaskEmailServiceIml, !! method: End sendStatusUpdateEmail");
 	}
 
-	public void sendSubtaskEmail(SubTask subTask) throws MessagingException, UnsupportedEncodingException {
+	public void sendSubtaskEmail(TmsSubTask subTask) throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: EmailServiceIml, !! method: End sendSubtaskEmail");
 		List<GetUsersDTO> userdetails = taskRepository.getSubtaskAssignUsers(subTask.getSubTaskId());
+		
 		GetUsersDTO getUsersDTO = taskRepository.getUser(subTask.getUpdatedBy());
 
 		StringBuilder users = new StringBuilder();
@@ -274,7 +270,7 @@ public class EmailServiceIml {
 		}
 
 		Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
-		System.err.println(emailSet);
+
 
 		String[] uniqueEmails = emailSet.toArray(new String[0]);
 
@@ -284,15 +280,117 @@ public class EmailServiceIml {
 		helper.setFrom(narveemail, shortMessage);
 
 		String subject = "SubTask Status Updated: " + subTask.getSubTaskName();
-		String body = "<html><body>" + "<p>Hi " + users + ",</p>" + "<p>The status of the task <strong>"
+		String body = "<html><body>" + "<div>Hi " + users + ",</div>" + "<div>The status of the task <strong>"
 				+ subTask.getSubTaskName() + "</strong> has been updated to: <strong>" + subTask.getStatus()
-				+ "</strong> by <strong>" + getUsersDTO.getFullname() + "</strong></p>" + "<p> Task ID: <strong>"
-				+ subTask.getTask().getTicketid()+ " </strong> </p>" + "<p>Sub-Task Name: <strong>" + subTask.getSubTaskName()
-				+ "</strong> </p>" + "<p>Best Regards,</p>"+"<p>Narvee Technologies </p>" + "</body></html>";
+				+ "</strong> by <strong>" + getUsersDTO.getFullname() + "</strong></div>" + "<div> Task ID: <strong>"
+				+ subTask.getTask().getTicketid()+ " </strong> </div>" + "<div>Sub-Task Name: <strong>" + subTask.getSubTaskName()
+				+ "</strong></div>" + "<div>Best Regards,</div>"+"<div> Narvee Technologies </div>" + "</body></html>";
 		helper.setSubject(subject);
 		helper.setText(body, true);
 		mailSender.send(message);
 		logger.info("!!! inside class: EmailServiceIml, !! method: End sendSubtaskEmail");
-
 	}
+	public void sendCommentEmail(UpdateTask updateTask) throws MessagingException, UnsupportedEncodingException {
+	    logger.info("!!! inside class: EmailServiceImpl, !! method: End sendCommentEmail");
+		   List<GetUsersDTO> userdetails=taskRepository.getAssignUsers(updateTask.getTaskid());
+			GetUsersDTO getUsersDTO = taskRepository.getUser(updateTask.getUpdatedby());
+			StringBuilder users = new StringBuilder();
+			int i = 0;
+			String emails[] = new String[userdetails.size()];
+			for (GetUsersDTO userDTO : userdetails) {
+				if (i != 0) {
+					users.append(", ");
+				}
+				users.append(userDTO.getPseudoname());
+				emails[i] = userDTO.getEmail();
+				i++;
+			}
+			Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
+			String[] uniqueEmails = emailSet.toArray(new String[0]);
+			MimeMessage message = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(message);
+			helper.setTo(uniqueEmails);
+			helper.setFrom(narveemail, shortMessage);
+			 String subject = "Task Comment Added: " + updateTask.getTicketid();
+			    String body = "<html><body>" +
+			            "<div>Hi " + users + ",</div>" +
+			            "<div>The Ticket  Id : <strong>" +  updateTask.getTicketid()+ "</strong> has a new comment:</div>" +
+			            "<div><strong>Comment:</strong> " + updateTask.getComments() +"<strong>Commented by:</strong> " + getUsersDTO.getFullname() + "</div>" +
+			            "<div><strong>Status:</strong> " + updateTask.getStatus() + "</div>" +			            
+			            "<div>Ticket ID: <strong>" +updateTask.getTicketid()+ "</strong></div>" +			         			            
+			            "<div>Best Regards,</div>" +
+			            "<div>Narvee Technologies</div>" +
+			            "</body></html>";
+			    helper.setSubject(subject);
+			    helper.setText(body, true);
+			    mailSender.send(message);
+			    logger.info("!!! inside class: EmailServiceImpl, !! method: End sendCommentEmail");	   	    
+	}	
+	public void sendCreateProjectEmail(TmsProject project, List<GetUsersDTO> userdetails,boolean projectUpdate) throws MessagingException, UnsupportedEncodingException {
+	    logger.info("!!! inside class: EmailServiceImpl, !! method: sendCreateProjectEmail");
+
+	    Set<String> assignedUsersSet = new LinkedHashSet<>();
+	    String[] emails = new String[userdetails.size()];
+
+	    for (int i = 0; i < userdetails.size(); i++) {
+	        GetUsersDTO userDTO = userdetails.get(i);
+	        assignedUsersSet.add(userDTO.getPseudoname());
+	        emails[i] = userDTO.getEmail();
+	    }
+
+	    String assignedUsers = String.join(", ", assignedUsersSet);
+
+	    for (GetUsersDTO userDTO : userdetails) {
+	        String email = userDTO.getEmail();
+	        String pseudoname = userDTO.getPseudoname();
+
+	        MimeMessage message = mailSender.createMimeMessage();
+	        MimeMessageHelper helper = new MimeMessageHelper(message);
+	        helper.setTo(email);
+	        helper.setFrom(narveemail, shortMessage);
+	        String subject;
+	        String body;
+	        
+	        if (projectUpdate) {
+	        	
+	         subject = "New Project Created: " + project.getProjectid();
+	       body = "<html><body>" +
+	                "<div>Hi " + pseudoname + ",</div>" +
+	                "<br>" + 
+	                "<div>A new project has been created and assigned to: <strong>" + assignedUsers + "</strong></div>" +
+	                "<div><strong>Project Id:</strong> " + project.getProjectid() + "</div>" +
+	                "<div><strong>Project Name:</strong> " + project.getProjectName() + "</div>" +
+	                "<div><strong>Description:</strong> " + project.getDescription() + "</div>" +
+	                "<br>" +
+	                "<div>Best Regards,</div>" +
+	                "<div>Narvee Technologies.</div>" +
+	                "</body></html>";
+	      }else {
+	    	    subject = "Project Updated: " + project.getProjectid();
+	    	   body = "<html><body>" +
+	                    "<div>Hi " + pseudoname + ",</div>" +
+	                    "<br>" + 
+	                    "<div>The project has been updated:</div>" +
+	                    "<div><strong>Project Id:</strong> " + project.getProjectid() + "</div>" +
+	                    "<div><strong>Project Name:</strong> " + project.getProjectName() + "</div>" +
+	                    "<div><strong>Description:</strong> " + project.getDescription() + "</div>" +
+	                    "<br>" +
+	                    "<div>Best Regards,</div>" +
+	                    "<div>Narvee Technologies.</div>" +
+	                    "</body></html>";
+	    	  
+	    	  
+	      }
+	        helper.setSubject(subject);
+	        helper.setText(body, true);
+	        mailSender.send(message);
+
+	        logger.info("Email sent to: " + email);
+	    }
+
+	    logger.info("!!! inside class: EmailServiceImpl, !! method: End sendCreateProjectEmail");
+	}
+
 }
+
+

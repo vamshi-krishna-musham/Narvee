@@ -28,9 +28,9 @@ import com.narvee.dto.TaskResponse;
 import com.narvee.dto.TaskTrackerDTO;
 import com.narvee.dto.TasksResponseDTO;
 import com.narvee.dto.UpdateTask;
-import com.narvee.entity.AssignedUsers;
-import com.narvee.entity.Task;
-import com.narvee.entity.TicketTracker;
+import com.narvee.entity.TmsAssignedUsers;
+import com.narvee.entity.TmsTask;
+import com.narvee.entity.TmsTicketTracker;
 import com.narvee.feignclient.UserClient;
 import com.narvee.repository.TaskRepository;
 import com.narvee.service.service.TaskService;
@@ -49,7 +49,7 @@ public class TaskServiceImpl implements TaskService {
 	private UserClient userClient;
 
 	@Override
-	public Task createTask(Task task, String token) {
+	public TmsTask createTask(TmsTask task, String token) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: createTask");
 		Long maxnumber = taskRepo.maxNumber();
 		if (maxnumber == null) {
@@ -73,9 +73,9 @@ public class TaskServiceImpl implements TaskService {
 //		List<AssignedUsers> addedByToAssignedUsers = task.getAssignedto();
 //		addedByToAssignedUsers.addAll(assignedUsers);
 		taskRepo.save(task);
-		List<AssignedUsers> addedByToAssignedUsers = task.getAssignedto();
+		List<TmsAssignedUsers> addedByToAssignedUsers = task.getAssignedto();
 		// assignid=null, userid=28, completed=false
-		List<Long> usersids = addedByToAssignedUsers.stream().map(AssignedUsers::getUserid)
+		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getUserid)
 				.collect(Collectors.toList());
 
 		List<GetUsersDTO> user = taskRepo.getTaskAssinedUsersAndCreatedBy(task.getAddedby(), usersids);
@@ -90,16 +90,16 @@ public class TaskServiceImpl implements TaskService {
 	@Override
 	public boolean updateTask(UpdateTask updateTask) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTask");
-		List<TicketTracker> listTicketTracker = new ArrayList<>();
-		TicketTracker ticketTracker = new TicketTracker();
-		Task task = taskRepo.findById(updateTask.getTaskid()).get();
+		List<TmsTicketTracker> listTicketTracker = new ArrayList<>();
+		TmsTicketTracker ticketTracker = new TmsTicketTracker();
+		TmsTask task = taskRepo.findById(updateTask.getTaskid()).get();
 
 		if (task.getStartDate() == null) {
 			task.setStartDate(LocalDate.now());
 		}
 
-		List<AssignedUsers> asigned = task.getAssignedto();
-		for (AssignedUsers assignedUsers : asigned) {
+		List<TmsAssignedUsers> asigned = task.getAssignedto();
+		for (TmsAssignedUsers assignedUsers : asigned) {
 			if (updateTask.getUpdatedby() == assignedUsers.getUserid()) {
 				assignedUsers.setUserstatus(updateTask.getStatus());
 			}
@@ -114,16 +114,22 @@ public class TaskServiceImpl implements TaskService {
 			listTicketTracker.add(ticketTracker);
 			task.setTrack(listTicketTracker);
 			taskRepo.save(task);
+			try {
+				emailService.sendCommentEmail(updateTask);
+		    } catch (MessagingException | UnsupportedEncodingException e) {
+		    	e.printStackTrace();
+		    }
+
 			return true;
 		}
 		return false;
 	}
 
 	@Override
-	public Task findBytaskId(Long taskid) {
+	public TmsTask findBytaskId(Long taskid) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: findBytaskId");
-		Task task = taskRepo.findById(taskid).get();
-		for (AssignedUsers aUser : task.getAssignedto()) {
+		TmsTask task = taskRepo.findById(taskid).get();
+		for (TmsAssignedUsers aUser : task.getAssignedto()) {
 			GetUsersDTO user = taskRepo.getUser(aUser.getUserid());
 			aUser.setFullname(user.getFullname());
 			aUser.setPseudoname(user.getPseudoname());
@@ -132,7 +138,7 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public List<Task> getAllTasks() {
+	public List<TmsTask> getAllTasks() {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: getAllTasks");
 		return taskRepo.findAll(Sort.by("taskid").descending());
 	}
@@ -216,7 +222,7 @@ public class TaskServiceImpl implements TaskService {
 	@Override
 	public boolean updateTaskStatus(Long taskid, String status,String updatedby) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTaskStatus");
-		Task taskInfo = taskRepo.findById(taskid).get();
+		TmsTask taskInfo = taskRepo.findById(taskid).get();
 		   ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
 	        LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
 
@@ -301,7 +307,7 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public Task findByTicketId(String taskid) {
+	public TmsTask findByTicketId(String taskid) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: findByTicketId");
 		return taskRepo.findByTicketid(taskid);
 	}
@@ -325,9 +331,9 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public Task update(Task task) {
+	public TmsTask update(TmsTask task) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: ticketTracker");
-		Task update = taskRepo.findById(task.getTaskid()).get();
+		TmsTask update = taskRepo.findById(task.getTaskid()).get();
 		update.setTargetdate(task.getTargetdate());
 		update.setTaskname(task.getTaskname());
 		update.setDescription(task.getDescription());

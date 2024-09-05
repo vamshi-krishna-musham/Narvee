@@ -12,20 +12,20 @@ import com.narvee.dto.TaskResponse;
 import com.narvee.dto.TaskTrackerDTO;
 import com.narvee.dto.TasksResponseDTO;
 import com.narvee.dto.UpdateTask;
-import com.narvee.entity.Task;
+import com.narvee.entity.TmsTask;
 
 public interface TaskService {
-	public Task createTask(Task ticket, String token);
+	public TmsTask createTask(TmsTask ticket, String token);
 	
-	public Task update(Task ticket);
+	public TmsTask update(TmsTask ticket);
 
 	public boolean updateTask(UpdateTask updateTask);
 
-	public Task findBytaskId(Long taskid);
+	public TmsTask findBytaskId(Long taskid);
 	
-	public Task findByTicketId(String taskid);
+	public TmsTask findByTicketId(String taskid);
 
-	public List<Task> getAllTasks();
+	public List<TmsTask> getAllTasks();
 
 	public List<TaskAssignDTO> taskAssignInfo(Long taskid);
 

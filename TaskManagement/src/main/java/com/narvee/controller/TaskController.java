@@ -22,7 +22,7 @@ import com.narvee.dto.DateSearchDTO;
 import com.narvee.dto.RequestDTO;
 import com.narvee.dto.UpdateTask;
 import com.narvee.dto.UserDTO;
-import com.narvee.entity.Task;
+import com.narvee.entity.TmsTask;
 import com.narvee.feignclient.UserClient;
 import com.narvee.repository.TaskRepository;
 import com.narvee.service.service.TaskService;
@@ -56,7 +56,7 @@ public class TaskController {
 	}
 
 	@PostMapping("/createTask")
-	public ResponseEntity<?> createTask(@RequestBody Task task, @RequestHeader("AUTHORIZATION") String token) {
+	public ResponseEntity<?> createTask(@RequestBody TmsTask task, @RequestHeader("AUTHORIZATION") String token) {
 		logger.info("!!! inside class: TaskController , !! method: createTask");
 		return new ResponseEntity<RestAPIResponse>(
 				new RestAPIResponse("success", " task created successfully", service.createTask(task, token)),
@@ -64,7 +64,7 @@ public class TaskController {
 	}
 
 	@PostMapping("/update")
-	public ResponseEntity<?> update(@RequestBody Task task) {
+	public ResponseEntity<?> update(@RequestBody TmsTask task) {
 		logger.info("!!! inside class: TaskController , !! method: update");
 		return new ResponseEntity<RestAPIResponse>(
 				new RestAPIResponse("success", " task created successfully", service.update(task)), HttpStatus.CREATED);

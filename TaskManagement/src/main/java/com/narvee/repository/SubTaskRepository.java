@@ -14,9 +14,9 @@ import org.springframework.data.repository.query.Param;
 
 import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.SubTaskUserDTO;
-import com.narvee.entity.SubTask;
+import com.narvee.entity.TmsSubTask;
 
-public interface SubTaskRepository extends JpaRepository<SubTask, Long> {
+public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 
 	@Query(value = "select s.subtaskid, s.subtaskname, s.subtaskdescription, s.status, s.targetdate, u.fullname as addedby from sub_task s, users u where u.userid = s.addedby ", nativeQuery = true)
 	public Page<SubTaskUserDTO> getSubTaskUser(Pageable pageable);
@@ -28,11 +28,11 @@ public interface SubTaskRepository extends JpaRepository<SubTask, Long> {
 
 	@Query(value = "select * from sub_task s WHERE (s.subTaskName LIKE CONCAT('%', :keyword, '%') OR s.subTaskDescription LIKE CONCAT('%', :keyword, '%') or s.status LIKE CONCAT('%', :keyword, '%') "
 			+ " or s.targetDate LIKE CONCAT('%', :keyword, '%')) ", nativeQuery = true)
-	public Page<SubTask> getAllSubTasksSortingAndFiltering(Pageable pageable, @Param("keyword") String keyword);
+	public Page<TmsSubTask> getAllSubTasksSortingAndFiltering(Pageable pageable, @Param("keyword") String keyword);
 
-	public List<SubTask> findByTaskTicketid(String ticketid);
+	public List<TmsSubTask> findByTaskTicketid(String ticketid);
 
-	@Query(value = "select st.subtaskid ,u.fullname , u.pseudoname from sub_task st , assigned_users au , users u  ,task t where st.subtaskid =au.subtaskid and t.taskid=st.taskid AND\r\n"
+ 	@Query(value = "select st.subtaskid ,u.fullname , u.pseudoname from sub_task st , assigned_users au , users u  ,task t where st.subtaskid =au.subtaskid and t.taskid=st.taskid AND\r\n"
 			+ "			  au.userid =u.userid and t.ticketid= :ticketid", nativeQuery = true)
 	public List<GetUsersDTO> getAssignUsers(String ticketid);
 

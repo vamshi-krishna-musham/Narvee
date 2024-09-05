@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.narvee.commons.RestAPIResponse;
 import com.narvee.dto.RequestDTO;
-import com.narvee.entity.Project;
+import com.narvee.entity.TmsProject;
 import com.narvee.service.service.ProjectService;
 
 @RestController
@@ -29,9 +29,8 @@ public class ProjectController {
 	private static final Logger logger = LoggerFactory.getLogger(ProjectController.class);
 
 	@PostMapping("/save")
-	public ResponseEntity<RestAPIResponse> createProject(@RequestBody Project project) {
+	public ResponseEntity<RestAPIResponse> createProject(@RequestBody TmsProject project) {
 		logger.info("!!! inside class: ProjectController , !! method: createproject");
-		this.projectservice.saveproject(project);
 		return new ResponseEntity<RestAPIResponse>(
 				new RestAPIResponse("success", " project created successfully", projectservice.saveproject(project)),
 				HttpStatus.CREATED);
@@ -53,7 +52,7 @@ public class ProjectController {
 	}
 
 	@PutMapping("/update")
-	public ResponseEntity<RestAPIResponse> updateProject(@RequestBody Project project) {
+	public ResponseEntity<RestAPIResponse> updateProject(@RequestBody TmsProject project) {
 		logger.info("!!! inside class: ProjectController , !! method: updateProject");
 		boolean flag = projectservice.updateproject(project);
 		if (flag == true) {
@@ -65,7 +64,6 @@ public class ProjectController {
 
 	}
 
-	
 	@PostMapping("/findAllProjects")
 	public ResponseEntity<RestAPIResponse> getAllProjects(
 			@RequestBody RequestDTO requestresponsedto) {

@@ -1,6 +1,12 @@
 package com.narvee.service.serviceimpl;
 
+import java.io.UnsupportedEncodingException;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.mail.MessagingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,10 +17,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.ProjectDTO;
 import com.narvee.dto.RequestDTO;
-import com.narvee.entity.Project;
+import com.narvee.entity.TmsAssignedUsers;
+import com.narvee.entity.TmsProject;
 import com.narvee.repository.ProjectRepository;
+import com.narvee.repository.TaskRepository;
 import com.narvee.service.service.ProjectService;
 
 @Service
@@ -23,12 +32,20 @@ public class ProjectServiceImpl implements ProjectService {
 	private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
 	@Autowired
+	private EmailServiceIml emailService;
+
+
+	@Autowired
+	private TaskRepository repository;
+
+	@Autowired
 	private ProjectRepository projectrepository;
 	private static final int DIGIT_PADDING = 4;
 
 	@Override
-	public Project saveproject(Project project) {
+	public TmsProject saveproject(TmsProject project) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: saveProject");
+
 		Long pmaxnumber = projectrepository.pmaxNumber();
 		if (pmaxnumber == null) {
 			pmaxnumber = 0L;
@@ -37,14 +54,26 @@ public class ProjectServiceImpl implements ProjectService {
 		String value = "PROJ" + valueWithPadding;
 		project.setProjectid(value);
 		projectrepository.save(project);
-		project.setPmaxnum(pmaxnumber + 1);
+		project.setPmaxnum(pmaxnumber+1);
+		
+		Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
+	
+		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getUserid)
+				.collect(Collectors.toList());
+		List<GetUsersDTO> user = repository.getTaskAssinedUsersAndCreatedBy(project.getAddedBy(), usersids);
+		try {
+			emailService.sendCreateProjectEmail(project, user, true);
+		} catch (UnsupportedEncodingException | MessagingException e) {
+			e.printStackTrace();
+		}
+		
 		return project;
 	}
 
 	@Override
-	public Project findByprojectId(Long pid) {
+	public TmsProject findByprojectId(Long pid) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: findByprojectId");
-		Optional<Project> optional = projectrepository.findById(pid);
+		Optional<TmsProject> optional = projectrepository.findById(pid);
 		if (optional.isPresent()) {
 			return optional.get();
 		} else
@@ -60,11 +89,11 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 
 	@Override
-	public boolean updateproject(Project updateproject) {
+	public boolean updateproject(TmsProject updateproject) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: updateproject");
-		Optional<Project> optionalProject = projectrepository.findById(updateproject.getPId());
+		Optional<TmsProject> optionalProject = projectrepository.findById(updateproject.getPId());
 		if (optionalProject.isPresent()) {
-			Project project = optionalProject.get();
+			TmsProject project = optionalProject.get();
 			project.setProjectName(updateproject.getProjectName());
 			project.setAddedBy(updateproject.getAddedBy());
 			project.setUpdatedBy(updateproject.getUpdatedBy());
@@ -72,6 +101,17 @@ public class ProjectServiceImpl implements ProjectService {
 			project.setStatus(updateproject.getStatus());
 			project.setTasks(updateproject.getTasks());
 			projectrepository.save(project);
+			
+			Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
+			List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getUserid)
+					.collect(Collectors.toList());
+			List<GetUsersDTO> user = repository.getTaskAssinedUsersAndCreatedBy(project.getAddedBy(), usersids);
+			try {
+				emailService.sendCreateProjectEmail(project, user, false);
+			} catch (UnsupportedEncodingException | MessagingException e) {
+				e.printStackTrace();
+			}
+		
 			return true;
 		} else {
 			return false;

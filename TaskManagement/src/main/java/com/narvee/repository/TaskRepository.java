@@ -17,11 +17,12 @@ import org.springframework.stereotype.Repository;
 import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.TaskAssignDTO;
 import com.narvee.dto.TaskTrackerDTO;
-import com.narvee.entity.Task;
+import com.narvee.entity.TmsAssignedUsers;
+import com.narvee.entity.TmsTask;
 
 @Repository
 @Transactional
-public interface TaskRepository extends JpaRepository<Task, Long> {
+public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 
 	@Query(value = "select max(maxnum) as max from task", nativeQuery = true)
 	public Long maxNumber();
@@ -116,7 +117,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 	@Query(value = "select u.fullname , u.pseudoname  from users u where u.userid = :userid ", nativeQuery = true)
 	public GetUsersDTO getUser(Long userid);
 
-	public Task findByTicketid(String ticketid);
+	public TmsTask findByTicketid(String ticketid);
 
 	@Query(value = "Select pid FROM project WHERE projectid = :projectid " , nativeQuery = true)
 	public Long findPid(String projectid);
@@ -124,5 +125,11 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 	@Query(value = "SELECT t.taskid ,u.fullname , u.pseudoname,u.email from task t ,  assigned_users au , users u , sub_task st WHERE "
 			+ "au.subtaskid= st.subtaskid and au.userid =u.userid and t.taskid=st.taskid and st.subtaskid=:subtaskid", nativeQuery = true)
 	public List<GetUsersDTO> getSubtaskAssignUsers(Long subtaskid);
+
+	
+
+//	@Query(value = "select t.taskid ,u.fullname , u.pseudoname,u.email from task t , task_users tu , assigned_users au , users u where t.taskid = tu.taskid and  "
+//			+ "tu.assignedto= au.assignid and au.userid =u.userid and t.ticketid=:ticketid", nativeQuery = true)
+//	public List<GetUsersDTO> getAssignUsers(String ticketid);
 
 }

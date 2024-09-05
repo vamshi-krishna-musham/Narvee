@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.narvee.commons.RestAPIResponse;
 import com.narvee.dto.RequestDTO;
-import com.narvee.entity.SubTask;
+import com.narvee.entity.TmsSubTask;
 import com.narvee.service.service.SubTaskService;
 
 @RestController
@@ -30,7 +30,7 @@ public class SubTaskController {
 	private SubTaskService subtaskservice;
 
 	@PostMapping("/saveSubTask")
-	public ResponseEntity<RestAPIResponse> createSubTask(@RequestBody SubTask subtask) {
+	public ResponseEntity<RestAPIResponse> createSubTask(@RequestBody TmsSubTask subtask) {
 		logger.info("!!! inside class: SubTaskController , !! method: findBySubTaskId");
 		return new ResponseEntity<RestAPIResponse>(
 				new RestAPIResponse("success", "SubTask created successfully", subtaskservice.createSubTask(subtask)),
@@ -62,7 +62,7 @@ public class SubTaskController {
 	}
 
 	@PutMapping("/update")
-	public ResponseEntity<RestAPIResponse> updateSubTask(@RequestBody SubTask subtask) {
+	public ResponseEntity<RestAPIResponse> updateSubTask(@RequestBody TmsSubTask subtask) {
 		logger.info("!!! inside class: SubTaskController , !! method: updateproject");
 		Boolean flag = subtaskservice.updateSubTask(subtask);
 		if (flag == true) {
