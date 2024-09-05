@@ -3,9 +3,9 @@ package com.narvee.service.serviceimpl;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.mail.MessagingException;
@@ -23,9 +23,8 @@ import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.RequestDTO;
 import com.narvee.dto.SubTaskResponse;
 import com.narvee.dto.SubTaskUserDTO;
-import com.narvee.entity.AssignedUsers;
-import com.narvee.entity.SubTask;
-import com.narvee.entity.Task;
+import com.narvee.entity.TmsAssignedUsers;
+import com.narvee.entity.TmsSubTask;
 import com.narvee.repository.SubTaskRepository;
 import com.narvee.repository.TaskRepository;
 import com.narvee.service.service.SubTaskService;
@@ -37,43 +36,42 @@ public class SubTaskServiceImpl implements SubTaskService {
 
 	@Autowired
 	private SubTaskRepository subtaskrepository;
-	
+
 	@Autowired
 	private EmailServiceIml emailService;
 
 	@Autowired
 	private TaskRepository repository;
-	
+
 	@Override
-	public SubTask createSubTask(SubTask subtask) {
+	public TmsSubTask createSubTask(TmsSubTask subtask) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: createSubTask");
-	List<AssignedUsers> addedByToAssignedUsers = subtask.getAssignedto();
-		List<Long> usersids = addedByToAssignedUsers.stream().map(AssignedUsers::getUserid)
+		Set<TmsAssignedUsers> addedByToAssignedUsers = subtask.getAssignedto();
+		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getUserid)
 				.collect(Collectors.toList());
-		List<GetUsersDTO> user = repository.getTaskAssinedUsersAndCreatedBy(subtask.getAddedBy(), usersids);
-for (GetUsersDTO getUsersDTO : user) {
-	System.err.println( getUsersDTO.getEmail() );
-	
-}
-     SubTask subtasks=subtaskrepository.save(subtask);
+		List<GetUsersDTO> user = repository.getTaskAssinedUsersAndCreatedBy(subtask.getAddedby(), usersids);
+
+		TmsSubTask subtasks = subtaskrepository.save(subtask);
 		try {
-		emailService.SubTaskAssigningEmail(subtasks, user);
+			emailService.SubTaskAssigningEmail(subtasks, user);
 		} catch (UnsupportedEncodingException | MessagingException e) {
-		e.printStackTrace();
-	}
+			e.printStackTrace();
+		}
 		return subtaskrepository.save(subtasks);
 	}
+
 	@Override
-	public SubTask findBySubTaskId(Long subtaskid) {
+	public TmsSubTask findBySubTaskId(Long subtaskid) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: findBySubTaskId");
-		SubTask subtask = subtaskrepository.findById(subtaskid).get();
-		for (AssignedUsers aUser : subtask.getAssignedto()) {
+		TmsSubTask subtask = subtaskrepository.findById(subtaskid).get();
+		for (TmsAssignedUsers aUser : subtask.getAssignedto()) {
 			GetUsersDTO user = repository.getUser(aUser.getUserid());
 			aUser.setFullname(user.getFullname());
 			aUser.setPseudoname(user.getPseudoname());
 		}
 		return subtask;
 	}
+
 	@Override
 	public void deleteSubTask(Long subtaskid) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: deleteSubTask");
@@ -82,19 +80,19 @@ for (GetUsersDTO getUsersDTO : user) {
 	}
 
 	@Override
-	public Boolean updateSubTask(SubTask updatesubtask) {
+	public Boolean updateSubTask(TmsSubTask updatesubtask) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTask");
-		Optional<SubTask> optional = subtaskrepository.findById(updatesubtask.getSubTaskId());
+		Optional<TmsSubTask> optional = subtaskrepository.findById(updatesubtask.getSubTaskId());
 		if (optional.isPresent()) {
-			SubTask subtask = optional.get();
+			TmsSubTask subtask = optional.get();
 			subtask.setSubTaskName(updatesubtask.getSubTaskName());
 			subtask.setSubTaskDescription(updatesubtask.getSubTaskDescription());
-			subtask.setAddedBy(updatesubtask.getAddedBy());
+			subtask.setAddedby(updatesubtask.getAddedby());
 			subtask.setUpdatedBy(updatesubtask.getUpdatedBy());
 			subtask.setStatus(updatesubtask.getStatus());
 			subtask.setTargetDate(updatesubtask.getTargetDate());
 			subtask.setAssignedto(updatesubtask.getAssignedto());
-			
+
 			subtaskrepository.save(subtask);
 			return true;
 		} else {
@@ -136,7 +134,7 @@ for (GetUsersDTO getUsersDTO : user) {
 	}
 
 	@Override
-	public Page<SubTask> getAllSubTasks(RequestDTO requestresponsedto) {
+	public Page<TmsSubTask> getAllSubTasks(RequestDTO requestresponsedto) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: getAllSubTasks");
 		String sortorder = requestresponsedto.getSortOrder();
 		String sortfield = requestresponsedto.getSortField();
@@ -165,7 +163,7 @@ for (GetUsersDTO getUsersDTO : user) {
 		Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
 
 		if (keyword.equalsIgnoreCase("empty")) {
-			Page<SubTask> page = subtaskrepository.findAll(pageable);
+			Page<TmsSubTask> page = subtaskrepository.findAll(pageable);
 			return page;
 		} else {
 			logger.info("!!! inside class: SubTaskServiceImpl , !! method: getAllSubTasks Inside Filters");
@@ -177,11 +175,11 @@ for (GetUsersDTO getUsersDTO : user) {
 	@Override
 	public SubTaskResponse findBySubTaskTicketId(String ticketId) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: findBySubTaskTicketId");
-		List<SubTask> subTasksList = subtaskrepository.findByTaskTicketid(ticketId);
+		List<TmsSubTask> subTasksList = subtaskrepository.findByTaskTicketid(ticketId);
 		SubTaskResponse response = new SubTaskResponse();
-		for (SubTask order : subTasksList) {
+		for (TmsSubTask order : subTasksList) {
 			order.setTaskId(order.getTask().getTaskid());
-			for (AssignedUsers assignUsers : order.getAssignedto()) {
+			for (TmsAssignedUsers assignUsers : order.getAssignedto()) {
 				GetUsersDTO user = repository.getUser(assignUsers.getUserid());
 				assignUsers.setFullname(user.getFullname());
 				assignUsers.setPseudoname(user.getPseudoname());
@@ -195,16 +193,16 @@ for (GetUsersDTO getUsersDTO : user) {
 	}
 
 	@Override
-	public boolean updateSubTaskStatus(Long subTaskId, String staus,Long updatedby) {
+	public boolean updateSubTaskStatus(Long subTaskId, String staus, Long updatedby) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskStatus");
-	
-		SubTask subtasks = subtaskrepository.findById(subTaskId).get();
+
+		
 		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
-        LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
+		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
 
 		try {
-			
 			subtaskrepository.updateTaskStatus(subTaskId, staus, updatedby, indiaDateTime);
+			TmsSubTask subtasks = subtaskrepository.findById(subTaskId).get();
 			emailService.sendSubtaskEmail(subtasks);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();

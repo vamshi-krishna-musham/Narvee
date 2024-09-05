@@ -1,7 +1,7 @@
 package com.narvee.entity;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -30,7 +30,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class SubTask extends AuditModel {
+public class TmsSubTask extends AuditModel {
 
 	private static final long serialVersionUID = 1L;
 
@@ -43,7 +43,7 @@ public class SubTask extends AuditModel {
 	@Column(name = "subtaskdescription")
 	private String subTaskDescription;
 	@Column(name = "addedby")
-	private Long addedBy;
+	private Long addedby;
 	@Column(name = "updatedby")
 	private Long updatedBy;
 	@Column(name = "status")
@@ -56,11 +56,11 @@ public class SubTask extends AuditModel {
 	@ToString.Exclude
 	@ManyToOne
 	@JoinColumn(name = "taskid")
-	private Task task;
+	private TmsTask task;
 
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "subtaskid")
-	private List<AssignedUsers> assignedto;
+	private Set<TmsAssignedUsers> assignedto;
 
 	@Transient
 	private Long taskId;

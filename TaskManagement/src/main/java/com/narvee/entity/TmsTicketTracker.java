@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @EqualsAndHashCode(callSuper = true)
-public class TicketTracker extends AuditModel {
+public class TmsTicketTracker extends AuditModel {
 
 	private static final long serialVersionUID = 1L;
 

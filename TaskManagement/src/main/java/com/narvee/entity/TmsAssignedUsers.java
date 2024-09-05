@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class AssignedUsers {
+public class TmsAssignedUsers {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

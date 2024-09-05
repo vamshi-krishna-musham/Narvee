@@ -3,6 +3,7 @@ package com.narvee.entity;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -35,7 +36,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class Task extends AuditModel {
+public class TmsTask extends AuditModel {
 
 	private static final long serialVersionUID = 1L;
 
@@ -62,12 +63,12 @@ public class Task extends AuditModel {
 
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "taskid", nullable = false)
-	private List<TicketTracker> track = new ArrayList<TicketTracker>();
+	private List<TmsTicketTracker> track = new ArrayList<TmsTicketTracker>();
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinTable(name = "task_users", joinColumns = { @JoinColumn(name = "taskid") }, inverseJoinColumns = {
+	@JoinTable(name = "tms_task_users", joinColumns = { @JoinColumn(name = "taskid") }, inverseJoinColumns = {
 			@JoinColumn(name = "assignedto") })
-	private List<AssignedUsers> assignedto = new ArrayList<AssignedUsers>();
+	private Set<TmsAssignedUsers> assignedto ;
 
 	private Long maxnum;
 	private String ticketid;
@@ -78,12 +79,12 @@ public class Task extends AuditModel {
 	@ToString.Exclude
 	@ManyToOne
 	@JoinColumn(name = "pid")
-	private Project project;
+	private TmsProject project;
 
 	@JsonManagedReference
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "task_id")
-	private List<SubTask> subTasks = new ArrayList<>();
+	private List<TmsSubTask> subTasks = new ArrayList<>();
 	
 	
 

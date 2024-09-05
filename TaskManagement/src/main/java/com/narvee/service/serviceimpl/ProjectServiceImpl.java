@@ -11,10 +11,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.ProjectDTO;
 import com.narvee.dto.RequestDTO;
-import com.narvee.entity.Project;
+import com.narvee.entity.TmsAssignedUsers;
+import com.narvee.entity.TmsProject;
 import com.narvee.repository.ProjectRepository;
+import com.narvee.repository.TaskRepository;
 import com.narvee.service.service.ProjectService;
 
 @Service
@@ -24,10 +27,14 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Autowired
 	private ProjectRepository projectrepository;
+	
 	private static final int DIGIT_PADDING = 4;
+	
+	@Autowired
+	private TaskRepository repository;
 
 	@Override
-	public Project saveproject(Project project) {
+	public TmsProject saveproject(TmsProject project) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: saveProject");
 		Long pmaxnumber = projectrepository.pmaxNumber();
 		if (pmaxnumber == null) {
@@ -42,35 +49,40 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 
 	@Override
-	public Project findByprojectId(Long pid) {
+	public TmsProject findByprojectId(Long pid) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: findByprojectId");
-		Optional<Project> optional = projectrepository.findById(pid);
-		if (optional.isPresent()) {
-			return optional.get();
-		} else
-			return null;
+		TmsProject project = projectrepository.findById(pid).get();
+		for (TmsAssignedUsers aUser : project.getAssignedto()) {
+			GetUsersDTO user = repository.getUser(aUser.getUserid());
+			aUser.setFullname(user.getFullname());
+			aUser.setPseudoname(user.getPseudoname());
+		}
+		return project;
+		
 
 	}
 
 	@Override
 	public void deleteProject(Long pid) {
-		logger.info("!!! inside class: ProjectSe                                                                                                                                                                                                    rviceImpl , !! method: deleteProject");
+		logger.info(
+				"!!! inside class: ProjectSe                                                                                                                                                                                                    rviceImpl , !! method: deleteProject");
 		projectrepository.deleteById(pid);
 
 	}
 
 	@Override
-	public boolean updateproject(Project updateproject) {
+	public boolean updateproject(TmsProject updateproject) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: updateproject");
-		Optional<Project> optionalProject = projectrepository.findById(updateproject.getPId());
+		Optional<TmsProject> optionalProject = projectrepository.findById(updateproject.getPId());
 		if (optionalProject.isPresent()) {
-			Project project = optionalProject.get();
+			TmsProject project = optionalProject.get();
 			project.setProjectName(updateproject.getProjectName());
 			project.setAddedBy(updateproject.getAddedBy());
 			project.setUpdatedBy(updateproject.getUpdatedBy());
 			project.setDescription(updateproject.getDescription());
 			project.setStatus(updateproject.getStatus());
 			project.setTasks(updateproject.getTasks());
+			project.setAssignedto(updateproject.getAssignedto());
 			projectrepository.save(project);
 			return true;
 		} else {
@@ -78,7 +90,6 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 
 	}
-
 
 	@Override
 	public Page<ProjectDTO> findAllProjects(RequestDTO requestresponsedto) {
@@ -88,13 +99,15 @@ public class ProjectServiceImpl implements ProjectService {
 		String keyword = requestresponsedto.getKeyword();
 		Integer pageNo = requestresponsedto.getPageNumber();
 		Integer pageSize = requestresponsedto.getPageSize();
+		Long userid = requestresponsedto.getUserid();
+		String access=requestresponsedto.getAccess();
 
 		if (sortfield.equalsIgnoreCase("projectid"))
 			sortfield = "projectId";
 		else if (sortfield.equalsIgnoreCase("projectname"))
 			sortfield = "projectName";
-		else if (sortfield.equalsIgnoreCase("description"))
-			sortfield = "description";
+		else if (sortfield.equalsIgnoreCase("status"))
+			sortfield = "status";
 		else if (sortfield.equalsIgnoreCase("addedBy"))
 			sortfield = "addedBy";
 		else
@@ -107,13 +120,26 @@ public class ProjectServiceImpl implements ProjectService {
 		Sort sort = Sort.by(sortDirection, sortfield);
 		Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
 
-		if (keyword.equalsIgnoreCase("empty")) {
-			logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects, Empty");
-			return projectrepository.findAllProjects(pageable, keyword);
-		} else {
-			logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects, Filter");
-			return projectrepository.findAllProjectWithFiltering(pageable, keyword);
+		if (access.equalsIgnoreCase("Super Administrator")) {
+			if (keyword.equalsIgnoreCase("empty")) {
+				logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects, Empty");
+				return projectrepository.findAllProjects(pageable, keyword);
+			} else {
+				logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects, Filter");
+				return projectrepository.findAllProjectWithFiltering(pageable, keyword);
 
+			}
+
+		} else {
+
+			if (keyword.equalsIgnoreCase("empty")) {
+				logger.info("!!! inside class: ProjectServiceImpl , !! method: getAllProjectsByUser, Empty");
+				return projectrepository.getAllProjectsByUser(userid, pageable);
+			} else {
+				logger.info("!!! inside class: ProjectServiceImpl , !! method: getAllProjectsByUserFilter, Filter");
+				return projectrepository.getAllProjectsByUserFilter(pageable, keyword, userid);
+
+			}
 		}
 
 	}

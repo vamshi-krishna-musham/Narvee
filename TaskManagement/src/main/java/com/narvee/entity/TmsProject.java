@@ -2,9 +2,12 @@ package com.narvee.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -27,7 +30,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table
 @EqualsAndHashCode(callSuper = true)
-public class Project extends AuditModel {
+public class TmsProject extends AuditModel {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -47,8 +50,16 @@ public class Project extends AuditModel {
 	private String status="To Do";
 	@Column(name = "projectdescription", columnDefinition = "MEDIUMTEXT")
 	private String description;
+	
+	private String department;
+	
 	@OneToMany
 	@JsonManagedReference
 	@JoinColumn(name = "pid")
-    private List<Task> tasks = new ArrayList<>();
+    private List<TmsTask> tasks = new ArrayList<>();
+	
+	@OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+	@JoinColumn(name = "pid")
+    private Set<TmsAssignedUsers> assignedto;
+	
 }
