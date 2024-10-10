@@ -17,9 +17,6 @@ import org.springframework.stereotype.Repository;
 import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.TaskAssignDTO;
 import com.narvee.dto.TaskTrackerDTO;
-
-import com.narvee.entity.TmsAssignedUsers;
-
 import com.narvee.entity.TmsTask;
 
 @Repository
@@ -60,8 +57,9 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	public List<TaskTrackerDTO> allTasksRecords();
 
 	@Query(value = "SELECT t.taskid, t.ticketid, t.taskname, t.createddate, t.targetdate, tt.trackid, t.status,t.description as taskdescription, tt.description, tt.fromdate, tt.todate,u.pseudoname\r\n"
-			+ "FROM\r\n" + "    tms_task t\r\n" + "LEFT JOIN\r\n" + "    tms_ticket_tracker tt ON t.taskid = tt.taskid\r\n"
-			+ "LEFT JOIN\r\n" + "    tms_task_users tu ON tu.taskid = t.taskid\r\n" + "LEFT JOIN\r\n"
+			+ "FROM\r\n" + "    tms_task t\r\n" + "LEFT JOIN\r\n"
+			+ "    tms_ticket_tracker tt ON t.taskid = tt.taskid\r\n" + "LEFT JOIN\r\n"
+			+ "    tms_task_users tu ON tu.taskid = t.taskid\r\n" + "LEFT JOIN\r\n"
 			+ "    tms_assigned_users au ON au.assignid = tu.assignedto\r\n" + "LEFT JOIN\r\n"
 			+ "    users u ON u.userid = au.userid WHERE DATE(t.createddate) >=:fromDate \r\n"
 			+ "	AND t.targetdate <=:toDate \r\n" + "		ORDER BY\r\n" + "		 tt.trackid DESC\r\n"
@@ -69,15 +67,15 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	public List<TaskTrackerDTO> taskReports(@Param("fromDate") LocalDate fromDate, @Param("toDate") LocalDate toDate);
 
 	@Query(value = "SELECT t.taskid, t.ticketid, t.taskname, t.createddate, t.targetdate, tt.trackid, t.status,t.description as taskdescription, tt.description, tt.fromdate, tt.todate,u.pseudoname\r\n"
-			+ "FROM\r\n" + "    tms_task t\r\n" + "LEFT JOIN\r\n" + "    tms_ticket_tracker tt ON t.taskid = tt.taskid\r\n"
-			+ "LEFT JOIN\r\n" + "    tms_task_users tu ON tu.taskid = t.taskid\r\n" + "LEFT JOIN\r\n"
+			+ "FROM\r\n" + "    tms_task t\r\n" + "LEFT JOIN\r\n"
+			+ "    tms_ticket_tracker tt ON t.taskid = tt.taskid\r\n" + "LEFT JOIN\r\n"
+			+ "    tms_task_users tu ON tu.taskid = t.taskid\r\n" + "LEFT JOIN\r\n"
 			+ "    tms_assigned_users au ON au.assignid = tu.assignedto\r\n" + "LEFT JOIN\r\n"
 			+ "    users u ON u.userid = au.userid WHERE DATE(t.createddate) >=:fromDate \r\n"
 			+ "	AND t.targetdate <=:toDate AND t.department=:dept \r\n" + "		ORDER BY\r\n"
 			+ "		 t.ticketid DESC\r\n" + "", nativeQuery = true)
 	public List<TaskTrackerDTO> taskReportsByDepartment(@Param("fromDate") LocalDate fromDate,
 			@Param("toDate") LocalDate toDate, @Param("dept") String dept);
-
 
 	@Query(value = "SELECT t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,t.projectid,t.pid"
 			+ "FROM tms_task t JOIN tms_project p ON t.pid = p.pid WHERE p.projectid =:projectid AND  t.status=:status ", nativeQuery = true)
@@ -96,7 +94,8 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	@Modifying
 	@Transactional
 	@Query(value = "UPDATE tms_task SET status=:status, updatedby=:updatedby , updateddate = :updateddate WHERE taskid =:taskid ", nativeQuery = true)
-	public int updateTaskStatus(@Param("taskid") Long taskid, @Param("status") String status,@Param("updatedby") String updatedby , LocalDateTime updateddate);
+	public int updateTaskStatus(@Param("taskid") Long taskid, @Param("status") String status,
+			@Param("updatedby") String updatedby, LocalDateTime updateddate);
 
 	@Query(value = "SELECT  t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,p.projectid,p.pid \r\n"
 			+ "			FROM tms_task t right Join tms_project p ON t.pid = p.pid WHERE p.projectid = :projectid ", nativeQuery = true)
@@ -109,37 +108,85 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			@Param("keyword") String keyword);
 
 	@Query(value = "select null as createdby,email, pseudoname from users where userid in (:auserid) union "
-			+ "select pseudoname as createdby,email, pseudoname from users where userid = :userid ", nativeQuery = true)
+			+ "select pseudoname as createdby,email, null as pseudoname from users where userid = :userid ", nativeQuery = true)
 	public List<GetUsersDTO> getTaskAssinedUsersAndCreatedBy(long userid, List<Long> auserid);
 
-	@Query(value = "select t.taskid ,u.fullname , u.pseudoname,u.email from tms_task t , tms_task_users tu , tms_assigned_users au , users u where t.taskid = tu.taskid and  "
-			+ "tu.assignedto= au.assignid and au.userid =u.userid and t.taskid=:taskId", nativeQuery = true)
+	@Query(value = "SELECT \r\n"
+			+ "    t.taskid, \r\n"
+			+ "    NULL AS fullname, \r\n"
+			+ "    NULL AS pseudoname, \r\n"
+			+ "    NULL AS email, \r\n"
+			+ "    creator.fullname as cfullname ,\r\n"
+			+ "    creator.pseudoname as cpseudoname , \r\n"
+			+ "    creator.email as cemail \r\n"
+			+ "FROM tms_task t\r\n"
+			+ "JOIN users creator ON t.addedby = creator.userid  \r\n"
+			+ "WHERE t.taskid =:taskId \r\n"
+			+ "\r\n"
+			+ "UNION ALL\r\n"
+			+ "\r\n"
+			+ "SELECT \r\n"
+			+ "    t.taskid, \r\n"
+			+ "    u.fullname , \r\n"
+			+ "    u.pseudoname , \r\n"
+			+ "    u.email, \r\n"
+			+ "    NULL AS fullname, \r\n"
+			+ "    NULL AS pseudoname, \r\n"
+			+ "    NULL AS email\r\n"
+			+ "FROM tms_task t\r\n"
+			+ "JOIN tms_task_users tu ON t.taskid = tu.taskid\r\n"
+			+ "JOIN tms_assigned_users au ON tu.assignedto = au.assignid\r\n"
+			+ "JOIN users u ON au.userid = u.userid  -- Fetch assigned users\r\n"
+			+ "WHERE t.taskid =:taskId ;", nativeQuery = true)
 	public List<GetUsersDTO> getAssignUsers(Long taskId);
 
-	@Query(value = "select u.fullname , u.pseudoname  from users u where u.userid = :userid ", nativeQuery = true)
+	@Query(value = "select st.subtaskid ,u.fullname , u.pseudoname,u.email from tms_sub_task st , tms_task_users tu , tms_assigned_users au , users u where st.subtaskid = tu.taskid and \r\n"
+			+ "			tu.assignedto= au.assignid and au.userid =u.userid and st.taskid=:subTaskId", nativeQuery = true)
+	public List<GetUsersDTO> getSubTaskAssignUsers(Long subTaskId);
+
+	@Query(value = "select u.fullname , u.pseudoname ,u.email from users u where u.userid = :userid ", nativeQuery = true)
 	public GetUsersDTO getUser(Long userid);
 
 	public TmsTask findByTicketid(String ticketid);
 
-	@Query(value = "Select pid FROM tms_project WHERE projectid = :projectid " , nativeQuery = true)
+	@Query(value = "Select pid FROM tms_project WHERE projectid = :projectid ", nativeQuery = true)
 	public Long findPid(String projectid);
-	
-	@Query(value = "SELECT t.taskid ,u.fullname , u.pseudoname,u.email from tms_task t ,  tms_assigned_users au , users u , tms_sub_task st WHERE "
-			+ "au.subtaskid= st.subtaskid and au.userid =u.userid and t.taskid=st.taskid and st.subtaskid=:subtaskid", nativeQuery = true)
+
+	@Query(value = "SELECT \r\n"
+			+ "    t.taskid, \r\n"
+			+ "    NULL AS fullname, \r\n"
+			+ "    NULL AS pseudoname, \r\n"
+			+ "    NULL AS email, \r\n"
+			+ "    creator.fullname AS cfullname, \r\n"
+			+ "    creator.pseudoname AS cpseudoname, \r\n"
+			+ "    creator.email AS cemail \r\n"
+			+ "FROM tms_task t\r\n"
+			+ "JOIN tms_sub_task ts ON ts.taskid = t.taskid \r\n"
+			+ "JOIN users creator ON ts.addedby = creator.userid  \r\n"
+			+ "WHERE ts.subtaskid =:subtaskid \r\n"
+			+ "UNION ALL\r\n"
+			+ "SELECT \r\n"
+			+ "    t.taskid, \r\n"
+			+ "    u.fullname, \r\n"
+			+ "    u.pseudoname, \r\n"
+			+ "    u.email, \r\n"
+			+ "    NULL AS cfullname, \r\n"
+			+ "    NULL AS cpseudoname, \r\n"
+			+ "    NULL AS cemail\r\n"
+			+ "FROM tms_task t\r\n"
+			+ "JOIN tms_task_users tu ON t.taskid = tu.taskid\r\n"
+			+ "JOIN tms_assigned_users au ON tu.assignedto = au.assignid\r\n"
+			+ "JOIN users u ON au.userid = u.userid\r\n"
+			+ "JOIN tms_sub_task ts ON  ts.taskid=t.taskid\r\n"
+			+ "WHERE ts.subtaskid =:subtaskid ;", nativeQuery = true)
 	public List<GetUsersDTO> getSubtaskAssignUsers(Long subtaskid);
-	
-	
+
 	@Query(value = "SELECT u.userid ,u.pseudoname,u.fullname FROM users u , tms_project p , tms_assigned_users au WHERE  au.pid=p.pid AND  u.userid=au.userid AND p.projectid =:projectId", nativeQuery = true)
 	public List<GetUsersDTO> getProjectUsers(String projectId);
-	
-	
 
-	
-
-//	@Query(value = "select t.taskid ,u.fullname , u.pseudoname,u.email from task t , task_users tu , assigned_users au , users u where t.taskid = tu.taskid and  "
-//			+ "tu.assignedto= au.assignid and au.userid =u.userid and t.ticketid=:ticketid", nativeQuery = true)
-//	public List<GetUsersDTO> getAssignUsers(String ticketid);
-
+	@Query(value = "SELECT t.taskid, t.status,u.fullname, u.pseudoname, t.taskname, t.targetdate, t.ticketid, u.email FROM tms_task t\r\n"
+			+ "	join tms_task_users tu on tu.taskid=t.taskid\r\n"
+			+ "	join tms_assigned_users au on au.assignid =tu.assignedto\r\n" + "	join users u on au.userid=u.userid\r\n"
+			+ "	WHERE date(t.targetdate) < :currentDate AND t.status!='to do' AND t.status!='Completed'", nativeQuery = true)
+	public List<TaskTrackerDTO> getExceededTargetDateSubTasks(LocalDate currentDate);
 }
-
-

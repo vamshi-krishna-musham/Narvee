@@ -12,6 +12,7 @@ public interface GetUsersDTO {
 	public String getTaskname();
 	public String getTicketid();
 	public String getUpdatedby();
+	public String getCemail();
 	
 	
 	

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.narvee.commons.RestAPIResponse;
 import com.narvee.dto.RequestDTO;
+import com.narvee.dto.UpdateTask;
 import com.narvee.entity.TmsSubTask;
 import com.narvee.service.service.SubTaskService;
 
@@ -88,10 +89,29 @@ public class SubTaskController {
 
 	@RequestMapping(value = "/updateSubTaskStatus/{subTaskid}/{status}/{updatedby}", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<RestAPIResponse> updateSubTaskStatus(@PathVariable Long subTaskid,
-			@PathVariable String status,@PathVariable Long updatedby) {
+			@PathVariable String status, @PathVariable Long updatedby) {
 		logger.info("!!! inside class: SubTaskController , !! method: updateSubTaskStatus");
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Updated status  successfully",
 				subtaskservice.updateSubTaskStatus(subTaskid, status, updatedby)), HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/trackBySubTask/{subTaskid}", method = RequestMethod.GET, produces = "application/json")
+	public ResponseEntity<RestAPIResponse> trackBySubTask(@PathVariable Long subTaskid) {
+		logger.info("!!! inside class: SubTaskController , !! method: trackBySubTask");
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Comments fetched successfully",
+				subtaskservice.ticketTrackerBySubTaskId(subTaskid)), HttpStatus.OK);
+	}
+
+	@PostMapping("/updateSubTaskTrack")
+	public ResponseEntity<RestAPIResponse> updateTask(@RequestBody UpdateTask updateTask) {
+		logger.info("!!! inside class: SubTaskController , !! method: updateTask");
+		Boolean flag = subtaskservice.updateSubTaskTrack(updateTask);
+		if (flag == true)
+			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Updated successfully"),
+					HttpStatus.OK);
+		else
+			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("Task fail", "Task Not Found"),
+					HttpStatus.OK);
 	}
 
 }

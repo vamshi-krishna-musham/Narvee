@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class UpdateTask {
 
 	private Long taskid;
+	private Long subTaskId;
 	private String ticketid;
 	private Long updatedby;
 	private String status;

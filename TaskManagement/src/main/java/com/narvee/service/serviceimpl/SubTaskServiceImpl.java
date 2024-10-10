@@ -3,6 +3,7 @@ package com.narvee.service.serviceimpl;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -23,11 +24,12 @@ import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.RequestDTO;
 import com.narvee.dto.SubTaskResponse;
 import com.narvee.dto.SubTaskUserDTO;
+import com.narvee.dto.TaskTrackerDTO;
+import com.narvee.dto.TasksResponseDTO;
+import com.narvee.dto.UpdateTask;
 import com.narvee.entity.TmsAssignedUsers;
 import com.narvee.entity.TmsSubTask;
-
-import com.narvee.entity.TmsTask;
-
+import com.narvee.entity.TmsTicketTracker;
 import com.narvee.repository.SubTaskRepository;
 import com.narvee.repository.TaskRepository;
 import com.narvee.service.service.SubTaskService;
@@ -41,7 +43,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 	private SubTaskRepository subtaskrepository;
 
 	@Autowired
-	private EmailServiceIml emailService;
+	private EmailServiceImpl emailService;
 
 	@Autowired
 	private TaskRepository repository;
@@ -54,7 +56,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 				.collect(Collectors.toList());
 		List<GetUsersDTO> user = repository.getTaskAssinedUsersAndCreatedBy(subtask.getAddedby(), usersids);
 		TmsSubTask subtasks = subtaskrepository.save(subtask);
-    
+
 		try {
 			emailService.SubTaskAssigningEmail(subtasks, user);
 		} catch (UnsupportedEncodingException | MessagingException e) {
@@ -214,4 +216,54 @@ public class SubTaskServiceImpl implements SubTaskService {
 		return true;
 
 	}
+
+	@Override
+	public List<TasksResponseDTO> ticketTrackerBySubTaskId(Long subtaskid) {
+		logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskStatus");
+		List<TaskTrackerDTO> tracker = subtaskrepository.ticketTrackerBySubTaskId(subtaskid);
+		List<TasksResponseDTO> tasksList = new ArrayList<>();
+
+		for (TaskTrackerDTO taskTrackerDTO : tracker) {
+			TasksResponseDTO track = new TasksResponseDTO(taskTrackerDTO);
+			GetUsersDTO user = repository.getUser(taskTrackerDTO.getUpdatedby());
+			if (taskTrackerDTO.getUpdatedby() != null) {
+				track.setFullname(user.getFullname());
+				track.setPseudoname(user.getPseudoname());
+			}
+			tasksList.add(track);
+		}
+
+		return tasksList;
+	}
+
+	@Override
+	public boolean updateSubTaskTrack(UpdateTask updateTask) {
+		logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskTrack");
+		
+		TmsSubTask subTask = subtaskrepository.findById(updateTask.getSubTaskId()).get();
+		List<TmsTicketTracker> listTicketTracker = subTask.getTrack();
+		TmsTicketTracker ticketTracker = new TmsTicketTracker();
+
+		if (subTask != null) {
+			subTask.setStatus(updateTask.getStatus());
+			ticketTracker.setStatus(updateTask.getStatus());
+			ticketTracker.setComments(updateTask.getComments());
+			ticketTracker.setUpdatedby(updateTask.getUpdatedby());
+			listTicketTracker.add(ticketTracker);
+			subTask.setTrack(listTicketTracker);
+			subtaskrepository.save(subTask);
+			
+			
+			try {
+				emailService.sendCommentEmail(updateTask);
+			} catch (MessagingException | UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+
+			return true;
+		}
+		return false;
+
+	}
+
 }

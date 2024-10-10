@@ -1,6 +1,8 @@
 package com.narvee.repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -14,6 +16,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.SubTaskUserDTO;
+import com.narvee.dto.TaskTrackerDTO;
 import com.narvee.entity.TmsSubTask;
 
 public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
@@ -32,7 +35,6 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 
 	public List<TmsSubTask> findByTaskTicketid(String ticketid);
 
-
 	@Query(value = "select st.subtaskid ,u.fullname , u.pseudoname from tms_sub_task st , tms_assigned_users au , users u , tms_task t where st.subtaskid =au.subtaskid and t.taskid=st.taskid AND\r\n"
 			+ "			  au.userid =u.userid and t.ticketid= :ticketid", nativeQuery = true)
 	public List<GetUsersDTO> getAssignUsers(String ticketid);
@@ -40,13 +42,14 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	@Modifying
 	@Transactional
 	@Query(value = "UPDATE tms_sub_task SET status=:status , updatedby=:updatedby, updateddate = :updateddate WHERE subtaskid =:subTaskId ", nativeQuery = true)
-	public int updateTaskStatus(@Param("subTaskId") Long subTaskId, @Param("status") String status,@Param("updatedby") Long updatedby,LocalDateTime updateddate);
+	public int updateTaskStatus(@Param("subTaskId") Long subTaskId, @Param("status") String status,
+			@Param("updatedby") Long updatedby, LocalDateTime updateddate);
 
-	@Query(value = "SELECT taskid FROM tms_task WHERE ticketid= :ticketid" , nativeQuery = true)
+	@Query(value = "SELECT taskid FROM tms_task WHERE ticketid= :ticketid", nativeQuery = true)
 	public Long findTaskId(String ticketid);
-	
-    @Query(value =" select projectname , taskname , ticketid FROM tms_task t , tms_project p , tms_sub_task st WHERE  p.pid= t.pid AND t.taskid =st.taskid AND st.subtaskid=:subtaskid",nativeQuery = true)
-    public GetUsersDTO GetPorjectNameAndTaskName(Long subtaskid);
+
+	@Query(value = " select projectname , taskname , ticketid FROM tms_task t , tms_project p , tms_sub_task st WHERE  p.pid= t.pid AND t.taskid =st.taskid AND st.subtaskid=:subtaskid", nativeQuery = true)
+	public GetUsersDTO GetPorjectNameAndTaskName(Long subtaskid);
 
 	@Query(value = "select st.subtaskid ,u.fullname , u.pseudoname from tms_sub_task st , tms_assigned_users au , users u  , tms_task t where st.subtaskid =au.subtaskid and t.taskid=st.taskid AND\r\n"
 			+ "			  au.userid =u.userid and st.subtaskid= :subTaskId", nativeQuery = true)
@@ -55,4 +58,10 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	@Query(value = "select u.fullname , u.pseudoname  from users u where u.userid = :userid ", nativeQuery = true)
 	public GetUsersDTO getUser(Long userid);
 
+	@Query(value = "select tt.taskid , st.subtaskid , tt.status,tt.createddate , tt.description ,tt.updatedby from tms_ticket_tracker tt , tms_sub_task st  WHERE tt.subtaskid= st.subtaskid and st.subtaskid=:subtaskid order by tt.createddate desc", nativeQuery = true)
+	public List<TaskTrackerDTO> ticketTrackerBySubTaskId(Long subtaskid);
+
+	@Query(value = "SELECT st.subtaskid, st.status,u.fullname, u.pseudoname, st.subtaskname, st.targetdate, t.ticketid, u.email FROM tms_sub_task st JOIN tms_assigned_users au ON st.subtaskid = au.subtaskid\r\n"
+			+ "JOIN users u ON au.userid = u.userid JOIN tms_task t ON st.taskid = t.taskid WHERE date(st.targetdate) < :currentDate AND st.status!='to do' AND st.status!='Completed'  ", nativeQuery = true)
+	public List<TaskTrackerDTO> getExceededTargetDateSubTasks(LocalDate currentDate);
 }

@@ -4,9 +4,9 @@ import java.io.UnsupportedEncodingException;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -20,7 +20,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import com.narvee.dto.GetUsersDTO;
-
+import com.narvee.dto.TaskTrackerDTO;
 import com.narvee.dto.UpdateTask;
 import com.narvee.entity.TmsProject;
 import com.narvee.entity.TmsSubTask;
@@ -30,8 +30,8 @@ import com.narvee.repository.SubTaskRepository;
 import com.narvee.repository.TaskRepository;
 
 @Component
-public class EmailServiceIml {
-	private static final Logger logger = LoggerFactory.getLogger(EmailServiceIml.class);
+public class EmailServiceImpl {
+	private static final Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
 
 	@Autowired
 	private SubTaskRepository subTaskRepository;
@@ -82,22 +82,11 @@ public class EmailServiceIml {
 		Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
 		String[] uniqueEmails = emailSet.toArray(new String[0]);
 		emails = uniqueEmails;
-		/*
-		 * for (UserDTO userDTO : userdetails) { if (userDTO.getCreatedby() != null) {
-		 * createdBy.append(userDTO.getCreatedby()); } else { if (i != 0) {
-		 * users.append(","); } users.append(userDTO.getPseudoname()); } emails[i++] =
-		 * userDTO.getEmail(); System.out.println(i); }
-		 */
-		for (String s : emails) {
-			System.out.println(Arrays.toString(emails));
-		}
-		String q = url;
-		String rooturl = "<a href='" + q + "'>Click Here to Go Task List</a>";
 
 		DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 		MimeMessage message = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message);
-		 helper.setCc(ccmail);
+		helper.setCc(ccmail);
 		// helper.setBcc(emails);
 
 		helper.setTo(emails);
@@ -156,22 +145,11 @@ public class EmailServiceIml {
 		Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
 		String[] uniqueEmails = emailSet.toArray(new String[0]);
 		emails = uniqueEmails;
-		/*
-		 * for (UserDTO userDTO : userdetails) { if (userDTO.getCreatedby() != null) {
-		 * createdBy.append(userDTO.getCreatedby()); } else { if (i != 0) {
-		 * users.append(","); } users.append(userDTO.getPseudoname()); } emails[i++] =
-		 * userDTO.getEmail(); System.out.println(i); }
-		 */
-		for (String s : emails) {
-			System.out.println(Arrays.toString(emails));
-		}
-		String q = url;
-		String rooturl = "<a href='" + q + "'>Click Here to Go SubTask List</a>";
 
 		DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 		MimeMessage message = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message);
-		 helper.setCc(ccmail);
+		helper.setCc(ccmail);
 		// helper.setBcc(emails);
 
 		helper.setTo(emails);
@@ -201,8 +179,7 @@ public class EmailServiceIml {
 				.append("<td>" + subTask.getStatus() + "</td>").append("</tr>")
 				.append("<tr> <th colspan=\"9\" class=\"description\">Description</th> </tr>")
 				.append("<tr><td colspan=\"9\">").append("<pre>").append(subTask.getSubTaskDescription())
-				.append("</pre>").append("</td></tr>").append("</table>").append("</body>")
-				.append("</html>");
+				.append("</pre>").append("</td></tr>").append("</table>").append("</body>").append("</html>");
 
 		helper.setSubject(subject);
 		helper.setText(stringBuilder.toString(), true);
@@ -216,6 +193,9 @@ public class EmailServiceIml {
 
 		List<GetUsersDTO> userdetails = taskRepository.getAssignUsers(task.getTaskid());
 		GetUsersDTO getUsersDTO = taskRepository.getUser(task.getUpdatedby());
+		String createdByDetails = userdetails.stream().filter(user -> user.getCemail() != null)
+				.map(GetUsersDTO::getCemail).findFirst().orElse("No Email found");
+		userdetails = userdetails.stream().filter(user -> user.getEmail() != null).collect(Collectors.toList());
 
 		StringBuilder users = new StringBuilder();
 		int i = 0;
@@ -225,10 +205,17 @@ public class EmailServiceIml {
 			if (i != 0) {
 				users.append(", ");
 			}
-			users.append(userDTO.getPseudoname());
-			emails[i] = userDTO.getEmail();
+			if (userDTO.getEmail() != null) {
+				users.append(userDTO.getPseudoname());
+				emails[i] = userDTO.getEmail();
+
+			}
 			i++;
+
 		}
+
+		emails[i] = createdByDetails;
+		System.err.println(createdByDetails);
 
 		Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
 		String[] uniqueEmails = emailSet.toArray(new String[0]);
@@ -244,7 +231,8 @@ public class EmailServiceIml {
 				+ task.getTaskname() + "</strong> has been updated to: <strong>" + task.getStatus()
 				+ "</strong> by <strong>" + getUsersDTO.getFullname() + "</strong></div>" + "<div>  Task ID: <strong>"
 				+ task.getTicketid() + " </strong> </div>" + "<div>Task Name: <strong>" + task.getTaskname()
-				+ "</strong></div>" + "<div>Best Regards,</div>" + "</body></html>";
+				+ "</strong></div> <br>" + "<div>Best Regards,</div>" + "<div> Narvee Technologies </div>"
+				+ "</body></html>";
 		helper.setSubject(subject);
 		helper.setText(body, true);
 		mailSender.send(message);
@@ -254,7 +242,8 @@ public class EmailServiceIml {
 	public void sendSubtaskEmail(TmsSubTask subTask) throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: EmailServiceIml, !! method: End sendSubtaskEmail");
 		List<GetUsersDTO> userdetails = taskRepository.getSubtaskAssignUsers(subTask.getSubTaskId());
-		
+		userdetails = userdetails.stream().filter(user -> user.getEmail() != null).collect(Collectors.toList());
+
 		GetUsersDTO getUsersDTO = taskRepository.getUser(subTask.getUpdatedBy());
 
 		StringBuilder users = new StringBuilder();
@@ -285,115 +274,168 @@ public class EmailServiceIml {
 		String body = "<html><body>" + "<div>Hi " + users + ",</div>" + "<div>The status of the task <strong>"
 				+ subTask.getSubTaskName() + "</strong> has been updated to: <strong>" + subTask.getStatus()
 				+ "</strong> by <strong>" + getUsersDTO.getFullname() + "</strong></div>" + "<div> Task ID: <strong>"
-				+ subTask.getTask().getTicketid()+ " </strong> </div>" + "<div>Sub-Task Name: <strong>" + subTask.getSubTaskName()
-				+ "</strong></div>" + "<div>Best Regards,</div>"+"<div> Narvee Technologies </div>" + "</body></html>";
+				+ subTask.getTask().getTicketid() + " </strong> </div>" + "<div>Sub-Task Name: <strong>"
+				+ subTask.getSubTaskName() + "</strong></div><br>" + "<div>Best Regards,</div>"
+				+ "<div> Narvee Technologies </div>" + "</body></html>";
 		helper.setSubject(subject);
 		helper.setText(body, true);
-		
+
 		mailSender.send(message);
 		logger.info("!!! inside class: EmailServiceIml, !! method: End sendSubtaskEmail");
 	}
+
 	public void sendCommentEmail(UpdateTask updateTask) throws MessagingException, UnsupportedEncodingException {
-	    logger.info("!!! inside class: EmailServiceImpl, !! method: End sendCommentEmail");
-		   List<GetUsersDTO> userdetails=taskRepository.getAssignUsers(updateTask.getTaskid());
-			GetUsersDTO getUsersDTO = taskRepository.getUser(updateTask.getUpdatedby());
-			StringBuilder users = new StringBuilder();
-			int i = 0;
-			String emails[] = new String[userdetails.size()];
-			for (GetUsersDTO userDTO : userdetails) {
-				if (i != 0) {
-					users.append(", ");
-				}
-				users.append(userDTO.getPseudoname());
-				emails[i] = userDTO.getEmail();
-				i++;
+		logger.info("!!! inside class: EmailServiceImpl, !! method:  sendCommentEmail");
+		List<GetUsersDTO> userdetails = null;
+		String createdByDetails = null;
+		if (updateTask.getTaskid() == null) {
+			userdetails = taskRepository.getSubtaskAssignUsers(updateTask.getSubTaskId());
+
+			createdByDetails = userdetails.stream().filter(user -> user.getCemail() != null).map(GetUsersDTO::getCemail)
+					.findFirst().orElse("No Email found");
+
+			userdetails = userdetails.stream().filter(user -> user.getEmail() != null).collect(Collectors.toList());
+
+		} else {
+			userdetails = taskRepository.getAssignUsers(updateTask.getTaskid());
+			createdByDetails = userdetails.stream().filter(user -> user.getCemail() != null).map(GetUsersDTO::getCemail)
+					.findFirst().orElse("No Email found");
+			userdetails = userdetails.stream().filter(user -> user.getEmail() != null).collect(Collectors.toList());
+
+		}
+		GetUsersDTO getUsersDTO = taskRepository.getUser(updateTask.getUpdatedby());
+
+		StringBuilder users = new StringBuilder();
+		int i = 0;
+		String emails[] = new String[userdetails.size() + 1];
+
+		for (GetUsersDTO userDTO : userdetails) {
+			if (i != 0) {
+				users.append(", ");
 			}
-			Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
-			String[] uniqueEmails = emailSet.toArray(new String[0]);
-			MimeMessage message = mailSender.createMimeMessage();
-			MimeMessageHelper helper = new MimeMessageHelper(message);
-			helper.setTo(uniqueEmails);
-			helper.setFrom(narveemail, shortMessage);
-			 String subject = "Task Comment Added: " + updateTask.getTicketid();
-			    String body = "<html><body>" +
-			            "<div>Hi " + users + ",</div>" +
-			            "<div>The Ticket  Id : <strong>" +  updateTask.getTicketid()+ "</strong> has a new comment:</div>" +
-			            "<div><strong>Comment:</strong> " + updateTask.getComments() +"<strong>Commented by:</strong> " + getUsersDTO.getFullname() + "</div>" +
-			            "<div><strong>Status:</strong> " + updateTask.getStatus() + "</div>" +			            
-			            "<div>Ticket ID: <strong>" +updateTask.getTicketid()+ "</strong></div>" +			         			            
-			            "<div>Best Regards,</div>" +
-			            "<div>Narvee Technologies</div>" +
-			            "</body></html>";
-			    helper.setSubject(subject);
-			    helper.setText(body, true);
-			    mailSender.send(message);
-			    logger.info("!!! inside class: EmailServiceImpl, !! method: End sendCommentEmail");	   	    
-	}	
-	public void sendCreateProjectEmail(TmsProject project, List<GetUsersDTO> userdetails,boolean projectUpdate) throws MessagingException, UnsupportedEncodingException {
-	    logger.info("!!! inside class: EmailServiceImpl, !! method: sendCreateProjectEmail");
 
-	    Set<String> assignedUsersSet = new LinkedHashSet<>();
-	    String[] emails = new String[userdetails.size()];
+			users.append(userDTO.getPseudoname());
+			emails[i] = userDTO.getEmail();
+			i++;
 
-	    for (int i = 0; i < userdetails.size(); i++) {
-	        GetUsersDTO userDTO = userdetails.get(i);
-	        assignedUsersSet.add(userDTO.getPseudoname());
-	        emails[i] = userDTO.getEmail();
-	    }
+		}
+		emails[i] = createdByDetails;
 
-	    String assignedUsers = String.join(", ", assignedUsersSet);
+		Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
+		String[] uniqueEmails = emailSet.toArray(new String[0]);
 
-	    for (GetUsersDTO userDTO : userdetails) {
-	        String email = userDTO.getEmail();
-	        String pseudoname = userDTO.getPseudoname();
+		MimeMessage message = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(message);
+		helper.setTo(uniqueEmails);
+		helper.setCc(ccmail);
+		helper.setFrom(narveemail, shortMessage);
+		String subject = "Task Comment Added: " + updateTask.getTicketid();
+		String body = "<html><body>" + "<div>Hi " + users + ",</div> <br>" + "<div>The Ticket  Id : <strong>"
+				+ updateTask.getTicketid() + "</strong> has a new comment:</div>" + "<div><strong>Comment: </strong> "
+				+ updateTask.getComments() + " <strong>Commented by: </strong> " + getUsersDTO.getFullname() + "</div>"
+				+ "<div><strong>Status:</strong> " + updateTask.getStatus() + "</div>" + "<div>Ticket ID: <strong>"
+				+ updateTask.getTicketid() + "</strong></div> <br>" + "<div>Best Regards,</div>"
+				+ "<div>Narvee Technologies</div>" + "</body></html>";
+		helper.setSubject(subject);
+		helper.setText(body, true);
+		mailSender.send(message);
+		logger.info("!!! inside class: EmailServiceImpl, !! method: End sendCommentEmail");
+	}
 
-	        MimeMessage message = mailSender.createMimeMessage();
-	        MimeMessageHelper helper = new MimeMessageHelper(message);
-	        helper.setTo(email);
-	        helper.setFrom(narveemail, shortMessage);
-	        String subject;
-	        String body;
-	        
-	        if (projectUpdate) {
-	        	
-	         subject = "New Project Created: " + project.getProjectid();
-	       body = "<html><body>" +
-	                "<div>Hi " + pseudoname + ",</div>" +
-	                "<br>" + 
-	                "<div>A new project has been created and assigned to: <strong>" + assignedUsers + "</strong></div>" +
-	                "<div><strong>Project Id:</strong> " + project.getProjectid() + "</div>" +
-	                "<div><strong>Project Name:</strong> " + project.getProjectName() + "</div>" +
-	                "<div><strong>Description:</strong> " + project.getDescription() + "</div>" +
-	                "<br>" +
-	                "<div>Best Regards,</div>" +
-	                "<div>Narvee Technologies.</div>" +
-	                "</body></html>";
-	      }else {
-	    	    subject = "Project Updated: " + project.getProjectid();
-	    	   body = "<html><body>" +
-	                    "<div>Hi " + pseudoname + ",</div>" +
-	                    "<br>" + 
-	                    "<div>The project has been updated:</div>" +
-	                    "<div><strong>Project Id:</strong> " + project.getProjectid() + "</div>" +
-	                    "<div><strong>Project Name:</strong> " + project.getProjectName() + "</div>" +
-	                    "<div><strong>Description:</strong> " + project.getDescription() + "</div>" +
-	                    "<br>" +
-	                    "<div>Best Regards,</div>" +
-	                    "<div>Narvee Technologies.</div>" +
-	                    "</body></html>";
-	    	  
-	    	  
-	      }
-	        helper.setSubject(subject);
-	        helper.setText(body, true);
-	        mailSender.send(message);
+	public void sendCreateProjectEmail(TmsProject project, List<GetUsersDTO> userdetails, boolean projectUpdate)
+			throws MessagingException, UnsupportedEncodingException {
+		logger.info("!!! inside class: EmailServiceImpl, !! method: sendCreateProjectEmail");
 
-	        logger.info("Email sent to: " + email);
-	    }
+		StringBuilder assignedUsers = new StringBuilder();
+		StringBuilder createdby = new StringBuilder();
 
-	    logger.info("!!! inside class: EmailServiceImpl, !! method: End sendCreateProjectEmail");
+		int i = 0;
+		String emails[] = new String[userdetails.size()];
+		for (GetUsersDTO userDTO : userdetails) {
+			if (userDTO.getCreatedby() != null) {
+				createdby.append(userDTO.getCreatedby());
+			} else {
+				if (i != 0) {
+					assignedUsers.append(",");
+				}
+				assignedUsers.append(userDTO.getPseudoname());
+			}
+
+			emails[i] = userDTO.getEmail();
+			i++;
+		}
+		Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
+		String[] uniqueEmails = emailSet.toArray(new String[0]);
+
+		MimeMessage message = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(message);
+		helper.setTo(uniqueEmails);
+		helper.setFrom(narveemail, shortMessage);
+		helper.setCc(ccmail);
+		String subject;
+		String body;
+
+		if (projectUpdate) {
+
+			subject = "New Project Assignment:" + project.getProjectid();
+			body = "<html><body>" + "<div>Hi " + assignedUsers + ",</div>" + "<br>"
+					+ "<div>A new project has been created and assigned to: <strong>" + assignedUsers
+					+ "</strong></div>" + "<div><strong>Project Id:</strong> " + project.getProjectid() + "</div>"
+					+ "<div><strong>Project Name:</strong> " + project.getProjectName() + "</div>"
+					+ "<div><strong>Description:</strong> " + project.getDescription() + "</div>"
+					+ "<div><strong>Created By:</strong> " + createdby + "</div>" + "<br>" + "<div>Best Regards,</div>"
+					+ "<div>Narvee Technologies.</div>" + "</body></html>";
+		} else {
+			subject = "Project Updated: " + project.getProjectid();
+			body = "<html><body>" + "<div>Hi " + assignedUsers + ",</div>" + "<br>"
+					+ "<div>The project has been updated:</div>" + "<div><strong>Project Id:</strong> "
+					+ project.getProjectid() + "</div>" + "<div><strong>Project Name:</strong> "
+					+ project.getProjectName() + "</div>" + "<div><strong>Description:</strong> "
+					+ project.getDescription() + "</div>" + "<div><strong>Updated By: </strong> " + createdby + "</div>"
+					+ "<br>" + "<div>Best Regards,</div>" + "<div>Narvee Technologies.</div>" + "</body></html>";
+
+		}
+		helper.setSubject(subject);
+		helper.setText(body, true);
+		mailSender.send(message);
+		logger.info("!!! inside class: EmailServiceImpl, !! method: End sendCreateProjectEmail");
+
+	}
+
+	public void targetExceededEmail(TaskTrackerDTO task, String taskType)
+			throws MessagingException, UnsupportedEncodingException {
+		logger.info("!!! inside class: TaskEmailServiceIml, !! method: targetExceededEmail");
+		MimeMessage message = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(message);
+		helper.setTo(task.getEmail());
+		helper.setCc(ccmail);
+		helper.setFrom(narveemail, shortMessage);
+		String subject = null;
+
+		StringBuilder body = new StringBuilder();
+
+		body.append("<html><body>" + "<div>Hi " + task.getPseudoname() + ",</div> <br>"
+				+ "<div>I hope this email finds you well.</div> <br>"
+				+ "<div>I wanted to bring to your attention that your assigned task target has been exceeded. "
+				+ "Please review the progress and ensure that any necessary adjustments or actions are taken to bring things back on track.</div> <br>"
+				+ "</strong></div>" + "<div><strong>Ticket Id:</strong> " + task.getTicketid() + "</div>");
+		if (taskType.equalsIgnoreCase("subtask")) {
+			subject = "Task Target Exceeded " + task.getSubtaskname();
+			body.append("<div><strong>Sub-Task Name:</strong> " + task.getSubtaskname() + "</div>");
+		} else {
+			subject = "Task Target Exceeded " + task.getTaskName();
+			body.append("<div><strong>Task Name:</strong> " + task.getTaskName() + "</div>");
+		}
+		body.append("<div><strong style='color: red;'>Target Date:</strong> " + task.getTargetdate() + "</div>");
+
+		body.append(
+				"If there are any challenges or issues preventing completion within the specified time frame, feel free to reach out so we can discuss potential solutions.<br>"
+						+ "Thank you for your attention to this matter. <br>" + "</strong></div> <br>"
+						+ "<div>Best Regards,</div>" + "<div> Narvee Technologies </div>" + "</body></html>");
+		helper.setSubject(subject);
+		helper.setText(body.toString(), true);
+		mailSender.send(message);
+		logger.info("!!! inside class: TaskEmailServiceIml, !! method: End targetExceededEmail end");
 	}
 
 }
-
-

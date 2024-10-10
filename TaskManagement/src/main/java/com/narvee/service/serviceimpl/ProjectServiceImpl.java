@@ -32,7 +32,7 @@ public class ProjectServiceImpl implements ProjectService {
 	private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
 
 	@Autowired
-	private EmailServiceIml emailService;
+	private EmailServiceImpl emailService;
 
 
 	@Autowired
@@ -106,12 +106,13 @@ public class ProjectServiceImpl implements ProjectService {
 			project.setStatus(updateproject.getStatus());
 			project.setTasks(updateproject.getTasks());
 			project.setAssignedto(updateproject.getAssignedto());
+			project.setDepartment(updateproject.getDepartment());
 			projectrepository.save(project);
 			
 			Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
 			List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getUserid)
 					.collect(Collectors.toList());
-			List<GetUsersDTO> user = repository.getTaskAssinedUsersAndCreatedBy(project.getAddedBy(), usersids);
+			List<GetUsersDTO> user = repository.getTaskAssinedUsersAndCreatedBy(project.getUpdatedBy(), usersids);
 			try {
 				emailService.sendCreateProjectEmail(project, user, false);
 			} catch (UnsupportedEncodingException | MessagingException e) {

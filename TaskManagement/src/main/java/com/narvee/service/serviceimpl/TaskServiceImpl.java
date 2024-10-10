@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,7 +33,6 @@ import com.narvee.dto.UpdateTask;
 import com.narvee.entity.TmsAssignedUsers;
 import com.narvee.entity.TmsTask;
 import com.narvee.entity.TmsTicketTracker;
-import com.narvee.feignclient.UserClient;
 import com.narvee.repository.TaskRepository;
 import com.narvee.service.service.TaskService;
 
@@ -44,9 +44,7 @@ public class TaskServiceImpl implements TaskService {
 	private static final int DIGIT_PADDING = 5;
 
 	@Autowired
-	private EmailServiceIml emailService;
-
-	
+	private EmailServiceImpl emailService;
 
 	@Override
 	public TmsTask createTask(TmsTask task, String token) {
@@ -91,9 +89,9 @@ public class TaskServiceImpl implements TaskService {
 	@Override
 	public boolean updateTask(UpdateTask updateTask) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTask");
-		List<TmsTicketTracker> listTicketTracker = new ArrayList<>();
-		TmsTicketTracker ticketTracker = new TmsTicketTracker();
 		TmsTask task = taskRepo.findById(updateTask.getTaskid()).get();
+		List<TmsTicketTracker> listTicketTracker = task.getTrack();
+		TmsTicketTracker ticketTracker = new TmsTicketTracker();
 
 		if (task.getStartDate() == null) {
 			task.setStartDate(LocalDate.now());
@@ -116,9 +114,9 @@ public class TaskServiceImpl implements TaskService {
 			taskRepo.save(task);
 			try {
 				emailService.sendCommentEmail(updateTask);
-		    } catch (MessagingException | UnsupportedEncodingException e) {
-		    	e.printStackTrace();
-		    }
+			} catch (MessagingException | UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
 
 			return true;
 		}
@@ -220,20 +218,20 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public boolean updateTaskStatus(Long taskid, String status,String updatedby) {
+	public boolean updateTaskStatus(Long taskid, String status, String updatedby) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTaskStatus");
-		
-		   ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
-	        LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
+
+		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
+		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
 
 		try {
 			taskRepo.updateTaskStatus(taskid, status, updatedby, indiaDateTime);
 			TmsTask taskInfo = taskRepo.findById(taskid).get();
 			emailService.sendStatusUpdateEmail(taskInfo);
-			
+
 		} catch (Exception e) {
 			// TODO: handle exception
-		} 
+		}
 
 		return true;
 
@@ -276,8 +274,12 @@ public class TaskServiceImpl implements TaskService {
 			for (TaskTrackerDTO order : res) {
 				TasksResponseDTO result = new TasksResponseDTO(order);
 				List<GetUsersDTO> assignUsers = taskRepo.getAssignUsers(order.getTaskid());
-				result.setAssignUsers(assignUsers);
+
+				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
+						.collect(Collectors.toList());
+				result.setAssignUsers(filteredAssignUsers);
 				tasksList.add(result);
+
 			}
 
 			Long pid = taskRepo.findPid(projectid);

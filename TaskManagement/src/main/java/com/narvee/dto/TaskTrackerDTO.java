@@ -22,6 +22,8 @@ public interface TaskTrackerDTO {
 	public String getTicketid();
 
 	public String getTaskName();
+	
+	public String getSubtaskname();
 
 	public String getDescription();
 	
@@ -35,5 +37,7 @@ public interface TaskTrackerDTO {
 	public String getPseudoname();
 	
 	public String getDuration();
+	
+	public String getEmail();
 
 }

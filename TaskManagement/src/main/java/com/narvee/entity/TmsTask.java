@@ -63,7 +63,7 @@ public class TmsTask extends AuditModel {
 	private LocalDate targetdate;
 
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name = "taskid", nullable = false)
+	@JoinColumn(name = "taskid")
 	private List<TmsTicketTracker> track = new ArrayList<TmsTicketTracker>();
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
