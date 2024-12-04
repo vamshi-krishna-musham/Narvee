@@ -98,7 +98,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			@Param("updatedby") String updatedby, LocalDateTime updateddate);
 
 	@Query(value = "SELECT  t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,p.projectid,p.pid \r\n"
-			+ "			FROM tms_task t right Join tms_project p ON t.pid = p.pid WHERE p.projectid = :projectid ", nativeQuery = true)
+			+ "			FROM tms_task t right Join tms_project p ON t.pid = p.pid WHERE p.projectid = :projectid Order by t.updateddate DESC ", nativeQuery = true)
 	public List<TaskTrackerDTO> findTaskByProjectid(@Param("projectid") String projectid);
 
 	@Query(value = "SELECT t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,p.projectid,t.pid "
@@ -136,7 +136,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			+ "FROM tms_task t\r\n"
 			+ "JOIN tms_task_users tu ON t.taskid = tu.taskid\r\n"
 			+ "JOIN tms_assigned_users au ON tu.assignedto = au.assignid\r\n"
-			+ "JOIN users u ON au.userid = u.userid  -- Fetch assigned users\r\n"
+			+ "JOIN users u ON au.userid = u.userid  \r\n"
 			+ "WHERE t.taskid =:taskId ;", nativeQuery = true)
 	public List<GetUsersDTO> getAssignUsers(Long taskId);
 

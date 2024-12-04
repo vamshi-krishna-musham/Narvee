@@ -86,7 +86,7 @@ public class EmailServiceImpl {
 		DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 		MimeMessage message = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message);
-		helper.setCc(ccmail);
+//		helper.setCc(ccmail);
 		// helper.setBcc(emails);
 
 		helper.setTo(emails);
@@ -149,7 +149,7 @@ public class EmailServiceImpl {
 		DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 		MimeMessage message = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message);
-		helper.setCc(ccmail);
+//		helper.setCc(ccmail);
 		// helper.setBcc(emails);
 
 		helper.setTo(emails);
@@ -199,8 +199,7 @@ public class EmailServiceImpl {
 
 		StringBuilder users = new StringBuilder();
 		int i = 0;
-		String emails[] = new String[userdetails.size()];
-
+		String emails[] = new String[userdetails.size()+1];
 		for (GetUsersDTO userDTO : userdetails) {
 			if (i != 0) {
 				users.append(", ");
@@ -213,9 +212,8 @@ public class EmailServiceImpl {
 			i++;
 
 		}
-
+		
 		emails[i] = createdByDetails;
-		System.err.println(createdByDetails);
 
 		Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
 		String[] uniqueEmails = emailSet.toArray(new String[0]);
@@ -223,7 +221,7 @@ public class EmailServiceImpl {
 		MimeMessage message = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message);
 		helper.setTo(uniqueEmails);
-		helper.setCc(ccmail);
+//		helper.setCc(ccmail);
 		helper.setFrom(narveemail, shortMessage);
 
 		String subject = "Task Status Updated: " + task.getTaskname();
@@ -268,7 +266,7 @@ public class EmailServiceImpl {
 		MimeMessageHelper helper = new MimeMessageHelper(message);
 		helper.setFrom(narveemail, shortMessage);
 		helper.setTo(uniqueEmails);
-		helper.setCc(ccmail);
+//		helper.setCc(ccmail);
 
 		String subject = "SubTask Status Updated: " + subTask.getSubTaskName();
 		String body = "<html><body>" + "<div>Hi " + users + ",</div>" + "<div>The status of the task <strong>"
@@ -327,7 +325,7 @@ public class EmailServiceImpl {
 		MimeMessage message = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message);
 		helper.setTo(uniqueEmails);
-		helper.setCc(ccmail);
+//		helper.setCc(ccmail);
 		helper.setFrom(narveemail, shortMessage);
 		String subject = "Task Comment Added: " + updateTask.getTicketid();
 		String body = "<html><body>" + "<div>Hi " + users + ",</div> <br>" + "<div>The Ticket  Id : <strong>"
@@ -371,7 +369,7 @@ public class EmailServiceImpl {
 		MimeMessageHelper helper = new MimeMessageHelper(message);
 		helper.setTo(uniqueEmails);
 		helper.setFrom(narveemail, shortMessage);
-		helper.setCc(ccmail);
+//		helper.setCc(ccmail);
 		String subject;
 		String body;
 
@@ -408,7 +406,7 @@ public class EmailServiceImpl {
 		MimeMessage message = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message);
 		helper.setTo(task.getEmail());
-		helper.setCc(ccmail);
+//		helper.setCc(ccmail);
 		helper.setFrom(narveemail, shortMessage);
 		String subject = null;
 
