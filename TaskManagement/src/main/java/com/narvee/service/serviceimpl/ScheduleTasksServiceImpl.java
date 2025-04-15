@@ -10,7 +10,6 @@ import javax.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.narvee.dto.TaskTrackerDTO;
@@ -32,7 +31,7 @@ public class ScheduleTasksServiceImpl implements ScheduleTasksService {
 	private EmailServiceImpl emailServiceImpl;
 
 	@Override
-	@Scheduled(cron = "0 30 09 * * ?", zone = "Asia/Kolkata")
+//	@Scheduled(cron = "0 30 09 * * ?", zone = "Asia/Kolkata")
 	public void subtaskDeadlineExceededEmail() throws UnsupportedEncodingException, MessagingException {
 		logger.info("!!! inside class: ScheduleTasksServiceImpl, !! method: subtaskDeadlineExceededEmail");
 		ZoneId india = ZoneId.of("Asia/Kolkata");
@@ -46,7 +45,7 @@ public class ScheduleTasksServiceImpl implements ScheduleTasksService {
 	}
 
 	@Override
-	@Scheduled(cron = "0 30 09 * * ?", zone = "Asia/Kolkata")
+//	@Scheduled(cron = "0 30 09 * * ?", zone = "Asia/Kolkata")
 	public void TaskdeadlineExceededEmail() throws UnsupportedEncodingException, MessagingException {
 		logger.info("!!! inside class: ScheduleTasksServiceImpl, !! method: TaskdeadlineExceededEmail");
 		ZoneId india = ZoneId.of("Asia/Kolkata");
