@@ -62,5 +62,4 @@ public class TmsProject extends AuditModel {
 	@JoinColumn(name = "pid")
     private Set<TmsAssignedUsers> assignedto;
 	
-
 }

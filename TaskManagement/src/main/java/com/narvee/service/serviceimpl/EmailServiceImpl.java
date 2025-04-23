@@ -356,7 +356,8 @@ public class EmailServiceImpl {
 				if (i != 0) {
 					assignedUsers.append(",");
 				}
-				assignedUsers.append(userDTO.getPseudoname());
+				//assignedUsers.append(userDTO.getPseudoname());
+				assignedUsers.append(userDTO.getPseudoname());  //- chnaged for full name for tms users
 			}
 
 			emails[i] = userDTO.getEmail();

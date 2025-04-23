@@ -20,6 +20,7 @@ public class TmsAssignedUsers {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long assignid;
 	private Long userid;
+	private Long tmsUserId;
 	private boolean completed ;
 	private String userstatus ="To Do";
 	

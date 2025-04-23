@@ -71,7 +71,36 @@ public class ProjectServiceImpl implements ProjectService {
 		
 		return project;
 	}
+//---------------tms users project ---------------------------
+	@Override
+	public TmsProject saveTmsproject(TmsProject project) {
+		logger.info("!!! inside class: ProjectServiceImpl , !! method: saveTmsproject");
 
+		Long pmaxnumber = projectrepository.pmaxNumber();
+		if (pmaxnumber == null) {
+			pmaxnumber = 0L;
+		}
+		String valueWithPadding = String.format("%0" + DIGIT_PADDING + "d", pmaxnumber + 1);
+		String value = "PROJ" + valueWithPadding;
+		project.setProjectid(value);
+		projectrepository.save(project);
+		project.setPmaxnum(pmaxnumber+1);
+		
+		Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
+		
+		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
+				.collect(Collectors.toList());
+		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(project.getAddedBy(), usersids);
+		try {
+			emailService.sendCreateProjectEmail(project, user, true);
+		} catch (UnsupportedEncodingException | MessagingException e) {
+			e.printStackTrace();
+		}
+		
+		return project;
+	}
+		
+	
 	@Override
 	public TmsProject findByprojectId(Long pid) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: findByprojectId");
@@ -180,3 +209,4 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 
 }
+

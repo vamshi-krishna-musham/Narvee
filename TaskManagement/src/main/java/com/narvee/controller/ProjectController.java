@@ -35,6 +35,16 @@ public class ProjectController {
 				new RestAPIResponse("success", " project created successfully", projectservice.saveproject(project)),
 				HttpStatus.CREATED);
 	}
+	
+	
+	@PostMapping("/save_tms")
+	public ResponseEntity<RestAPIResponse> TmscreateProject(@RequestBody TmsProject project) {     // save tms project 
+		logger.info("!!! inside class: ProjectController , !! method: createproject");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", " project created successfully", projectservice.saveTmsproject(project)),
+				HttpStatus.CREATED);
+	}
+
 
 	@GetMapping("/getbyProjectId/{pid}")
 	public ResponseEntity<RestAPIResponse> findByProjectId(@PathVariable Long pid) {

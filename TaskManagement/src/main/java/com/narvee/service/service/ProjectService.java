@@ -9,6 +9,8 @@ import com.narvee.entity.TmsProject;
 public interface ProjectService {
 	
 	public TmsProject saveproject(TmsProject project);
+	
+	public TmsProject saveTmsproject(TmsProject project); // tms users project 
 
 	public TmsProject findByprojectId(Long projectid);
 	
