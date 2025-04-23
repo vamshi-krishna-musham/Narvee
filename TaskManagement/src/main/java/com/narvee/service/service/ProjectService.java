@@ -10,16 +10,21 @@ public interface ProjectService {
 	
 	public TmsProject saveproject(TmsProject project);
 	
-	public TmsProject saveTmsproject(TmsProject project); // tms users project 
-
 	public TmsProject findByprojectId(Long projectid);
 	
-	public void deleteProject(Long projectid);
+	public void deleteProject(Long projectid);  // for both Ats and tms users 
 
 	public boolean updateproject( TmsProject project);
 	
 	public Page<ProjectDTO> findAllProjects(RequestDTO requestresponsedto);
 	
 	
-
+	 //------------------------ All tms code replicate for tms users  Added by keerthi-------------------
+	
+	public TmsProject saveTmsproject(TmsProject project); 
+	
+	public TmsProject findByprojectIdTms(Long projectid); 
+	
+	public boolean updateprojectTms(TmsProject updateproject) ;
+	
 }

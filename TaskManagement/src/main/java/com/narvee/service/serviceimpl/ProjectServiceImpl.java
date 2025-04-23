@@ -71,36 +71,7 @@ public class ProjectServiceImpl implements ProjectService {
 		
 		return project;
 	}
-//---------------tms users project ---------------------------
-	@Override
-	public TmsProject saveTmsproject(TmsProject project) {
-		logger.info("!!! inside class: ProjectServiceImpl , !! method: saveTmsproject");
 
-		Long pmaxnumber = projectrepository.pmaxNumber();
-		if (pmaxnumber == null) {
-			pmaxnumber = 0L;
-		}
-		String valueWithPadding = String.format("%0" + DIGIT_PADDING + "d", pmaxnumber + 1);
-		String value = "PROJ" + valueWithPadding;
-		project.setProjectid(value);
-		projectrepository.save(project);
-		project.setPmaxnum(pmaxnumber+1);
-		
-		Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
-		
-		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
-				.collect(Collectors.toList());
-		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(project.getAddedBy(), usersids);
-		try {
-			emailService.sendCreateProjectEmail(project, user, true);
-		} catch (UnsupportedEncodingException | MessagingException e) {
-			e.printStackTrace();
-		}
-		
-		return project;
-	}
-		
-	
 	@Override
 	public TmsProject findByprojectId(Long pid) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: findByprojectId");
@@ -113,9 +84,10 @@ public class ProjectServiceImpl implements ProjectService {
 		return project;
 
 	}
+	
 
 	@Override
-	public void deleteProject(Long pid) {
+	public void deleteProject(Long pid) {     // it will work for bith Ats And tms users --------
 		logger.info(
 				"!!! inside class: ProjectSe                                                                                                                                                                                                    rviceImpl , !! method: deleteProject");
 		projectrepository.deleteById(pid);
@@ -157,7 +129,9 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public Page<ProjectDTO> findAllProjects(RequestDTO requestresponsedto) {
-		logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects");
+		logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects" );
+		
+ System.err.println(requestresponsedto );
 		String sortorder = requestresponsedto.getSortOrder();
 		String sortfield = requestresponsedto.getSortField();
 		String keyword = requestresponsedto.getKeyword();
@@ -184,7 +158,7 @@ public class ProjectServiceImpl implements ProjectService {
 		Sort sort = Sort.by(sortDirection, sortfield);
 		Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
 
-		if (access.equalsIgnoreCase("Super Administrator")) {
+		if (access.equalsIgnoreCase("SUPER_ADMIN")) {  // changed for tms users Super Administrator to SUPER_ADMIN
 			if (keyword.equalsIgnoreCase("empty")) {
 				logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects, Empty");
 				return projectrepository.findAllProjects(pageable, keyword);
@@ -198,15 +172,94 @@ public class ProjectServiceImpl implements ProjectService {
 
 			if (keyword.equalsIgnoreCase("empty")) {
 				logger.info("!!! inside class: ProjectServiceImpl , !! method: getAllProjectsByUser, Empty");
-				return projectrepository.getAllProjectsByUser(userid, pageable);
+				return projectrepository.getAllProjectsByTmsUser(userid, pageable); // changed query Ats users to tms users
 			} else {
 				logger.info("!!! inside class: ProjectServiceImpl , !! method: getAllProjectsByUserFilter, Filter");
-				return projectrepository.getAllProjectsByUserFilter(pageable, keyword, userid);
+				return projectrepository.getAllProjectsByTmsUserFilter(pageable, keyword, userid); // chenged Query  Ats users to tms users
 
 			}
 		}
 
 	}
+	
+	//--------------------------------------- all methods replicated foor tms users  Added By keerthi ----------------------
+	@Override
+	public TmsProject saveTmsproject(TmsProject project) {
+		logger.info("!!! inside class: ProjectServiceImpl , !! method: saveTmsproject");
 
+		Long pmaxnumber = projectrepository.pmaxNumber();
+		if (pmaxnumber == null) {
+			pmaxnumber = 0L;
+		}
+		String valueWithPadding = String.format("%0" + DIGIT_PADDING + "d", pmaxnumber + 1);
+		String value = "PROJ" + valueWithPadding;
+		project.setProjectid(value);
+		projectrepository.save(project);
+		project.setPmaxnum(pmaxnumber+1);
+		
+		Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
+		
+		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
+				.collect(Collectors.toList());
+		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(project.getAddedBy(), usersids);
+		try {
+			emailService.sendCreateProjectEmail(project, user, true);
+		} catch (UnsupportedEncodingException | MessagingException e) {
+			e.printStackTrace();
+		}
+		
+		return project;
+	}
+	
+	
+		@Override
+		public TmsProject findByprojectIdTms(Long pid) {
+			logger.info("!!! inside class: ProjectServiceImpl , !! method: findByprojectId For Tms ");
+			TmsProject project = projectrepository.findById(pid).get();
+			for (TmsAssignedUsers aUser : project.getAssignedto()) {
+				GetUsersDTO user = repository.getTmsUser(aUser.getTmsUserId());
+				aUser.setFullname(user.getFullname());
+				//aUser.setPseudoname(user.getPseudoname());
+			}
+			return project;
+
+		}
+		
+		@Override
+		public boolean updateprojectTms(TmsProject updateproject) {
+			logger.info("!!! inside class: ProjectServiceImpl , !! method: updateprojectTms ,!! for tms users");
+			Optional<TmsProject> optionalProject = projectrepository.findById(updateproject.getPId());
+			if (optionalProject.isPresent()) {
+				TmsProject project = optionalProject.get();
+				project.setProjectName(updateproject.getProjectName());
+				project.setAddedBy(updateproject.getAddedBy());
+				project.setUpdatedBy(updateproject.getUpdatedBy());
+				project.setDescription(updateproject.getDescription());
+				project.setStatus(updateproject.getStatus());
+				project.setTasks(updateproject.getTasks());
+				project.setAssignedto(updateproject.getAssignedto());
+				project.setDepartment(updateproject.getDepartment());
+				projectrepository.save(project);
+				
+				Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
+				List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
+						.collect(Collectors.toList());
+				
+				System.err.println(usersids);
+				List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(project.getUpdatedBy(), usersids);
+				
+				System.err.println(user +"users "  ); 
+				try {
+					emailService.sendCreateProjectEmail(project, user, false);
+				} catch (UnsupportedEncodingException | MessagingException e) {
+					e.printStackTrace();
+				}
+			
+				return true;
+			} else {
+				return false;
+			}
+
+		}
 }
 

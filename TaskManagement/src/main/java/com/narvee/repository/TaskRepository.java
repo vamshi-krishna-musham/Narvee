@@ -151,6 +151,9 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 
 	@Query(value = "select u.fullname , u.pseudoname ,u.email from users u where u.userid = :userid ", nativeQuery = true)
 	public GetUsersDTO getUser(Long userid);
+	
+	@Query(value = "select u.full_name As fullname ,u.email from tms_users u where u.user_id = :userid ", nativeQuery = true)
+	public GetUsersDTO getTmsUser(Long userid);  // added by keerthi for tms users 
 
 	public TmsTask findByTicketid(String ticketid);
 
