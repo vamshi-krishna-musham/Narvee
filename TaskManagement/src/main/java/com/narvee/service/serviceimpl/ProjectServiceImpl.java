@@ -172,10 +172,10 @@ public class ProjectServiceImpl implements ProjectService {
 
 			if (keyword.equalsIgnoreCase("empty")) {
 				logger.info("!!! inside class: ProjectServiceImpl , !! method: getAllProjectsByUser, Empty");
-				return projectrepository.getAllProjectsByTmsUser(userid, pageable); // changed query Ats users to tms users
+				return projectrepository.getAllProjectsByUser(userid, pageable); 
 			} else {
 				logger.info("!!! inside class: ProjectServiceImpl , !! method: getAllProjectsByUserFilter, Filter");
-				return projectrepository.getAllProjectsByTmsUserFilter(pageable, keyword, userid); // chenged Query  Ats users to tms users
+				return projectrepository.getAllProjectsByUserFilter(pageable, keyword, userid);
 
 			}
 		}
@@ -261,5 +261,61 @@ public class ProjectServiceImpl implements ProjectService {
 			}
 
 		}
+		
+		@Override
+		public Page<ProjectDTO> findTmsAllProjects(RequestDTO requestresponsedto) {
+			logger.info("!!! inside class: ProjectServiceImpl , !! method: findTmsAllProjects" );
+			
+	 System.err.println(requestresponsedto );
+			String sortorder = requestresponsedto.getSortOrder();
+			String sortfield = requestresponsedto.getSortField();
+			String keyword = requestresponsedto.getKeyword();
+			Integer pageNo = requestresponsedto.getPageNumber();
+			Integer pageSize = requestresponsedto.getPageSize();
+			Long userid = requestresponsedto.getUserid();
+			String access=requestresponsedto.getAccess();
+
+			if (sortfield.equalsIgnoreCase("projectid"))
+				sortfield = "projectId";
+			else if (sortfield.equalsIgnoreCase("projectname"))
+				sortfield = "projectName";
+			else if (sortfield.equalsIgnoreCase("status"))
+				sortfield = "status";
+			else if (sortfield.equalsIgnoreCase("addedBy"))
+				sortfield = "addedBy";
+			else
+				sortfield = "updateddate";
+
+			Sort.Direction sortDirection = Sort.Direction.ASC;
+			if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
+				sortDirection = Sort.Direction.DESC;
+			}
+			Sort sort = Sort.by(sortDirection, sortfield);
+			Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
+
+			if (access.equalsIgnoreCase("SUPER_ADMIN") ) {  
+				if (keyword.equalsIgnoreCase("empty")) {
+					logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllTmsProjects, Empty");
+					return projectrepository.findAllTmsProjects(pageable,userid);
+				} else {
+					logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllTmsProjectWithFiltering, Filter");
+					return projectrepository.findAllTmsProjectWithFiltering(pageable, keyword,userid);
+
+				}
+
+			} else {
+
+				if (keyword.equalsIgnoreCase("empty")) {
+					logger.info("!!! inside class: ProjectServiceImpl , !! method: getAllProjectsByTmsUser, Empty");
+					return projectrepository.getAllProjectsByTmsUser(userid, pageable); // changed query Ats users to tms users
+				} else {
+					logger.info("!!! inside class: ProjectServiceImpl , !! method: getAllProjectsByTmsUserFilter, Filter");
+					return projectrepository.getAllProjectsByTmsUserFilter(pageable, keyword, userid); // chenged Query  Ats users to tms users
+
+				}
+			}
+
+		}
+		
 }
 

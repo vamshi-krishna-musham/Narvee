@@ -375,23 +375,61 @@ public class EmailServiceImpl {
 		String body;
 
 		if (projectUpdate) {
+			subject = "New Project Assignment: " + project.getProjectid();
+			body = "<!DOCTYPE html>"
+			    + "<html><head><meta charset='UTF-8'><title>New Project Assigned</title></head>"
+			    + "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;'>"
+			    + "<table width='100%' cellpadding='0' cellspacing='0' style='padding: 30px 0;'>"
+			    + "<tr><td align='center'>"
+			    + "<table width='600' cellpadding='0' cellspacing='0' style='background-color: #ffffff; border-radius: 6px;'>"
+			    + "<tr><td style='background-color: #0468b4; padding: 20px; color: #ffffff; text-align: center; border-top-left-radius: 6px; border-top-right-radius: 6px;'>"
+			    + "<h2 style='margin: 0;'>Narvee Technologies</h2>"
+			    + "</td></tr>"
+			    + "<tr><td style='padding: 30px; color: #333;'>"
+			    + "<p style='font-size: 16px;'>Hi,</p>"
+			    + "<p style='font-size: 14px;'>A new project has been created and assigned to you. Please find the project details below:</p>"
+			    + "<table cellpadding='6' cellspacing='0' style='font-size: 14px;'>"
+			    + "<tr><td style='font-weight: bold;'>Project ID:</td><td>" + project.getProjectid() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Project Name:</td><td>" + project.getProjectName() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Description:</td><td>" + project.getDescription() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Assigned Users:</td><td>" +assignedUsers+ "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Created By:</td><td>" + createdby + "</td></tr>"
+			    + "</table>"
+			    + "<p style='font-size: 14px; margin-top: 20px;'>Please log in to the portal to begin your work.</p>"
+			    + "</td></tr>"
+			    + "<tr><td style='background-color: #f0f0f0; padding: 20px; text-align: center; color: #555; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;'>"
+			    + "<p style='margin: 0; font-size: 13px;'>Best Regards,<br/>Narvee Technologies</p>"
+			    + "</td></tr>"
+     		    + "</table></td></tr></table></body></html>";
 
-			subject = "New Project Assignment:" + project.getProjectid();
-			body = "<html><body>" + "<div>Hi " + assignedUsers + ",</div>" + "<br>"
-					+ "<div>A new project has been created and assigned to: <strong>" + assignedUsers
-					+ "</strong></div>" + "<div><strong>Project Id:</strong> " + project.getProjectid() + "</div>"
-					+ "<div><strong>Project Name:</strong> " + project.getProjectName() + "</div>"
-					+ "<div><strong>Description:</strong> " + project.getDescription() + "</div>"
-					+ "<div><strong>Created By:</strong> " + createdby + "</div>" + "<br>" + "<div>Best Regards,</div>"
-					+ "<div>Narvee Technologies.</div>" + "</body></html>";
-		} else {
+		} else {	
 			subject = "Project Updated: " + project.getProjectid();
-			body = "<html><body>" + "<div>Hi " + assignedUsers + ",</div>" + "<br>"
-					+ "<div>The project has been updated:</div>" + "<div><strong>Project Id:</strong> "
-					+ project.getProjectid() + "</div>" + "<div><strong>Project Name:</strong> "
-					+ project.getProjectName() + "</div>" + "<div><strong>Description:</strong> "
-					+ project.getDescription() + "</div>" + "<div><strong>Updated By: </strong> " + createdby + "</div>"
-					+ "<br>" + "<div>Best Regards,</div>" + "<div>Narvee Technologies.</div>" + "</body></html>";
+			body = "<!DOCTYPE html>"
+			    + "<html><head><meta charset='UTF-8'><title>Project Updated</title></head>"
+			    + "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;'>"
+			    + "<table width='100%' cellpadding='0' cellspacing='0' style='padding: 30px 0;'>"
+			    + "<tr><td align='center'>"
+			    + "<table width='600' cellpadding='0' cellspacing='0' style='background-color: #ffffff; border-radius: 6px;'>"
+			    + "<tr><td style='background-color: #0468b4; padding: 20px; color: #ffffff; text-align: center; border-top-left-radius: 6px; border-top-right-radius: 6px;'>"
+			    + "<h2 style='margin: 0;'>Narvee Technologies</h2>"
+			    + "</td></tr>"
+			    + "<tr><td style='padding: 30px; color: #333;'>"
+			    + "<p style='font-size: 16px;'>Hi,</p>"
+			    + "<p style='font-size: 15px;'>The project has been updated. Please find the updated details below:</p>"
+			    + "<table cellpadding='6' cellspacing='0' style='font-size: 14px;'>"
+			    + "<tr><td style='font-weight: bold;'>Project ID:</td><td>" + project.getProjectid() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Project Name:</td><td>" + project.getProjectName() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Description:</td><td>" + project.getDescription() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Assigned Users:</td><td>" +assignedUsers+ "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Updated By:</td><td>" + createdby + "</td></tr>"
+			    + "</table>"
+			    + "<p style='font-size: 14px; margin-top: 20px;'>Please check the portal for updated information.</p>"
+			    + "</td></tr>"
+			    + "<tr><td style='background-color: #f0f0f0; padding: 20px; text-align: center; color: #555; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;'>"
+			    + "<p style='margin: 0; font-size: 13px;'>Best Regards,<br/>Narvee Technologies</p>"
+			    + "</td></tr>"
+			    + "</table></td></tr></table></body></html>";
+
 
 		}
 		helper.setSubject(subject);
