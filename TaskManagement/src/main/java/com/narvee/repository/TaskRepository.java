@@ -110,6 +110,11 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	@Query(value = "select null as createdby,email, pseudoname from users where userid in (:auserid) union "
 			+ "select pseudoname as createdby,email, null as pseudoname from users where userid = :userid ", nativeQuery = true)
 	public List<GetUsersDTO> getTaskAssinedUsersAndCreatedBy(long userid, List<Long> auserid);
+	
+
+	@Query(value = "select null as createdby,email, full_name AS fullname  from tms_users where user_id in (:auserid) union "
+			+ "select full_name as createdby,email, null as fullname from tms_users where user_id = :userid ", nativeQuery = true)
+	public List<GetUsersDTO> getTaskAssinedTmsUsersAndCreatedBy(long userid, List<Long> auserid);   // tms Users 
 
 	@Query(value = "SELECT \r\n"
 			+ "    t.taskid, \r\n"
@@ -146,6 +151,9 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 
 	@Query(value = "select u.fullname , u.pseudoname ,u.email from users u where u.userid = :userid ", nativeQuery = true)
 	public GetUsersDTO getUser(Long userid);
+	
+	@Query(value = "select u.full_name As fullname ,u.email from tms_users u where u.user_id = :userid ", nativeQuery = true)
+	public GetUsersDTO getTmsUser(Long userid);  // added by keerthi for tms users 
 
 	public TmsTask findByTicketid(String ticketid);
 

@@ -36,13 +36,15 @@ public class ProjectController {
 				HttpStatus.CREATED);
 	}
 
+	
 	@GetMapping("/getbyProjectId/{pid}")
 	public ResponseEntity<RestAPIResponse> findByProjectId(@PathVariable Long pid) {
 		logger.info("!!! inside class: ProjectController , !! method: findByprojectid");
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched  Project successfully",
 				projectservice.findByprojectId(pid)), HttpStatus.OK);
 	}
-
+	
+	
 	@DeleteMapping("/delete/{pid}")
 	public ResponseEntity<RestAPIResponse> deleteProjectById(@PathVariable Long pid) {
 		logger.info("!!! inside class: ProjectController , !! method: deleteProjectById");
@@ -73,5 +75,37 @@ public class ProjectController {
 	
 	
 	
+	
+//	--- -------------------    all methods replicated for tms projects    --------------------------
+	
+	@PostMapping("/save_tms")
+	public ResponseEntity<RestAPIResponse> TmscreateProject(@RequestBody TmsProject project) {     // save tms project 
+		logger.info("!!! inside class: ProjectController , !! method: TmscreateProject , !! for tms project ");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", " project created successfully", projectservice.saveTmsproject(project)),
+				HttpStatus.CREATED);
+	}
+
+		@GetMapping("/getbyProjectIdTms/{pid}")
+		public ResponseEntity<RestAPIResponse> findByProjectIdTms(@PathVariable Long pid) {
+			logger.info("!!! inside class: ProjectController , !! method: findByProjectIdTms, !! for tms project ");
+			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched  Project successfully",
+					projectservice.findByprojectIdTms(pid)), HttpStatus.OK);
+	}
+		
+		@PutMapping("/update-tms")
+		public ResponseEntity<RestAPIResponse> updateProjectTms(@RequestBody TmsProject project) {
+			logger.info("!!! inside class: ProjectController , !! method: updateProjectTms , !! For Tms Users ");
+			boolean flag = projectservice.updateprojectTms(project);
+			if (flag == true) {
+				return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Updated successfully"),
+						HttpStatus.OK);
+			} else {
+				return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("fail", "Project not found"), HttpStatus.OK);
+			}
+
+		}
+		
+		
 
 }
