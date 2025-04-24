@@ -16,12 +16,25 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
 	@Query(value = "select max(pmaxnum) as max from tms_project", nativeQuery = true)
 	public Long pmaxNumber();
 
-	@Query(value = "SELECT p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid , p.createddate , p.department FROM tms_tms_project WHERE (p.projectname LIKE CONCAT('%', :keyword, '%') OR p.projectdescription LIKE CONCAT('%', :keyword, '%') or p.addedby LIKE CONCAT('%', :keyword, '%'))", nativeQuery = true)
+	@Query(value = "SELECT p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid , p.createddate , p.department "
+			+ "FROM tms_tms_project WHERE (p.projectname LIKE CONCAT('%', :keyword, '%') OR p.projectdescription LIKE CONCAT('%', :keyword, '%') or p.addedby LIKE CONCAT('%', :keyword, '%'))", nativeQuery = true)
 	public Page<ProjectDTO> findAllProjectWithFiltering(Pageable pageable, @Param("keyword") String keyword);
+	
+	
+	@Query(value = "SELECT p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid , p.createddate , p.department "
+			+ "FROM tms_tms_project WHERE p.addedby = :addedby  AND  (p.projectname LIKE CONCAT('%', :keyword, '%') OR p.projectdescription LIKE CONCAT('%', :keyword, '%') or "
+			+ "p.addedby LIKE CONCAT('%', :keyword, '%'))", nativeQuery = true)
+	public Page<ProjectDTO> findAllTmsProjectWithFiltering(Pageable pageable, @Param("keyword") String keyword,  @Param("addedby") Long addedby);
+
 
 	@Query(value = "SELECT  p.pid , p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid  , p.createddate , p.department FROM tms_project p ", nativeQuery = true)
 	public Page<ProjectDTO> findAllProjects(Pageable pageable, @Param("keyword") String keyword);
+    
+	@Query(value = "SELECT  p.pid , p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid  , p.createddate , p.department FROM tms_project p  where p.addedby = :addedby", nativeQuery = true)
+	public Page<ProjectDTO> findAllTmsProjects(Pageable pageable, Long addedby);
 
+	
+	
 	@Query(value = "SELECT  p.pid , p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid , p.createddate , p.department  FROM tms_project p where p.pid= :pid ", nativeQuery = true)
 	public ProjectDTO getByProjectId(Long pid);
 	

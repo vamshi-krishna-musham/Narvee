@@ -27,4 +27,6 @@ public interface ProjectService {
 	
 	public boolean updateprojectTms(TmsProject updateproject) ;
 	
+	public Page<ProjectDTO> findTmsAllProjects(RequestDTO requestresponsedto);
+	
 }
