@@ -52,6 +52,8 @@ public class TmsTask extends AuditModel {
 	private Long addedby;
 
 	private Long updatedby;
+	
+	private String prioriry;
 
 	private String status;
 

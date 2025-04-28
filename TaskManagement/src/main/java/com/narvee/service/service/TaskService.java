@@ -49,4 +49,13 @@ public interface TaskService {
 	
 	public List<TasksResponseDTO> ticketTracker(Long taskid);
 	
+	//-------------------------------replicated methods for TMS   --------------------------
+	
+	public TmsTask createTmsTask(TmsTask task, String token);
+	
+	public TmsTask Tmsupdate(TmsTask task);
+	
+	public List<GetUsersDTO> getProjectByTmsUsers(String projectID);
+	
+	public TaskResponse findTmsTaskByProjectid(RequestDTO requestresponsedto);
 }

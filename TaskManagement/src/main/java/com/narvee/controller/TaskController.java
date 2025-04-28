@@ -203,5 +203,22 @@ public class TaskController {
 				HttpStatus.OK);
 	}
 	
+	//---------------------replicated methods for Tms ----------------
+	
+	@PostMapping("/createTmsTask")
+	public ResponseEntity<?> createTmsTask(@RequestBody TmsTask task, @RequestHeader("AUTHORIZATION") String token) {
+		logger.info("!!! inside class: TaskController , !! method: createTmsTask");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", " task created successfully", service.createTmsTask(task, token)),
+				HttpStatus.CREATED);
+	}
+	
+	@PostMapping("/updateTmsTask")
+	public ResponseEntity<?> updateTmsTask(@RequestBody TmsTask task) {
+		logger.info("!!! inside class: TaskController , !! method: updateTmsTask");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", " task Updated successfully", service.Tmsupdate(task)), HttpStatus.CREATED);
+	}
+	
 	
 }
