@@ -474,5 +474,124 @@ public class EmailServiceImpl {
 		mailSender.send(message);
 		logger.info("!!! inside class: TaskEmailServiceIml, !! method: End targetExceededEmail end");
 	}
+	
+	
+	//--------------------------send emails when update the tms task ----------------------------
+	
+	
+	public void TaskUpdateEmail(TmsTask task)
+	        throws MessagingException, UnsupportedEncodingException {
+	    logger.info("!!! inside class: TaskEmailServiceIml, !! method: TaskUpdateEmail");
+	    List<GetUsersDTO> userdetails = taskRepository.getAssignUsers(task.getTaskid());
+      String updatedBy = taskRepository.getUpdatedByName(task.getUpdatedby());
+	   // StringBuilder updatedBy = new StringBuilder();
+	    StringBuilder users = new StringBuilder();
+	    int i = 0;
+	    String emails[] = new String[userdetails.size()];
+
+//	    for (GetUsersDTO userDTO : userdetails) {
+//	        if (userDTO.getUpdatedby() != null) {
+//	            updatedBy.append(userDTO.getUpdatedby());
+//	        } else {
+//	            if (i != 0) users.append(", ");
+//	            users.append(userDTO.getFullname());
+//	        }
+//	        emails[i] = userDTO.getEmail();
+//	        i++;
+//	    }
+	    
+	    for (GetUsersDTO userDTO : userdetails) {
+            if (i != 0) users.append(", ");
+            users.append(userDTO.getFullname());
+        
+        emails[i] = userDTO.getEmail();
+        i++;
+    }
+
+	    Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
+	    String[] uniqueEmails = emailSet.toArray(new String[0]);
+
+	    DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+
+	    MimeMessage message = mailSender.createMimeMessage();
+	    MimeMessageHelper helper = new MimeMessageHelper(message);
+
+	    helper.setTo(uniqueEmails);
+	    helper.setFrom(narveemail, shortMessage);
+	    helper.setSubject("Updated Task Notification - " + task.getTaskname());
+
+//	    StringBuilder stringBuilder = new StringBuilder();
+//	    stringBuilder.append("<!DOCTYPE html>")
+//	        .append("<html><head><style>")
+//	        .append("table {font-family: Arial, sans-serif;border-collapse: collapse;width: 100%;}")
+//	        .append("td, th {border: 1px solid #ddd;padding: 8px;}")
+//	        .append("th {background-color: #004aad;color: white;}")
+//	        .append("tr:nth-child(even) {background-color: #f2f2f2;}")
+//	        .append(".desc {padding-top: 20px;font-weight: bold;color: #004aad;}")
+//	        .append("</style></head><body>");
+//
+//	    stringBuilder.append("<h2 style='color:#004aad;'>Task Updated Successfully</h2>");
+//	    stringBuilder.append("<p>Hello ").append(users).append(",</p>");
+//	    stringBuilder.append("<p>The following task has been <b>updated</b> recently. Please review the new details:</p>");
+//
+//	    stringBuilder.append("<table>")
+//	        .append("<tr><th>Ticket ID</th><th>Task Name</th><th>Updated By</th><th>Updated Date</th><th>Assigned Users</th><th>Target Date</th><th>Status</th></tr>")
+//	        .append("<tr>")
+//	        .append("<td>").append(task.getTicketid()).append("</td>")
+//	        .append("<td>").append(task.getTaskname()).append("</td>")
+//	        .append("<td>").append(updatedBy).append("</td>")
+//	        .append("<td>").append(task.getUpdateddate().format(myFormatObj)).append("</td>")
+//	        .append("<td>").append(users).append("</td>")
+//	        .append("<td>").append(task.getTargetdate()).append("</td>")
+//	        .append("<td>").append(task.getStatus()).append("</td>")
+//	        .append("</tr>")
+//	        .append("</table>");
+//
+//	    stringBuilder.append("<div class='desc'>Description:</div>")
+//	        .append("<pre style='background-color:#f8f8f8;padding:15px;border-radius:5px;'>")
+//	        .append(task.getDescription())
+//	        .append("</pre>");
+//
+//	    stringBuilder.append("<p>Best regards,<br><b>Task Management System</b></p>")
+//	        .append("</body></html>");
+	    StringBuilder sb = new StringBuilder();
+	    sb.append("<html><body>");
+	    sb.append("<div style='font-family:Segoe UI, Tahoma, sans-serif; background-color:#f0f2f5; padding:20px;'>");
+
+	    sb.append("<div style='max-width:600px; margin:auto; background-color:#ffffff; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1); padding:30px;'>");
+
+
+	    sb.append("<p style='font-size:16px; color:#333;'>Hi <strong>").append(users).append("</strong>,</p>");
+	    sb.append("<p style='font-size:15px; color:#555;'>The task assigned to you has been <strong style='color:#007bff;'>updated</strong>. Please find the updated details below:</p>");
+
+	    sb.append("<div style='border:1px solid #e0e0e0; border-radius:8px; padding:20px; background-color:#fafafa;'>");
+
+	    sb.append("<p style='margin:3px 0;'><strong> Ticket ID:</strong> ").append(task.getTicketid()).append("</p>");
+	    sb.append("<p style='margin:5px 0;'><strong> Task Name:</strong> ").append(task.getTaskname()).append("</p>");
+	    sb.append("<p style='margin:5px 0;'><strong> Description:</strong> ").append(task.getDescription()).append("</p>");
+	    sb.append("<p style='margin:5px 0;'><strong> Target Date:</strong> ").append(task.getTargetdate()).append("</p>");
+	    sb.append("<p style='margin:5px 0;'><strong>Status:</strong> ").append(task.getStatus()).append("</p>");
+	    sb.append("<p style='margin:5px 0;'><strong> Updated By:</strong> ").append(updatedBy).append("</p>");
+	    sb.append("<p style='margin:5px 0;'><strong> Assigned Users:</strong> ").append(users).append("</p>");
+	    sb.append("<p style='margin:5px 0;'><strong>Updated Date:</strong> ").append(task.getUpdateddate().format(myFormatObj)).append("</p>");
+
+	    sb.append("</div>");
+
+	    sb.append("<p style='margin-top:20px; font-size:15px;'>Please login to the <strong>Task Management System</strong> to view or take action.</p>");
+
+	    sb.append("<p style='color:#777; font-size:13px;'>This is an automated email. Do not reply.</p>");
+	    sb.append("<p style='font-size:14px; color:#444;'>Best Regards,<br><strong>Task Management System Team</strong></p>");
+
+	    sb.append("</div></div>");
+	    sb.append("</body></html>");
+
+
+
+	    helper.setText(sb.toString(), true);
+	    mailSender.send(message);
+
+	    logger.info("Email sent for updated task: " + task.getTaskname());
+	}
+
 
 }
