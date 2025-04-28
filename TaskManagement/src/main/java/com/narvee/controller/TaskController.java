@@ -203,7 +203,7 @@ public class TaskController {
 				HttpStatus.OK);
 	}
 	
-	//---------------------replicated methods for Tms ----------------
+	//---------------------replicated methods for Tms  added by keerthi ----------------
 	
 	@PostMapping("/createTmsTask")
 	public ResponseEntity<?> createTmsTask(@RequestBody TmsTask task, @RequestHeader("AUTHORIZATION") String token) {
@@ -220,5 +220,49 @@ public class TaskController {
 				new RestAPIResponse("success", " task Updated successfully", service.Tmsupdate(task)), HttpStatus.CREATED);
 	}
 	
+	@RequestMapping(value = "/tasksByProjectId-tms", method = RequestMethod.POST, produces = "application/json")
+	public ResponseEntity<RestAPIResponse> getTmsTaskbyProjectId(@RequestBody RequestDTO requestResponseDTO) {
+		logger.info("!!! inside class: TaskController , !! method: getTaskbyProjectId");
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "fetched taskByProjectid",
+				service.getTaskByProjectid(requestResponseDTO)), HttpStatus.OK);
+
+	}
+	
+	@RequestMapping(value = "/findByProjectId-tms", method = RequestMethod.POST, produces = "application/json")
+	public ResponseEntity<RestAPIResponse> findTmsTaskByProjectId(@RequestBody RequestDTO requestResponseDTO) {
+		logger.info("!!! inside class: TaskController , !! method: findTaskByProjectId");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", "fetched tasks", service.findTmsTaskByProjectid(requestResponseDTO)),
+				HttpStatus.OK);
+	}
+	
+	
+	@PostMapping("/updateTask-tms")
+	public ResponseEntity<RestAPIResponse> updateTmsTask(@RequestBody UpdateTask updateTask) {
+		logger.info("!!! inside class: TaskController , !! method: updateTask");
+		Boolean flag = service.updateTmsTask(updateTask);
+		if (flag == true)
+			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Updated successfully"),
+					HttpStatus.OK);
+		else
+			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("Task fail", "Task Not Found"),
+					HttpStatus.OK);
+	}
+	
+	
+	@DeleteMapping("/delete-tms/{taskid}")
+	public ResponseEntity<RestAPIResponse> deletetmsTaskById(@PathVariable Long taskid) {
+		logger.info("!!! inside class: TaskController , !! method: deletetmsTaskById");
+		try {
+			service.deleteTask(taskid);
+			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "deleted successfully"),
+					HttpStatus.OK);
+
+		} catch (Exception e) {
+			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("failed", "Cannot delete this Task because it has associated Sub-Task."),
+					HttpStatus.OK);
+		}
+
+	}
 	
 }

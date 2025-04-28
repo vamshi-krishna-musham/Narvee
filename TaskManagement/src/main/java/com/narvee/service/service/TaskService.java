@@ -58,4 +58,10 @@ public interface TaskService {
 	public List<GetUsersDTO> getProjectByTmsUsers(String projectID);
 	
 	public TaskResponse findTmsTaskByProjectid(RequestDTO requestresponsedto);
+	
+	public Page<TaskTrackerDTO> getTmsTaskByProjectid(RequestDTO requestresponsedto);
+	
+	public boolean updateTmsTask(UpdateTask updateTask);
+	
+	public void deleteTmsTask(Long id);
 }
