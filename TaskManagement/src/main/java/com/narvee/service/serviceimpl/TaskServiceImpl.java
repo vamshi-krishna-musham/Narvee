@@ -351,7 +351,11 @@ public class TaskServiceImpl implements TaskService {
   
 	
 	
-	//  ---------------  all methods replicated for the  task under thr project  for tms  -----------------------------
+	
+	
+	
+	
+	//  ---------------  all methods replicated for the  task under thr project  for tms  -----------------------------------------------------------------------------------------------------------------------
 	
 	
 
@@ -394,6 +398,46 @@ public class TaskServiceImpl implements TaskService {
 		}
 		return task;
 	}
+	
+	
+	@Override
+	public boolean updateTmsTask(UpdateTask updateTask) {
+		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTask");
+		TmsTask task = taskRepo.findById(updateTask.getTaskid()).get();
+		List<TmsTicketTracker> listTicketTracker = task.getTrack();
+		TmsTicketTracker ticketTracker = new TmsTicketTracker();
+
+		if (task.getStartDate() == null) {
+			task.setStartDate(LocalDate.now());
+		}
+		Set<TmsAssignedUsers> asigned = task.getAssignedto();
+		for (TmsAssignedUsers assignedUsers : asigned) {
+			if (updateTask.getUpdatedby() == assignedUsers.getTmsUserId()) {
+				assignedUsers.setUserstatus(updateTask.getStatus());
+			}
+		}
+		task.setAssignedto(asigned);
+
+		if (task != null) {
+			task.setStatus(updateTask.getStatus());
+			ticketTracker.setStatus(updateTask.getStatus());
+			ticketTracker.setComments(updateTask.getComments());
+			ticketTracker.setUpdatedby(updateTask.getUpdatedby());
+			listTicketTracker.add(ticketTracker);
+			task.setTrack(listTicketTracker);
+			taskRepo.save(task);
+			try {
+				emailService.sendCommentEmail(updateTask);
+			} catch (MessagingException | UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+
+			return true;
+		}
+		return false;
+	}
+	
+	
 	@Override
 	public TmsTask Tmsupdate(TmsTask task) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: Tmsupdate");
@@ -464,7 +508,7 @@ public class TaskServiceImpl implements TaskService {
 
 			for (TaskTrackerDTO order : res) {
 				TasksResponseDTO result = new TasksResponseDTO(order);
-				List<GetUsersDTO> assignUsers = taskRepo.getAssignUsers(order.getTaskid());
+				List<GetUsersDTO> assignUsers = taskRepo.getTmsAssignUsers(order.getTaskid());
 
 				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
 						.collect(Collectors.toList());
@@ -486,7 +530,7 @@ public class TaskServiceImpl implements TaskService {
 
 			for (TaskTrackerDTO order : res) {
 				TasksResponseDTO result = new TasksResponseDTO(order);
-				List<GetUsersDTO> assignUsers = taskRepo.getAssignUsers(order.getTaskid());
+				List<GetUsersDTO> assignUsers = taskRepo.getTmsAssignUsers(order.getTaskid());
 				result.setAssignUsers(assignUsers);
 				tasksList.add(result);
 			}
@@ -499,7 +543,47 @@ public class TaskServiceImpl implements TaskService {
 		}
 	}
 
+	@Override
+	public Page<TaskTrackerDTO> getTmsTaskByProjectid(RequestDTO requestresponsedto) {
+		logger.info("!!! inside class: TaskServiceImpl , !! method: getTmsTaskByProjectid");
+		String sortfield = requestresponsedto.getSortField();
+		String sortorder = requestresponsedto.getSortOrder();
+		String keyword = requestresponsedto.getKeyword();
+		Integer pageNo = requestresponsedto.getPageNumber();
+		Integer pageSize = requestresponsedto.getPageSize();
+		String projectid = requestresponsedto.getProjectid();
+		String status = requestresponsedto.getStatus();
+		if (sortfield.equalsIgnoreCase("ticketid"))
+			sortfield = "ticketid";
+		else if (sortfield.equalsIgnoreCase("taskname"))
+			sortfield = "taskname";
+		else if (sortfield.equalsIgnoreCase("description"))
+			sortfield = "description";
+		else if (sortfield.equalsIgnoreCase("targetdate"))
+			sortfield = "targetdate";
+		else if (sortfield.equalsIgnoreCase("status"))
+			sortfield = "status";
+		Sort.Direction sortDirection = Sort.Direction.ASC;
+
+		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
+			sortDirection = Sort.Direction.DESC;
+		}
+		Sort sort = Sort.by(sortDirection, sortfield);
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
+		if (keyword.equalsIgnoreCase("empty")) {
+			return taskRepo.getTmsTaskByProjectid(pageable, projectid, status);
+		} else {
+			return taskRepo.getTmsTaskByProjectIdWithsearching(pageable, projectid, status, keyword);
+		}	
+}
+
 	
-	
+
+	@Override
+	public void deleteTmsTask(Long id) {
+		logger.info("!!! inside class: TaskServiceImpl , !! method: deleteTmsTask");
+		taskRepo.deleteById(id);
+
+	}
 	
 }

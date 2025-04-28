@@ -54,6 +54,8 @@ public class TmsTask extends AuditModel {
 	private Long updatedby;
 	
 	private String prioriry;
+	
+	private Long duration;
 
 	private String status;
 
@@ -87,6 +89,7 @@ public class TmsTask extends AuditModel {
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "task_id")
 	private List<TmsSubTask> subTasks = new ArrayList<>();
+	
 	
 	
 
