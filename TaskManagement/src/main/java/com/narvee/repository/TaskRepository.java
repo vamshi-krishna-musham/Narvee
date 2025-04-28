@@ -152,8 +152,6 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	@Query(value = "select u.fullname , u.pseudoname ,u.email from users u where u.userid = :userid ", nativeQuery = true)
 	public GetUsersDTO getUser(Long userid);
 	
-	@Query(value = "select u.full_name As fullname ,u.email from tms_users u where u.user_id = :userid ", nativeQuery = true)
-	public GetUsersDTO getTmsUser(Long userid);  // added by keerthi for tms users 
 
 	public TmsTask findByTicketid(String ticketid);
 
@@ -197,4 +195,15 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			+ "	join tms_assigned_users au on au.assignid =tu.assignedto\r\n" + "	join users u on au.userid=u.userid\r\n"
 			+ "	WHERE date(t.targetdate) < :currentDate AND t.status!='to do' AND t.status!='Completed'", nativeQuery = true)
 	public List<TaskTrackerDTO> getExceededTargetDateSubTasks(LocalDate currentDate);
+	
+	//----------------------------all methods replicated for tms project -------------------
+	
+	@Query(value = "select u.full_name As fullname ,u.email from tms_users u where u.user_id = :userid ", nativeQuery = true)
+	public GetUsersDTO getTmsUser(Long userid);  // added by keerthi for tms users 
+	
+	@Query(value = "select u.full_name FROM tms_users u  JOIN tms_task t ON t.updatedby = u.user_id WHERE t.updatedby = :updatedby",nativeQuery = true)
+	public String getUpdatedByName(Long updatedby);
+	
+	@Query(value = "SELECT u.user_id As userId ,u.full_name As fullName FROM tms_users u , tms_project p , tms_assigned_users au WHERE  au.pid=p.pid AND  u.user_id=au.tms_user_id AND p.projectid =:projectId", nativeQuery = true)
+	public List<GetUsersDTO> getProjectByTmsUsers(String projectId);
 }

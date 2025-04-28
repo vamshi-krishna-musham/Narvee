@@ -346,7 +346,160 @@ public class TaskServiceImpl implements TaskService {
 	@Override
 	public List<GetUsersDTO> getProjectUsers(String projectID) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: ticketTracker");
-		return taskRepo.getProjectUsers(projectID);
+		return taskRepo.getProjectByTmsUsers(projectID);
+	}
+  
+	
+	
+	//  ---------------  all methods replicated for the  task under thr project  for tms  -----------------------------
+	
+	
+
+	@Override
+	public TmsTask createTmsTask(TmsTask task, String token) {
+		logger.info("!!! inside class: TaskServiceImpl , !! method: createTmsTask");
+		Long maxnumber = taskRepo.maxNumber();
+		if (maxnumber == null) {
+			maxnumber = 0L;
+		}
+		LocalDateTime now = LocalDateTime.now();
+		DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
+		DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyMMdd");
+		String formattedDateTime = now.format(inputFormatter);
+		LocalDateTime dateTime = LocalDateTime.parse(formattedDateTime, inputFormatter);
+		String formattedDateTime1 = dateTime.format(outputFormatter);
+		String valueWithPadding = String.format("%0" + DIGIT_PADDING + "d", maxnumber + 1);
+		String value = "T" + formattedDateTime1 + valueWithPadding;
+		task.setTicketid(value);
+		task.setMaxnum(maxnumber + 1);
+		task.setStatus("To Do");
+//		AssignedUsers asg = new AssignedUsers();
+//		asg.setUserid(task.getAddedby());
+//		List<AssignedUsers> assignedUsers = new ArrayList();
+//		assignedUsers.add(asg);
+//		List<AssignedUsers> addedByToAssignedUsers = task.getAssignedto();
+//		addedByToAssignedUsers.addAll(assignedUsers);
+		taskRepo.save(task);
+
+		Set<TmsAssignedUsers> addedByToAssignedUsers = task.getAssignedto();
+		// assignid=null, userid=28, completed=false
+		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
+				.collect(Collectors.toList());
+
+		List<GetUsersDTO> user = taskRepo.getTaskAssinedTmsUsersAndCreatedBy(task.getAddedby(), usersids);
+		try {
+			emailService.TaskAssigningEmail(task, user);
+		} catch (UnsupportedEncodingException | MessagingException e) {
+			e.printStackTrace();
+		}
+		return task;
+	}
+	@Override
+	public TmsTask Tmsupdate(TmsTask task) {
+		logger.info("!!! inside class: TaskServiceImpl , !! method: Tmsupdate");
+		TmsTask update = taskRepo.findById(task.getTaskid()).get();
+		update.setTargetdate(task.getTargetdate());
+		update.setTaskname(task.getTaskname());
+		update.setDescription(task.getDescription());
+		update.setAssignedto(task.getAssignedto());
+		update.setUpdatedby(task.getUpdatedby());
+		update.setStatus(task.getStatus());
+			
+//		Set<TmsAssignedUsers> addedByToAssignedUsers = task.getAssignedto();
+//		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
+//				.collect(Collectors.toList());
+//		
+//		
+//		List<GetUsersDTO> user = taskRepo.getTaskAssinedTmsUsersAndCreatedBy(task.getAddedby(), usersids);
+		try {
+			emailService.TaskUpdateEmail(update);
+		} catch (UnsupportedEncodingException | MessagingException e) {
+			e.printStackTrace();
+		}
+		return taskRepo.save(update);
 	}
 
+	
+	@Override
+	public List<GetUsersDTO> getProjectByTmsUsers(String projectID) {
+		logger.info("!!! inside class: TaskServiceImpl , !! method: ticketTracker");
+		return taskRepo.getProjectByTmsUsers(projectID);
+	}
+	
+	@Override
+	public TaskResponse findTmsTaskByProjectid(RequestDTO requestresponsedto) {
+		logger.info("!!! inside class: TaskServiceImpl , !! method: findTmsTaskByProjectid");
+		String sortfield = requestresponsedto.getSortField();
+		String sortorder = requestresponsedto.getSortOrder();
+		Integer pageNo = requestresponsedto.getPageNumber();
+		Integer pageSize = requestresponsedto.getPageSize();
+		String projectid = requestresponsedto.getProjectid();
+		String keyword = requestresponsedto.getKeyword();
+		if (sortfield.equalsIgnoreCase("ticketid"))
+			sortfield = "ticketid";
+		else if (sortfield.equalsIgnoreCase("taskname"))
+			sortfield = "taskname";
+		else if (sortfield.equalsIgnoreCase("description"))
+			sortfield = "description";
+		else if (sortfield.equalsIgnoreCase("targetdate"))
+			sortfield = "targetdate";
+		else if (sortfield.equalsIgnoreCase("status"))
+			sortfield = "status";
+		else if (sortfield.equalsIgnoreCase("Prioriry"))
+			sortfield = "prioriry";
+		Sort.Direction sortDirection = Sort.Direction.ASC;
+
+		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
+			sortDirection = Sort.Direction.DESC;
+		}
+		Sort sort = Sort.by(sortDirection, sortfield);
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
+
+		if (keyword.equalsIgnoreCase("empty")) {
+
+			List<TaskTrackerDTO> res = taskRepo.findTaskByProjectid(projectid);
+
+			logger.info("!!! inside class: TaskServiceImpl , !! method: findTaskByProjectid");
+			List<TasksResponseDTO> tasksList = new ArrayList<>();
+
+			for (TaskTrackerDTO order : res) {
+				TasksResponseDTO result = new TasksResponseDTO(order);
+				List<GetUsersDTO> assignUsers = taskRepo.getAssignUsers(order.getTaskid());
+
+				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
+						.collect(Collectors.toList());
+				result.setAssignUsers(filteredAssignUsers);
+				tasksList.add(result);
+
+			}
+
+			Long pid = taskRepo.findPid(projectid);
+			TaskResponse taskResp = new TaskResponse();
+			taskResp.setTasks(tasksList);
+			taskResp.setPid(pid);
+
+			return taskResp;
+		} else {
+			logger.info("!!! inside class: TaskServiceImpl , !! method: findTaskByProjectIdWithSearching , Filter");
+			List<TaskTrackerDTO> res = taskRepo.findTaskByProjectIdWithSearching(projectid, keyword);
+			List<TasksResponseDTO> tasksList = new ArrayList<>();
+
+			for (TaskTrackerDTO order : res) {
+				TasksResponseDTO result = new TasksResponseDTO(order);
+				List<GetUsersDTO> assignUsers = taskRepo.getAssignUsers(order.getTaskid());
+				result.setAssignUsers(assignUsers);
+				tasksList.add(result);
+			}
+
+			Long pid = taskRepo.findPid(projectid);
+			TaskResponse taskResp = new TaskResponse();
+			taskResp.setTasks(tasksList);
+			taskResp.setPid(pid);
+			return taskResp;
+		}
+	}
+
+	
+	
+	
 }

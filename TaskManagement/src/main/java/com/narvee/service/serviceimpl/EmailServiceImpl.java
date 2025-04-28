@@ -73,7 +73,7 @@ public class EmailServiceImpl {
 				if (i != 0) {
 					users.append(",");
 				}
-				users.append(userDTO.getPseudoname());
+				users.append(userDTO.getFullname());
 
 			}
 			emails[i] = userDTO.getEmail();
