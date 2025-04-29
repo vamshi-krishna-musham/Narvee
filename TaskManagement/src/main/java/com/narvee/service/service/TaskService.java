@@ -64,4 +64,13 @@ public interface TaskService {
 	public boolean updateTmsTask(UpdateTask updateTask);
 	
 	public void deleteTmsTask(Long id);
+	
+	public TmsTask findByTmstaskId(Long taskid);
+	
+	public List<TasksResponseDTO> ticketTmsTracker(Long taskid);
+	
+	public List<TaskAssignDTO> taskTmsAssignInfo(Long taskid);
+	
+	public List<TmsTask> getAllTmsTasks();
+	
 }

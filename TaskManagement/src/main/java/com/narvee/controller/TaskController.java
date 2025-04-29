@@ -265,4 +265,36 @@ public class TaskController {
 
 	}
 	
+	@GetMapping("/getbyTaskId-tms/{taskid}")
+	public ResponseEntity<RestAPIResponse> findByTmstaskId(@PathVariable Long taskid) {
+		logger.info("!!! inside class: TaskController , !! method: getbyTaskId");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", "Fetched  task successfully", service.findByTmstaskId(taskid)),
+				HttpStatus.OK);
+	}
+	
+	@GetMapping("/trackByTask-tms/{taskid}")
+	public ResponseEntity<RestAPIResponse> gettmsTaskRecord(@PathVariable Long taskid) {
+		logger.info("!!! inside class: TaskController , !! method: getTaskRecord");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", "Fetched tasks records successfully", service.ticketTmsTracker(taskid)),
+				HttpStatus.OK);
+	}
+	
+	@GetMapping("/taskAssinInfo-tms/{taskid}")
+	public ResponseEntity<RestAPIResponse> taskTmsAssinInfo(@PathVariable Long taskid) {
+		logger.info("!!! inside class: TaskController , !! method: taskTmsAssinInfo");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", "Fetched  task info successfully", service.taskTmsAssignInfo(taskid)),
+				HttpStatus.OK);
+
+	}
+	
+	@GetMapping("/getAllTasks-tms")
+	public ResponseEntity<RestAPIResponse> getAllTmsTasks() {
+		logger.info("!!! inside class: TaskController , !! method: getAllTmsTasks");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", "Fetched all tasks successfully", service.getAllTasks()), HttpStatus.OK);
+
+	}
 }

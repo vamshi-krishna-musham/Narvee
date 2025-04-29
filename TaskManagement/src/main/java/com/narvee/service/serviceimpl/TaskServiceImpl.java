@@ -361,7 +361,7 @@ public class TaskServiceImpl implements TaskService {
 
 	@Override
 	public TmsTask createTmsTask(TmsTask task, String token) {
-		logger.info("!!! inside class: TaskServiceImpl , !! method: createTmsTask");
+		logger.info("!!! inside class: TaskServiceImpl , !! method: createTmsTask-tms");
 		Long maxnumber = taskRepo.maxNumber();
 		if (maxnumber == null) {
 			maxnumber = 0L;
@@ -402,7 +402,7 @@ public class TaskServiceImpl implements TaskService {
 	
 	@Override
 	public boolean updateTmsTask(UpdateTask updateTask) {
-		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTask");
+		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTask-tms");
 		TmsTask task = taskRepo.findById(updateTask.getTaskid()).get();
 		List<TmsTicketTracker> listTicketTracker = task.getTrack();
 		TmsTicketTracker ticketTracker = new TmsTicketTracker();
@@ -440,7 +440,7 @@ public class TaskServiceImpl implements TaskService {
 	
 	@Override
 	public TmsTask Tmsupdate(TmsTask task) {
-		logger.info("!!! inside class: TaskServiceImpl , !! method: Tmsupdate");
+		logger.info("!!! inside class: TaskServiceImpl , !! method: Tmsupdate-tms");
 		TmsTask update = taskRepo.findById(task.getTaskid()).get();
 		update.setTargetdate(task.getTargetdate());
 		update.setTaskname(task.getTaskname());
@@ -466,13 +466,26 @@ public class TaskServiceImpl implements TaskService {
 	
 	@Override
 	public List<GetUsersDTO> getProjectByTmsUsers(String projectID) {
-		logger.info("!!! inside class: TaskServiceImpl , !! method: ticketTracker");
+		logger.info("!!! inside class: TaskServiceImpl , !! method: ticketTracker-tms");
 		return taskRepo.getProjectByTmsUsers(projectID);
+	}
+	
+
+	@Override
+	public TmsTask findByTmstaskId(Long taskid) {
+		
+			logger.info("!!! inside class: TaskServiceImpl , !! method: findByTmstaskId-tms");
+			TmsTask task = taskRepo.findById(taskid).get();
+			for (TmsAssignedUsers aUser : task.getAssignedto()) {
+				GetUsersDTO user = taskRepo.gettmsUser(aUser.getTmsUserId());
+				aUser.setFullname(user.getFullname());
+			}
+			return task;
 	}
 	
 	@Override
 	public TaskResponse findTmsTaskByProjectid(RequestDTO requestresponsedto) {
-		logger.info("!!! inside class: TaskServiceImpl , !! method: findTmsTaskByProjectid");
+		logger.info("!!! inside class: TaskServiceImpl , !! method: findTmsTaskByProjectid-tms");
 		String sortfield = requestresponsedto.getSortField();
 		String sortorder = requestresponsedto.getSortOrder();
 		Integer pageNo = requestresponsedto.getPageNumber();
@@ -524,7 +537,7 @@ public class TaskServiceImpl implements TaskService {
 
 			return taskResp;
 		} else {
-			logger.info("!!! inside class: TaskServiceImpl , !! method: findTaskByProjectIdWithSearching , Filter");
+			logger.info("!!! inside class: TaskServiceImpl , !! method: findTaskByProjectIdWithSearching , Filter-tms");
 			List<TaskTrackerDTO> res = taskRepo.findTaskByProjectIdWithSearching(projectid, keyword);
 			List<TasksResponseDTO> tasksList = new ArrayList<>();
 
@@ -545,7 +558,7 @@ public class TaskServiceImpl implements TaskService {
 
 	@Override
 	public Page<TaskTrackerDTO> getTmsTaskByProjectid(RequestDTO requestresponsedto) {
-		logger.info("!!! inside class: TaskServiceImpl , !! method: getTmsTaskByProjectid");
+		logger.info("!!! inside class: TaskServiceImpl , !! method: getTmsTaskByProjectid-tms");
 		String sortfield = requestresponsedto.getSortField();
 		String sortorder = requestresponsedto.getSortOrder();
 		String keyword = requestresponsedto.getKeyword();
@@ -581,9 +594,44 @@ public class TaskServiceImpl implements TaskService {
 
 	@Override
 	public void deleteTmsTask(Long id) {
-		logger.info("!!! inside class: TaskServiceImpl , !! method: deleteTmsTask");
+		logger.info("!!! inside class: TaskServiceImpl , !! method: deleteTmsTask-tms");
 		taskRepo.deleteById(id);
 
 	}
+
+	@Override
+	public List<TasksResponseDTO> ticketTmsTracker(Long taskid) {
+		
+			logger.info("!!! inside class: TaskServiceImpl , !! method: ticketTmsTracker-tms");
+			List<TaskTrackerDTO> tracker = taskRepo.ticketTracker(taskid);
+			List<TasksResponseDTO> tasksList = new ArrayList<>();
+
+			for (TaskTrackerDTO taskTrackerDTO : tracker) {
+				TasksResponseDTO track = new TasksResponseDTO(taskTrackerDTO);
+				GetUsersDTO user = taskRepo.gettmsUser(taskTrackerDTO.getUpdatedby());
+				if (taskTrackerDTO.getUpdatedby() != null) {
+					track.setFullname(user.getFullname());
+					track.setPseudoname(user.getPseudoname());
+				}
+				tasksList.add(track);
+			}
+			return tasksList;
+		}
+
+	@Override
+	public List<TaskAssignDTO> taskTmsAssignInfo(Long taskid) {
+			logger.info("!!! inside class: TaskServiceImpl , !! method: taskTmsAssignInfo-tms");
+			return taskRepo.taskTmsAssignInfo(taskid);
+		}
+
+	@Override
+	public List<TmsTask> getAllTmsTasks() {
+			logger.info("!!! inside class: TaskServiceImpl , !! method: getAllTmsTasks-tms");
+			return taskRepo.findAll(Sort.by("taskid").descending());
+		}
+	
+	
+
+
 	
 }

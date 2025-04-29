@@ -243,4 +243,15 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			+ "			JOIN tms_users u ON au.tms_user_id = u.user_id  "
 			+ "		WHERE t.taskid = :taskId ", nativeQuery = true) 
 	public List<GetUsersDTO> getTmsAssignUsers(Long taskId);
+	
+	
+	@Query(value = " select u.full_name AS fullname ,u.email from tms_users u where u.user_id = :userid ", nativeQuery = true)
+	public GetUsersDTO gettmsUser(Long userid);
+	
+	@Query(value = "select ad.full_name as createdby, t.ticketid, u.full_name, t.createddate, t.targetdate,au.userstatus as  status from tms_task t\r\n"
+			+ "   join tms_users ad on t.addedby = ad.user_id join tms_task_users tu on t.taskid = tu.taskid  join tms_assigned_users au  on au.assignid=tu.assignedto\r\n"
+			+ "   join tms_users u on u.user_id= au.tms_user_id  and t.taskid = :taskid", nativeQuery = true)
+	public List<TaskAssignDTO> taskTmsAssignInfo(Long taskid);
+	
+	
 }
