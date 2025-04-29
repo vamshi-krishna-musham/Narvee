@@ -98,7 +98,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			@Param("updatedby") String updatedby, LocalDateTime updateddate);
 
 	@Query(value = "SELECT  t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,p.projectid,p.pid,t.duration \r\n"
-			+ "			FROM tms_task t right Join tms_project p ON t.pid = p.pid WHERE p.projectid = :projectid Order by t.updateddate DESC ", nativeQuery = true)
+			+ "			FROM tms_task t  Join tms_project p ON t.pid = p.pid WHERE p.projectid = :projectid Order by t.updateddate DESC ", nativeQuery = true)
 	public List<TaskTrackerDTO> findTaskByProjectid(@Param("projectid") String projectid);
 
 	@Query(value = "SELECT t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,p.projectid,t.pid, t.duration  "
