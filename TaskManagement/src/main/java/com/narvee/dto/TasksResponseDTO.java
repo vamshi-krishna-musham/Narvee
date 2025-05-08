@@ -1,7 +1,6 @@
 package com.narvee.dto;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.Data;
@@ -20,18 +19,22 @@ public class TasksResponseDTO {
 	    private String ticketid;
 	    private String taskName;
 	    private String description;
-	  
-	    private LocalDateTime createddate;
+	  private LocalDate startdate;
+	    private LocalDate createddate;
 	    private LocalDate targetdate;
 	    private String taskdescription;
 	    private String pseudoname;
 	    private String duration;
+	    private String priority;
 	    List<GetUsersDTO> assignUsers;
+	    
+	    List<FileUploadDto> files;
 	   
 	    public TasksResponseDTO(TaskTrackerDTO dto) {
 	        this.trackid = dto.getTrackid();
 	        this.taskid = dto.getTaskid();
 	        this.status = dto.getStatus();
+	        this.startdate = dto.getstart_date();
 	        this.fullname = dto.getFullname();
 	        this.ticketid = dto.getTicketid();
 	        this.taskName = dto.getTaskName();
@@ -41,6 +44,7 @@ public class TasksResponseDTO {
 	        this.taskdescription = dto.getTaskdescription();
 	        this.pseudoname = dto.getPseudoname();
 	        this.duration = dto.getDuration();
+	        this.priority = dto.getPriority();
 	        this.pid=dto.getPid();
 	    }
 

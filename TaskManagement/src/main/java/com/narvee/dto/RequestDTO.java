@@ -19,5 +19,7 @@ public class RequestDTO {
 	private String access;
 	private Long userid;
 	
+	private String ticketId;
+	
  
 }

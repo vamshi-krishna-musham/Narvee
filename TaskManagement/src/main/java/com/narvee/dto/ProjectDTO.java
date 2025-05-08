@@ -2,6 +2,7 @@ package com.narvee.dto;
 
 import java.time.LocalDateTime;
 
+
 public interface ProjectDTO {
 
 	public Long getPid();
@@ -19,6 +20,4 @@ public interface ProjectDTO {
 	public String getProjectid();
 	
 	public LocalDateTime getCreateddate();
-
-	
 }

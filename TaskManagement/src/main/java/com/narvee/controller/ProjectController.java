@@ -1,9 +1,18 @@
 package com.narvee.controller;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,12 +21,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.net.HttpHeaders;
 import com.narvee.commons.RestAPIResponse;
 import com.narvee.dto.RequestDTO;
+import com.narvee.entity.TmsFileUpload;
 import com.narvee.entity.TmsProject;
+import com.narvee.repository.fileUploadRepository;
 import com.narvee.service.service.ProjectService;
+
 
 @RestController
 @RequestMapping("/project")
@@ -26,6 +42,17 @@ public class ProjectController {
 	@Autowired
 	private ProjectService projectservice;
 
+	
+	@Autowired
+	private fileUploadRepository fileUploadRepository;
+	
+	@Value("${AppFilesDir}")
+    private String UPLOAD_DIR;
+
+	
+	 //private final Path fileStorageLocation = Paths.get("project-files").toAbsolutePath().normalize();
+	 
+	 
 	private static final Logger logger = LoggerFactory.getLogger(ProjectController.class);
 
 	@PostMapping("/save")
@@ -78,11 +105,17 @@ public class ProjectController {
 	
 //	--- -------------------    all methods replicated for tms projects    --------------------------
 	
-	@PostMapping("/save_tms")
-	public ResponseEntity<RestAPIResponse> TmscreateProject(@RequestBody TmsProject project) {     // save tms project 
+	@PostMapping(value = "/save_tms", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<RestAPIResponse> TmscreateProject(@RequestPart("project") String tmsProject,
+		                                                    @RequestPart(value = "files",required =  false) List<MultipartFile> projectFile) throws IOException {  
+		
+		 ObjectMapper mapper = new ObjectMapper();
+		    TmsProject project = mapper.readValue(tmsProject, TmsProject.class);
+
+		// save tms project 
 		logger.info("!!! inside class: ProjectController , !! method: TmscreateProject , !! for tms project ");
 		return new ResponseEntity<RestAPIResponse>(
-				new RestAPIResponse("success", " project created successfully", projectservice.saveTmsproject(project)),
+				new RestAPIResponse("success", " project created successfully", projectservice.saveTmsproject(project,projectFile)),
 				HttpStatus.CREATED);
 	}
 
@@ -93,15 +126,18 @@ public class ProjectController {
 					projectservice.findByprojectIdTms(pid)), HttpStatus.OK);
 	}
 		
-		@PutMapping("/update-tms")
-		public ResponseEntity<RestAPIResponse> updateProjectTms(@RequestBody TmsProject project) {
+		@PutMapping(value = "/update-tms",consumes = MediaType.MULTIPART_FORM_DATA_VALUE )
+		public ResponseEntity<RestAPIResponse> updateProjectTms(@RequestPart("project") String tmsProject,
+				  @RequestPart(value = "files",required = false) List<MultipartFile> projectFile) throws IOException {
 			logger.info("!!! inside class: ProjectController , !! method: updateProjectTms , !! For Tms Users ");
-			boolean flag = projectservice.updateprojectTms(project);
-			if (flag == true) {
-				return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Updated successfully"),
+			 ObjectMapper mapper = new ObjectMapper();
+			    TmsProject project = mapper.readValue(tmsProject, TmsProject.class);
+			   
+			 try {
+				return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Updated successfully",projectservice.updateprojectTms(project,projectFile)),
 						HttpStatus.OK);
-			} else {
-				return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("fail", "Project not found"), HttpStatus.OK);
+			} catch(Exception e) {
+				return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("fail", "Project not found----",e), HttpStatus.OK);
 			}
 
 		}
@@ -114,6 +150,29 @@ public class ProjectController {
 		}
 		
 		
+		
+		@GetMapping("/download-file/{id}")
+        public ResponseEntity<Resource> downloadFileFromDisk(@PathVariable Long id) {
+			
+                        try {
+                                        TmsFileUpload doc = fileUploadRepository.findById(id)
+                                                                        .orElseThrow(() -> new FileNotFoundException("File not found with ID: " + id));
+                                        String filename = doc.getFileName();
+                                        Path filePath = Paths.get(UPLOAD_DIR).resolve(filename).normalize();
+                                        Resource resource = new UrlResource(filePath.toUri());
+                                        if (!resource.exists() || !resource.isReadable()) {
+                                                        throw new FileNotFoundException("Could not read file: " + filename);
+                                        }
+                                        return ResponseEntity.ok().contentType(MediaType.parseMediaType(doc.getFileType()))
+                                                                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + doc.getFileName() + "\"")
+                                                                        .body(resource);
+                        } catch (Exception e) {
+                                        e.printStackTrace();
+                                        return ResponseEntity.status(HttpStatus.OK).body(null);
+                        }
+        }
+
+
 		
 
 }

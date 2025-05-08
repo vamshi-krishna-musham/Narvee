@@ -3,6 +3,7 @@ package com.narvee.service.service;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.narvee.dto.RequestDTO;
 import com.narvee.dto.SubTaskResponse;
@@ -32,5 +33,24 @@ public interface SubTaskService {
 	public List<TasksResponseDTO> ticketTrackerBySubTaskId(Long subtaskid);
 
 	public boolean updateSubTaskTrack(UpdateTask updateTask);
+	
+	//-----------------------all replicated methods for tms by keerthi -------------------
+	
+	public TmsSubTask createTmsSubTask(TmsSubTask subtask, List<MultipartFile> files);
+	
+	public TmsSubTask updateTmsSubTask(TmsSubTask updatesubtask,List<MultipartFile> files);
 
+	public Page<TmsSubTask> getAllSubTasksTms(RequestDTO requestresponsedto);
+	
+	public void deleteSubTaskTms(Long subtaskid);
+	
+	public TmsSubTask findBySubTaskIdTms(Long subtaskid);
+	
+	public boolean updateSubTaskStatusTms(Long subTaskId , String staus,Long updatedby);
+	
+	public SubTaskResponse findTmsSubTaskByTicketId(RequestDTO requestresponsedto);
+	
+	public boolean updateTmsSubTaskTrack(UpdateTask updateTask);
+	
+	public List<TasksResponseDTO> ticketTrackerByTmsSubTaskId(Long subtaskid);
 }
