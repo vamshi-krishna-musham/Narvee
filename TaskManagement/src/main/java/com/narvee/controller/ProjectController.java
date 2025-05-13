@@ -41,6 +41,9 @@ public class ProjectController {
 
 	@Autowired
 	private ProjectService projectservice;
+	
+	@Autowired
+	private ObjectMapper mapper;
 
 	
 	@Autowired
@@ -109,7 +112,6 @@ public class ProjectController {
 	public ResponseEntity<RestAPIResponse> TmscreateProject(@RequestPart("project") String tmsProject,
 		                                                    @RequestPart(value = "files",required =  false) List<MultipartFile> projectFile) throws IOException {  
 		
-		 ObjectMapper mapper = new ObjectMapper();
 		    TmsProject project = mapper.readValue(tmsProject, TmsProject.class);
 
 		// save tms project 
@@ -130,7 +132,6 @@ public class ProjectController {
 		public ResponseEntity<RestAPIResponse> updateProjectTms(@RequestPart("project") String tmsProject,
 				  @RequestPart(value = "files",required = false) List<MultipartFile> projectFile) throws IOException {
 			logger.info("!!! inside class: ProjectController , !! method: updateProjectTms , !! For Tms Users ");
-			 ObjectMapper mapper = new ObjectMapper();
 			    TmsProject project = mapper.readValue(tmsProject, TmsProject.class);
 			   
 			 try {

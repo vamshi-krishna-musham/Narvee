@@ -360,7 +360,7 @@ public class TaskServiceImpl implements TaskService {
 	public TmsTask update(TmsTask task) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: ticketTracker");
 		TmsTask update = taskRepo.findById(task.getTaskid()).get();
-		update.setTargetdate(task.getTargetdate());
+		update.setTargetDate(task.getTargetDate());
 		update.setTaskname(task.getTaskname());
 		update.setDescription(task.getDescription());
 		update.setAssignedto(task.getAssignedto());
@@ -508,7 +508,7 @@ public class TaskServiceImpl implements TaskService {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: Tmsupdate-tms");
 		TmsTask update = taskRepo.findById(task.getTaskid()).get();
 		System.err.println("update tms task " + update);
-		update.setTargetdate(task.getTargetdate());
+		update.setTargetDate(task.getTargetDate());
 		update.setTaskname(task.getTaskname());
 		update.setPriority(task.getPriority());
 		update.setDescription(task.getDescription());

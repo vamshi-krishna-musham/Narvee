@@ -306,16 +306,18 @@ public class ProjectServiceImpl implements ProjectService {
 			throw new RuntimeException("project Id  not found with ID: " + updateproject.getPId());
 		}
 
-		TmsProject project = optionalProject.get();
+ 		TmsProject project = optionalProject.get();
 		project.setProjectName(updateproject.getProjectName());
 		project.setAddedBy(updateproject.getAddedBy());
 		project.setUpdatedBy(updateproject.getUpdatedBy());
 		project.setDescription(updateproject.getDescription());
 		project.setStatus(updateproject.getStatus());
-		project.setTasks(updateproject.getTasks());
+	//	project.setTasks(updateproject.getTasks());
 		project.setAssignedto(updateproject.getAssignedto());
 		project.setDepartment(updateproject.getDepartment());
 		// project.setFiles(updateproject.getFiles());
+		
+		projectrepository.save(project);
 
 		if (files != null && !files.isEmpty()) {
 			List<TmsFileUpload> uploadedFiles = files.stream().filter(file -> file != null && !file.isEmpty()).map(file -> {
@@ -350,8 +352,8 @@ public class ProjectServiceImpl implements ProjectService {
 
 			project.getFiles().addAll(uploadedFiles);
 		}
-
-		// projectrepository.save(project);
+        
+		
 
 		Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
 		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)

@@ -1,5 +1,6 @@
 package com.narvee.entity;
 
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.narvee.commons.AuditModel;
 
@@ -53,14 +54,16 @@ public class TmsProject extends AuditModel {
 	@Column(name = "projectdescription", columnDefinition = "MEDIUMTEXT")
 	private String description;
 	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private LocalDate startDate;
 	
-	private LocalDate targerDate;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	private LocalDate targetDate;
 	
 
 	private String department;
 	
-	@OneToMany
+	@OneToMany(cascade = CascadeType.ALL)
 	@JsonManagedReference
 	@JoinColumn(name = "pid")
     private List<TmsTask> tasks = new ArrayList<>();

@@ -142,7 +142,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			+ "JOIN tms_task_users tu ON t.taskid = tu.taskid\r\n"
 			+ "JOIN tms_assigned_users au ON tu.assignedto = au.assignid\r\n"
 			+ "JOIN users u ON au.userid = u.userid  \r\n"
-			+ "WHERE t.taskid =:taskId ;", nativeQuery = true)
+			+ "WHERE t.taskid =:taskId ", nativeQuery = true)
 	public List<GetUsersDTO> getAssignUsers(Long taskId);
 
 	@Query(value = "select st.subtaskid ,u.fullname , u.pseudoname,u.email from tms_sub_task st , tms_task_users tu , tms_assigned_users au , users u where st.subtaskid = tu.taskid and \r\n"
@@ -289,7 +289,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	public String getUserRole(long userid);
    
 	@Query(value = "SELECT status, COUNT(*) AS count FROM tms_task t  join tms_task_users tu on  \r\n"
-			+ "         t.taskid = tu.taskid join tms_assigned_users au on au.assignid = tu.assignedto join tms_users u on au.tms_user_id = u.user_id where u.user_id = userid and t.pid = :pid"
-			+ "         GROUP BY status ")	
+			+ "         t.taskid = tu.taskid join tms_assigned_users au on au.assignid = tu.assignedto join tms_users u on au.tms_user_id = u.user_id where u.user_id = :userid and t.pid = :pid"
+			+ "         GROUP BY status",nativeQuery = true)	
 	public List<Object[]> getTaskCountByUserAndPid(Long pid, Long userid);
 }

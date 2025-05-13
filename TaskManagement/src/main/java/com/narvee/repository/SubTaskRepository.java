@@ -82,30 +82,28 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	public Page<TaskTrackerDTO> findSubTaskByTicketIdWithSearching(@Param("ticketId") String ticketId,
 			@Param("keyword") String keyword,Pageable pageable);
 	
-	@Query(value = "SELECT \r\n"
-			+ "    t.taskid, \r\n"
-			+ "    NULL AS fullname, \r\n"
-			+ "    NULL AS email, \r\n"
-			+ "    creator.full_name AS cfullname, \r\n"
-			+ "    creator.email AS cemail \r\n"
-			+ "FROM tms_task t\r\n"
-			+ "JOIN tms_sub_task ts ON ts.taskid = t.taskid \r\n"
-			+ "JOIN tms_users creator ON ts.addedby = creator.user_id  \r\n"
-			+ "WHERE ts.subtaskid =:subtaskid \r\n"
-			+ "UNION ALL\r\n"
-			+ "SELECT \r\n"
-			+ "    t.taskid, \r\n"
-			+ "    u.full_name, \r\n"
-			
-			+ "    u.email, \r\n"
-			+ "    NULL AS cfullname, \r\n"
-			
-			+ "    NULL AS cemail\r\n"
-			+ "FROM tms_task t\r\n"
-			+ "JOIN tms_task_users tu ON t.taskid = tu.taskid\r\n"
-			+ "JOIN tms_assigned_users au ON tu.assignedto = au.assignid\r\n"
-			+ "JOIN tms_users u ON au.tms_user_id = u.user_id\r\n"
-			+ "JOIN tms_sub_task ts ON  ts.taskid=t.taskid\r\n"
-			+ "WHERE ts.subtaskid =:subtaskid ;", nativeQuery = true)
+	@Query(value = "       SELECT \r\n"
+			+ "			    st.subtaskid,  \r\n"
+			+ "			    NULL AS fullname,   \r\n"
+			+ "			    NULL AS email,   \r\n"
+			+ "			    creator.full_name as cfullname ,  \r\n"
+			+ "			    creator.email as cemail   \r\n"
+			+ "			FROM tms_sub_task st  \r\n"
+			+ "			JOIN tms_users creator ON st.addedby = creator.user_id    \r\n"
+			+ "			WHERE st.subtaskid = :subtaskid \r\n"
+			+ "			  \r\n"
+			+ "			UNION ALL  \r\n"
+			+ "			  \r\n"
+			+ "			SELECT   \r\n"
+			+ "			    st.subtaskid,   \r\n"
+			+ "			    u.full_name ,   \r\n"
+			+ "			    u.email,   \r\n"
+			+ "			    NULL AS fullname,   \r\n"
+			+ "			    NULL AS email  \r\n"
+			+ "			FROM tms_sub_task st \r\n"
+			+ "			\r\n"
+			+ "			JOIN tms_assigned_users au ON st.subtaskid = au.subtaskid  \r\n"
+			+ "			JOIN tms_users u ON au.tms_user_id = u.user_id    \r\n"
+			+ "			WHERE st.subtaskid = :subtaskid ", nativeQuery = true)
 	public List<GetUsersDTO> getSubtaskAssignUsersTms(Long subtaskid);
 }

@@ -114,7 +114,7 @@ public class EmailServiceImpl {
 				.append("</tr>").append("<tr>").append("<td>" + task.getTicketid() + "</td>")
 				.append("<td>" + task.getTaskname() + "</td>").append("<td>" + createdBy + "</td>")
 				.append("<td>" + task.getCreateddate().format(myFormatObj) + "</td>").append("<td>" + users + "</td>")
-				.append("<td>" + task.getTargetdate() + "</td>").append("<td>" + task.getStatus() + "</td>")
+				.append("<td>" + task.getTargetDate() + "</td>").append("<td>" + task.getStatus() + "</td>")
 				.append("</tr>").append("<tr> <th colspan=\"8\" class=\"description\">Description</th> </tr>")
 				.append("<tr><td colspan=\"8\">").append("<pre>").append(task.getDescription()).append("</pre>")
 				.append("</td></tr>").append("</table>").append("</body>").append("</html>");
@@ -546,7 +546,7 @@ public class EmailServiceImpl {
 			    + "<tr><td style='font-weight: bold;'>Task Name:</td><td>" + task.getTaskname() + "</td></tr>"
 			    + "<tr><td style='font-weight: bold;'>Project Id:</td><td>" + projectId + "</td></tr>"
 			    + "<tr><td style='font-weight: bold;'>Created By:</td><td>" + createdBy + "</td></tr>"
-			    + "<tr><td style='font-weight: bold;'>Target Date:</td><td>" + task.getTargetdate() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Target Date:</td><td>" + task.getTargetDate() + "</td></tr>"
 			    + "<tr><td style='font-weight: bold;'>Status:</td><td>" + task.getStatus() + "</td></tr>"
 			    + "<tr><td style='font-weight: bold;'>Created Date:</td><td>" +task.getCreateddate().format(myFormatObj)+ "</td></tr>"
 			    + "<tr><td style='font-weight: bold;'>  Assigned Users:</td><td>" + users + "</td></tr>"
@@ -577,7 +577,7 @@ public class EmailServiceImpl {
 				    + "<tr><td style='font-weight: bold;'>Task Name:</td><td>" + task.getTaskname() + "</td></tr>"
 				    + "<tr><td style='font-weight: bold;'>Project Id:</td><td>" + projectId + "</td></tr>"
 				    + "<tr><td style='font-weight: bold;'>Created By:</td><td>" + createdBy + "</td></tr>"
-				    + "<tr><td style='font-weight: bold;'>Target Date:</td><td>" + task.getTargetdate() + "</td></tr>"
+				    + "<tr><td style='font-weight: bold;'>Target Date:</td><td>" + task.getTargetDate() + "</td></tr>"
 				    + "<tr><td style='font-weight: bold;'>Status:</td><td>" + task.getStatus() + "</td></tr>"
 				    + "<tr><td style='font-weight: bold;'>Created Date:</td><td>" +task.getCreateddate().format(myFormatObj)+ "</td></tr>"
 				    + "<tr><td style='font-weight: bold;'>  Assigned Users:</td><td>" + users + "</td></tr>"

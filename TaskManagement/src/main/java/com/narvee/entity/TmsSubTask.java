@@ -43,7 +43,7 @@ public class TmsSubTask extends AuditModel {
 	private Long subTaskId;
 	@Column(name = "subtaskname")
 	private String subTaskName;
-	@Column(name = "subtaskdescription")
+	@Column(name = "subtaskdescription",  columnDefinition = "TEXT")
 	private String subTaskDescription;
 	@Column(name = "addedby")
 	private Long addedby;

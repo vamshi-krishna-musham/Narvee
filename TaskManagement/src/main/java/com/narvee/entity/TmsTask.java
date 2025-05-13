@@ -64,7 +64,7 @@ public class TmsTask extends AuditModel {
 	private LocalDate startDate;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	private LocalDate targetdate;
+	private LocalDate targetDate;
 
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "taskid")
