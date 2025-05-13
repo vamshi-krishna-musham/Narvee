@@ -352,54 +352,10 @@ public class ProjectServiceImpl implements ProjectService {
 
 			project.getFiles().addAll(uploadedFiles);
 		}
-        
+		return project;
+	}       
 		
 
-		@Override
-		public Page<ProjectDTO> findTmsAllProjects(RequestDTO requestresponsedto) {
-			logger.info("!!! inside class: ProjectServiceImpl , !! method: findTmsAllProjects" );
-			String sortorder = requestresponsedto.getSortOrder();
-			String sortfield = requestresponsedto.getSortField();
-			String keyword = requestresponsedto.getKeyword();
-			Integer pageNo = requestresponsedto.getPageNumber();
-			Integer pageSize = requestresponsedto.getPageSize();
-			Long userid = requestresponsedto.getUserid();
-			String access=requestresponsedto.getAccess();
-
-			if (sortfield.equalsIgnoreCase("projectid"))
-				sortfield = "projectId";
-			else if (sortfield.equalsIgnoreCase("projectname"))
-				sortfield = "projectName";
-			else if (sortfield.equalsIgnoreCase("status"))
-				sortfield = "status";
-			else if (sortfield.equalsIgnoreCase("addedBy"))
-				sortfield = "addedBy";
-			else
-				sortfield = "updateddate";
-
-			Sort.Direction sortDirection = Sort.Direction.ASC;
-			if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
-				sortDirection = Sort.Direction.DESC;
-			}
-			Sort sort = Sort.by(sortDirection, sortfield);
-			Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
-
-
-		Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
-		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
-				.collect(Collectors.toList());
-
-		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(project.getUpdatedBy(), usersids);
-		TmsProject tmsProject = projectrepository.save(project);
-		try {
-			emailService.sendCreateProjectEmail(project, user, false);
-		} catch (UnsupportedEncodingException | MessagingException e) {
-			e.printStackTrace();
-		}
-
-		return tmsProject;
-
-	}
 
 	@Override
 	public Page<ProjectResponseDto> findTmsAllProjects(RequestDTO requestresponsedto) {
@@ -436,7 +392,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 		List<ProjectResponseDto> res = new ArrayList<>();
 
-		if (access.equalsIgnoreCase("SUPER_ADMIN")) {
+		if (access.equalsIgnoreCase("ADMIN")) {
 			if (keyword.equalsIgnoreCase("empty")) {
 				logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllTmsProjects, Empty");
 
