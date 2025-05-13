@@ -11,6 +11,8 @@ public interface TaskTrackerDTO {
 
 	public Long getTaskid();
 	
+	public Long getSubtaskid();
+	
 	public Long getUpdatedby();
 	
 	public Long getPid();
@@ -24,19 +26,23 @@ public interface TaskTrackerDTO {
 	public String getTaskName();
 	
 	public String getSubtaskname();
-
+	
 	public String getDescription();
 	
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
-	public LocalDateTime getCreateddate();
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	public LocalDate getCreateddate();
 	
 	public LocalDate getTargetdate();
+	
+	public LocalDate getstart_date();
 
 	public String getTaskdescription();
 
 	public String getPseudoname();
 	
 	public String getDuration();
+	
+	public String getPriority();
 	
 	public String getEmail();
 

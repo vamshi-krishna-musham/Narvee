@@ -1,11 +1,13 @@
 package com.narvee.controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,13 +17,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.narvee.commons.RestAPIResponse;
 import com.narvee.dto.DateSearchDTO;
 import com.narvee.dto.RequestDTO;
 import com.narvee.dto.UpdateTask;
 import com.narvee.dto.UserDTO;
+import com.narvee.entity.TmsProject;
 import com.narvee.entity.TmsTask;
 import com.narvee.feignclient.UserClient;
 import com.narvee.repository.TaskRepository;
@@ -36,6 +42,10 @@ public class TaskController {
 
 	@Autowired
 	private TaskService service;
+	
+	@Autowired
+	private ObjectMapper mapper;
+
 
 	@Autowired
 	TaskRepository repo;
@@ -67,7 +77,7 @@ public class TaskController {
 	public ResponseEntity<?> update(@RequestBody TmsTask task) {
 		logger.info("!!! inside class: TaskController , !! method: update");
 		return new ResponseEntity<RestAPIResponse>(
-				new RestAPIResponse("success", " task created successfully", service.update(task)), HttpStatus.CREATED);
+				new RestAPIResponse("success", " task Updated successfully", service.update(task)), HttpStatus.CREATED);
 	}
 
 	@PostMapping("/updateTask")
@@ -205,19 +215,23 @@ public class TaskController {
 	
 	//---------------------replicated methods for Tms  added by keerthi ----------------
 	
-	@PostMapping("/createTmsTask")
-	public ResponseEntity<?> createTmsTask(@RequestBody TmsTask task, @RequestHeader("AUTHORIZATION") String token) {
+	@PostMapping(value = "/createTmsTask",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)	
+	public ResponseEntity<RestAPIResponse> createTmsTask(@RequestPart("task") String tmsTask, @RequestHeader("AUTHORIZATION") String token, @RequestPart(value = "files",required = false) List<MultipartFile> taskFile) throws IOException {	
+		// ObjectMapper mapper = new ObjectMapper();
+		 TmsTask task = mapper.readValue(tmsTask, TmsTask.class);
+		    
 		logger.info("!!! inside class: TaskController , !! method: createTmsTask");
 		return new ResponseEntity<RestAPIResponse>(
-				new RestAPIResponse("success", " task created successfully", service.createTmsTask(task, token)),
+				new RestAPIResponse("success", " task created successfully", service.createTmsTask(task, token,taskFile)),
 				HttpStatus.CREATED);
 	}
 	
-	@PostMapping("/updateTmsTask")
-	public ResponseEntity<?> updateTmsTask(@RequestBody TmsTask task) {
+	@PostMapping(value = "/updateTmsTask",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<?> updateTmsTask(@RequestPart("task") String tmsTask, @RequestPart(value = "files",required = false) List<MultipartFile> taskFile) throws IOException {
 		logger.info("!!! inside class: TaskController , !! method: updateTmsTask");
+		TmsTask task = mapper.readValue(tmsTask, TmsTask.class);
 		return new ResponseEntity<RestAPIResponse>(
-				new RestAPIResponse("success", " task Updated successfully", service.Tmsupdate(task)), HttpStatus.CREATED);
+				new RestAPIResponse("success", " task Updated successfully", service.Tmsupdate(task,taskFile)), HttpStatus.CREATED);
 	}
 	
 	@RequestMapping(value = "/tasksByProjectId-tms", method = RequestMethod.POST, produces = "application/json")
@@ -252,9 +266,9 @@ public class TaskController {
 	
 	@DeleteMapping("/delete-tms/{taskid}")
 	public ResponseEntity<RestAPIResponse> deletetmsTaskById(@PathVariable Long taskid) {
-		logger.info("!!! inside class: TaskController , !! method: deletetmsTaskById");
+		logger.info("!!! inside class: TaskController , !! method: deletetmsTaskById-tms");
 		try {
-			service.deleteTask(taskid);
+			service.deleteTmsTask(taskid);
 			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "deleted successfully"),
 					HttpStatus.OK);
 
@@ -264,5 +278,64 @@ public class TaskController {
 		}
 
 	}
+	
+	
+
+	@DeleteMapping("/deleteFile-tms/{fileId}")
+	public ResponseEntity<RestAPIResponse> deleteFile(@PathVariable Long fileId) {
+		logger.info("!!! inside class: TaskController , !! method: deletetmsTaskById-tms");
+		try {
+			service.deleteTmsTaskFileIpload(fileId);
+			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "deleted successfully"),
+					HttpStatus.OK);
+
+		} catch (Exception e) {
+			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("failed", "Cannot delete this Task because it has associated Sub-Task."),
+					HttpStatus.OK);
+		}
+
+	}
+	
+	@GetMapping("/getbyTaskId-tms/{taskid}")
+	public ResponseEntity<RestAPIResponse> findByTmstaskId(@PathVariable Long taskid) {
+		logger.info("!!! inside class: TaskController , !! method: getbyTaskId");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", "Fetched  task successfully", service.findByTmstaskId(taskid)),
+				HttpStatus.OK);
+	}
+	
+	@GetMapping("/trackByTask-tms/{taskid}")
+	public ResponseEntity<RestAPIResponse> gettmsTaskRecord(@PathVariable Long taskid) {
+		logger.info("!!! inside class: TaskController , !! method: getTaskRecord");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", "Fetched tasks records successfully", service.ticketTmsTracker(taskid)),
+				HttpStatus.OK);
+	}
+	
+	@GetMapping("/taskAssinInfo-tms/{taskid}")
+	public ResponseEntity<RestAPIResponse> taskTmsAssinInfo(@PathVariable Long taskid) {
+		logger.info("!!! inside class: TaskController , !! method: taskTmsAssinInfo");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", "Fetched  task info successfully", service.taskTmsAssignInfo(taskid)),
+				HttpStatus.OK);
+
+	}
+	
+	@GetMapping("/getAllTasks-tms")
+	public ResponseEntity<RestAPIResponse> getAllTmsTasks() {
+		logger.info("!!! inside class: TaskController , !! method: getAllTmsTasks");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", "Fetched all tasks successfully", service.getAllTasks()), HttpStatus.OK);
+
+	}
+	
+	@GetMapping("/getCountByStatus-tms/{pid}/{userid}")
+	public ResponseEntity<RestAPIResponse> getAllTmsTasksCount(@PathVariable Long pid,@PathVariable Long userid) {
+		logger.info("!!! inside class: TaskController , !! method: getAllTmsTasks--tms");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", "Fetched all tasks Count successfully", service.getTaskCountByStatus(pid,userid)), HttpStatus.OK);
+
+	}
+	
 	
 }

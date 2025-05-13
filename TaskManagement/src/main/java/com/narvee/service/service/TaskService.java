@@ -1,8 +1,10 @@
 package com.narvee.service.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.narvee.dto.DateSearchDTO;
 import com.narvee.dto.GetUsersDTO;
@@ -51,9 +53,9 @@ public interface TaskService {
 	
 	//-------------------------------replicated methods for TMS   --------------------------
 	
-	public TmsTask createTmsTask(TmsTask task, String token);
+	public TmsTask createTmsTask(TmsTask task, String token,List<MultipartFile> files);
 	
-	public TmsTask Tmsupdate(TmsTask task);
+	public TmsTask Tmsupdate(TmsTask task,List<MultipartFile> files);
 	
 	public List<GetUsersDTO> getProjectByTmsUsers(String projectID);
 	
@@ -64,4 +66,19 @@ public interface TaskService {
 	public boolean updateTmsTask(UpdateTask updateTask);
 	
 	public void deleteTmsTask(Long id);
+	
+	public TmsTask findByTmstaskId(Long taskid);
+	
+	public List<TasksResponseDTO> ticketTmsTracker(Long taskid);
+	
+	public List<TaskAssignDTO> taskTmsAssignInfo(Long taskid);
+	
+	public List<TmsTask> getAllTmsTasks();
+	
+	public void deleteTmsTaskFileIpload(Long id);
+	
+	public Map<String, Long> getTaskCountByStatus(Long pid,Long userid);
+	
+	
+	
 }

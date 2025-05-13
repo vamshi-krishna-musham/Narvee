@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.TaskTrackerDTO;
@@ -26,10 +26,11 @@ import com.narvee.entity.TmsProject;
 import com.narvee.entity.TmsSubTask;
 import com.narvee.entity.TmsTask;
 import com.narvee.feignclient.UserClient;
+import com.narvee.repository.ProjectRepository;
 import com.narvee.repository.SubTaskRepository;
 import com.narvee.repository.TaskRepository;
 
-@Component
+@Service
 public class EmailServiceImpl {
 	private static final Logger logger = LoggerFactory.getLogger(EmailServiceImpl.class);
 
@@ -38,6 +39,9 @@ public class EmailServiceImpl {
 
 	@Autowired
 	private TaskRepository taskRepository;
+	
+	@Autowired
+	private ProjectRepository projectRepository;
 
 	@Autowired
 	private JavaMailSender mailSender;
@@ -56,7 +60,8 @@ public class EmailServiceImpl {
 
 	@Value("${ccmail}")
 	private String[] ccmail;
-
+	
+//----------------TaskAssigningEmail   ---------------------For ATS TMS ----------------------
 	public void TaskAssigningEmail(TmsTask task, List<GetUsersDTO> userdetails)
 			throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: TaskEmailServiceIml, !! method: TaskAssigningEmail");
@@ -109,7 +114,7 @@ public class EmailServiceImpl {
 				.append("</tr>").append("<tr>").append("<td>" + task.getTicketid() + "</td>")
 				.append("<td>" + task.getTaskname() + "</td>").append("<td>" + createdBy + "</td>")
 				.append("<td>" + task.getCreateddate().format(myFormatObj) + "</td>").append("<td>" + users + "</td>")
-				.append("<td>" + task.getTargetdate() + "</td>").append("<td>" + task.getStatus() + "</td>")
+				.append("<td>" + task.getTargetDate() + "</td>").append("<td>" + task.getStatus() + "</td>")
 				.append("</tr>").append("<tr> <th colspan=\"8\" class=\"description\">Description</th> </tr>")
 				.append("<tr><td colspan=\"8\">").append("<pre>").append(task.getDescription()).append("</pre>")
 				.append("</td></tr>").append("</table>").append("</body>").append("</html>");
@@ -136,7 +141,8 @@ public class EmailServiceImpl {
 				if (i != 0) {
 					users.append(",");
 				}
-				users.append(userDTO.getPseudoname());
+				//users.append(userDTO.getPseudoname());
+				users.append(userDTO.getFullname());   // changed for tms users 
 
 			}
 			emails[i] = userDTO.getEmail();
@@ -144,8 +150,7 @@ public class EmailServiceImpl {
 		}
 		Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
 		String[] uniqueEmails = emailSet.toArray(new String[0]);
-		emails = uniqueEmails;
-
+		emails = uniqueEmails;	
 		DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 		MimeMessage message = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message);
@@ -153,7 +158,6 @@ public class EmailServiceImpl {
 		// helper.setBcc(emails);
 
 		helper.setTo(emails);
-
 		helper.setFrom(narveemail, shortMessage);
 		String subject = "Assigned SubTask Info ";
 		StringBuilder stringBuilder = new StringBuilder();
@@ -340,7 +344,9 @@ public class EmailServiceImpl {
 		logger.info("!!! inside class: EmailServiceImpl, !! method: End sendCommentEmail");
 	}
 
-	public void sendCreateProjectEmail(TmsProject project, List<GetUsersDTO> userdetails, boolean projectUpdate)
+	
+	
+	public void sendCreateProjectEmail(TmsProject project, List<GetUsersDTO> userdetails, boolean projectUpdate)   //----------->  this is used for both Tms superate project and Ats TMS
 			throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: EmailServiceImpl, !! method: sendCreateProjectEmail");
 
@@ -475,123 +481,360 @@ public class EmailServiceImpl {
 		logger.info("!!! inside class: TaskEmailServiceIml, !! method: End targetExceededEmail end");
 	}
 	
+	//---------------------------------- All Replicated method for TMS project ----------------------------------
 	
-	//--------------------------send emails when update the tms task ----------------------------
 	
 	
-	public void TaskUpdateEmail(TmsTask task)
-	        throws MessagingException, UnsupportedEncodingException {
-	    logger.info("!!! inside class: TaskEmailServiceIml, !! method: TaskUpdateEmail");
-	    List<GetUsersDTO> userdetails = taskRepository.getAssignUsers(task.getTaskid());
-      String updatedBy = taskRepository.getUpdatedByName(task.getUpdatedby());
-	   // StringBuilder updatedBy = new StringBuilder();
-	    StringBuilder users = new StringBuilder();
-	    int i = 0;
-	    String emails[] = new String[userdetails.size()];
+	
+	public void TaskAssigningEmailForTMS(TmsTask task, List<GetUsersDTO> userdetails,boolean isTask)  //   task created and updated email for TMS project 
+			throws MessagingException, UnsupportedEncodingException {
+		logger.info("!!! inside class: TaskEmailServiceIml, !! method: TaskAssigningEmailForTMS --- tms ");
+      String projectId =  projectRepository.getProjectName(task.getTaskid());
+		StringBuilder createdBy = new StringBuilder();
+		StringBuilder users = new StringBuilder();
+		int i = 0;
+		String emails[] = new String[userdetails.size()];
 
-//	    for (GetUsersDTO userDTO : userdetails) {
-//	        if (userDTO.getUpdatedby() != null) {
-//	            updatedBy.append(userDTO.getUpdatedby());
-//	        } else {
-//	            if (i != 0) users.append(", ");
-//	            users.append(userDTO.getFullname());
-//	        }
-//	        emails[i] = userDTO.getEmail();
-//	        i++;
-//	    }
-	    
-	    for (GetUsersDTO userDTO : userdetails) {
-            if (i != 0) users.append(", ");
-            users.append(userDTO.getFullname());
-        
-        emails[i] = userDTO.getEmail();
-        i++;
-    }
+		for (GetUsersDTO userDTO : userdetails) {
+			if (userDTO.getCreatedby() != null) {
+				createdBy.append(userDTO.getCreatedby());
+			} else {
+				if (i != 0) {
+					users.append(",");
+				}
+				users.append(userDTO.getFullname());
 
-	    Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
-	    String[] uniqueEmails = emailSet.toArray(new String[0]);
+			}
+			emails[i] = userDTO.getEmail();
+			i++;
+		}
+		Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
+		String[] uniqueEmails = emailSet.toArray(new String[0]);
+		emails = uniqueEmails;
 
-	    DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+		DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+		MimeMessage message = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(message);
+//		helper.setCc(ccmail);
+		// helper.setBcc(emails);
 
-	    MimeMessage message = mailSender.createMimeMessage();
-	    MimeMessageHelper helper = new MimeMessageHelper(message);
+		helper.setTo(emails);
 
-	    helper.setTo(uniqueEmails);
-	    helper.setFrom(narveemail, shortMessage);
-	    helper.setSubject("Updated Task Notification - " + task.getTaskname());
+		helper.setFrom(narveemail, shortMessage);
+		String subject = "Assigned Task Info ";
+		StringBuilder stringBuilder = new StringBuilder();
+		
+		String body;
+		
+		if(isTask) {
+			subject = " New Task Created " + task.getTaskname();
+			
+		body = "<!DOCTYPE html>"
+			    + "<html><head><meta charset='UTF-8'><title>Task Created </title></head>"
+			    + "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;'>"
+			    + "<table width='100%' cellpadding='0' cellspacing='0' style='padding: 30px 0;'>"
+			    + "<tr><td align='center'>"
+			    + "<table width='600' cellpadding='0' cellspacing='0' style='background-color: #ffffff; border-radius: 6px;'>"
+			    + "<tr><td style='background-color: #0468b4; padding: 20px; color: #ffffff; text-align: center; border-top-left-radius: 6px; border-top-right-radius: 6px;'>"
+			    + "<h2 style='margin: 0;'>Narvee Technologies</h2>"
+			    + "</td></tr>"
+			    + "<tr><td style='padding: 30px; color: #333;'>"
+			    + "<p style='font-size: 16px;'>Hi,</p>"
+			    + "<p style='font-size: 15px;'>The New Task has been Created. Please find the  details below:</p>"
+			    + "<table cellpadding='6' cellspacing='0' style='font-size: 14px;'>"
+			    + "<tr><td style='font-weight: bold;'>Ticket ID:</td><td>" +  task.getTicketid()+ "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Task Name:</td><td>" + task.getTaskname() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Project Id:</td><td>" + projectId + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Created By:</td><td>" + createdBy + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Target Date:</td><td>" + task.getTargetDate() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Status:</td><td>" + task.getStatus() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Created Date:</td><td>" +task.getCreateddate().format(myFormatObj)+ "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>  Assigned Users:</td><td>" + users + "</td></tr>"
+			    + "</table>"
+			    + "<p style='font-size: 14px; margin-top: 20px;'>Please check the portal for the information.</p>"
+			    + "</td></tr>"
+			    + "<tr><td style='background-color: #f0f0f0; padding: 20px; text-align: center; color: #555; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;'>"
+			    + "<p style='margin: 0; font-size: 13px;'>Best Regards,<br/>Task Management System Team</p>"
+			    + "</td></tr>"
+			    + "</table></td></tr></table></body></html>";
+		}else {
+			subject = " Task Updated " + task.getTaskname();
+			
+			body = "<!DOCTYPE html>"
+				    + "<html><head><meta charset='UTF-8'><title>Task  Updated</title></head>"
+				    + "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;'>"
+				    + "<table width='100%' cellpadding='0' cellspacing='0' style='padding: 30px 0;'>"
+				    + "<tr><td align='center'>"
+				    + "<table width='600' cellpadding='0' cellspacing='0' style='background-color: #ffffff; border-radius: 6px;'>"
+				    + "<tr><td style='background-color: #0468b4; padding: 20px; color: #ffffff; text-align: center; border-top-left-radius: 6px; border-top-right-radius: 6px;'>"
+				    + "<h2 style='margin: 0;'>Narvee Technologies</h2>"
+				    + "</td></tr>"
+				    + "<tr><td style='padding: 30px; color: #333;'>"
+				    + "<p style='font-size: 16px;'>Hi,</p>"
+				    + "<p style='font-size: 15px;'>The Task has been updated. Please find the updated details below:</p>"
+				    + "<table cellpadding='6' cellspacing='0' style='font-size: 14px;'>"
+				    + "<tr><td style='font-weight: bold;'>Ticket ID:</td><td>" +  task.getTicketid()+ "</td></tr>"
+				    + "<tr><td style='font-weight: bold;'>Task Name:</td><td>" + task.getTaskname() + "</td></tr>"
+				    + "<tr><td style='font-weight: bold;'>Project Id:</td><td>" + projectId + "</td></tr>"
+				    + "<tr><td style='font-weight: bold;'>Created By:</td><td>" + createdBy + "</td></tr>"
+				    + "<tr><td style='font-weight: bold;'>Target Date:</td><td>" + task.getTargetDate() + "</td></tr>"
+				    + "<tr><td style='font-weight: bold;'>Status:</td><td>" + task.getStatus() + "</td></tr>"
+				    + "<tr><td style='font-weight: bold;'>Created Date:</td><td>" +task.getCreateddate().format(myFormatObj)+ "</td></tr>"
+				    + "<tr><td style='font-weight: bold;'>  Assigned Users:</td><td>" + users + "</td></tr>"
+				    + "</table>"
+				    + "<p style='font-size: 14px; margin-top: 20px;'>Please check the portal for updated information.</p>"
+				    + "</td></tr>"
+				    + "<tr><td style='background-color: #f0f0f0; padding: 20px; text-align: center; color: #555; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;'>"
+				    + "<p style='margin: 0; font-size: 13px;'>Best Regards,<br/>Task Management System Team</p>"
+				    + "</td></tr>"
+				    + "</table></td></tr></table></body></html>";
+		}
+		helper.setSubject(subject);
+		helper.setText(body.toString(), true);
+		mailSender.send(message);
+		logger.info("!!! inside class: TaskEmailServiceIml, !! method: End TaskAssigningEmail");
+	}
+	
+	
+	// --------------------------for tms sub task  --------------------------------
+	public void sendCreateSubTaskEmail(TmsSubTask subtask, List<GetUsersDTO> userdetails, boolean  SubTaskUpdate)
+			throws MessagingException, UnsupportedEncodingException {
+		logger.info("!!! inside class: SubTaskServiceImpl, !! method: SubTaskAssigningEmail");
+		GetUsersDTO subTaskDetails = subTaskRepository.GetPorjectNameAndTaskName(subtask.getSubTaskId());
+		StringBuilder createdBy = new StringBuilder();
+		StringBuilder users = new StringBuilder();
+		int i = 0;
+		String emails[] = new String[userdetails.size()];
 
-//	    StringBuilder stringBuilder = new StringBuilder();
-//	    stringBuilder.append("<!DOCTYPE html>")
-//	        .append("<html><head><style>")
-//	        .append("table {font-family: Arial, sans-serif;border-collapse: collapse;width: 100%;}")
-//	        .append("td, th {border: 1px solid #ddd;padding: 8px;}")
-//	        .append("th {background-color: #004aad;color: white;}")
-//	        .append("tr:nth-child(even) {background-color: #f2f2f2;}")
-//	        .append(".desc {padding-top: 20px;font-weight: bold;color: #004aad;}")
-//	        .append("</style></head><body>");
-//
-//	    stringBuilder.append("<h2 style='color:#004aad;'>Task Updated Successfully</h2>");
-//	    stringBuilder.append("<p>Hello ").append(users).append(",</p>");
-//	    stringBuilder.append("<p>The following task has been <b>updated</b> recently. Please review the new details:</p>");
-//
-//	    stringBuilder.append("<table>")
-//	        .append("<tr><th>Ticket ID</th><th>Task Name</th><th>Updated By</th><th>Updated Date</th><th>Assigned Users</th><th>Target Date</th><th>Status</th></tr>")
-//	        .append("<tr>")
-//	        .append("<td>").append(task.getTicketid()).append("</td>")
-//	        .append("<td>").append(task.getTaskname()).append("</td>")
-//	        .append("<td>").append(updatedBy).append("</td>")
-//	        .append("<td>").append(task.getUpdateddate().format(myFormatObj)).append("</td>")
-//	        .append("<td>").append(users).append("</td>")
-//	        .append("<td>").append(task.getTargetdate()).append("</td>")
-//	        .append("<td>").append(task.getStatus()).append("</td>")
-//	        .append("</tr>")
-//	        .append("</table>");
-//
-//	    stringBuilder.append("<div class='desc'>Description:</div>")
-//	        .append("<pre style='background-color:#f8f8f8;padding:15px;border-radius:5px;'>")
-//	        .append(task.getDescription())
-//	        .append("</pre>");
-//
-//	    stringBuilder.append("<p>Best regards,<br><b>Task Management System</b></p>")
-//	        .append("</body></html>");
-	    StringBuilder sb = new StringBuilder();
-	    sb.append("<html><body>");
-	    sb.append("<div style='font-family:Segoe UI, Tahoma, sans-serif; background-color:#f0f2f5; padding:20px;'>");
+		for (GetUsersDTO userDTO : userdetails) {
+			if (userDTO.getCreatedby() != null) {
+				createdBy.append(userDTO.getCreatedby());
+			} else {
+				if (i != 0) {
+					users.append(",");
+				}
+				//users.append(userDTO.getPseudoname());
+				users.append(userDTO.getFullname());   // changed for tms users 
 
-	    sb.append("<div style='max-width:600px; margin:auto; background-color:#ffffff; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1); padding:30px;'>");
+			}
+			emails[i] = userDTO.getEmail();
+			i++;
+		}
+		Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
+		String[] uniqueEmails = emailSet.toArray(new String[0]);
+		emails = uniqueEmails;	
+		DateTimeFormatter myFormatObj = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+	
 
+		MimeMessage message = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(message);
+		helper.setTo(uniqueEmails);
+		helper.setFrom(narveemail, shortMessage);
+//		helper.setCc(ccmail);
+		String subject;
+		String body;
 
-	    sb.append("<p style='font-size:16px; color:#333;'>Hi <strong>").append(users).append("</strong>,</p>");
-	    sb.append("<p style='font-size:15px; color:#555;'>The task assigned to you has been <strong style='color:#007bff;'>updated</strong>. Please find the updated details below:</p>");
+		if (SubTaskUpdate) {
+			subject = "New Sub Task Assignment ";
+			body = "<!DOCTYPE html>"
+			    + "<html><head><meta charset='UTF-8'><title>New Sub Task Assigned</title></head>"
+			    + "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;'>"
+			    + "<table width='100%' cellpadding='0' cellspacing='0' style='padding: 30px 0;'>"
+			    + "<tr><td align='center'>"
+			    + "<table width='600' cellpadding='0' cellspacing='0' style='background-color: #ffffff; border-radius: 6px;'>"
+			    + "<tr><td style='background-color: #0468b4; padding: 20px; color: #ffffff; text-align: center; border-top-left-radius: 6px; border-top-right-radius: 6px;'>"
+			    + "<h2 style='margin: 0;'>Narvee Technologies</h2>"
+			    + "</td></tr>"
+			    + "<tr><td style='padding: 30px; color: #333;'>"
+			    + "<p style='font-size: 16px;'>Hi,</p>"
+			    + "<p style='font-size: 14px;'>A new Sub Task has been created and assigned to you. Please find the Sub Task details below:</p>"
+			    + "<table cellpadding='6' cellspacing='0' style='font-size: 14px;'>"
+			    + "<tr><td style='font-weight: bold;'>Ticket ID:</td><td>" + subTaskDetails.getTicketid() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Project Name:</td><td>" + subTaskDetails.getProjectname() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Task Name :</td><td>" + subTaskDetails.getTaskname() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Sub Task name :</td><td>" + subtask.getSubTaskName() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Created Date :</td><td>" + subtask.getCreateddate().format(myFormatObj) + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Assigned Users:</td><td>" +users+ "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Target Date :</td><td>" + subtask.getTargetDate() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Status:</td><td>" + subtask.getStatus() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Priority:</td><td>" + subtask.getPriority() + "</td></tr>"
+			    + "</table>"
+			    + "<p style='font-size: 14px; margin-top: 20px;'>Please log in to the portal to begin your work.</p>"
+			    + "</td></tr>"
+			    + "<tr><td style='background-color: #f0f0f0; padding: 20px; text-align: center; color: #555; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;'>"
+			    + "<p style='margin: 0; font-size: 13px;'>Best Regards,<br/>Task Management System Team</p>"
+			    + "</td></tr>"
+     		    + "</table></td></tr></table></body></html>";
 
-	    sb.append("<div style='border:1px solid #e0e0e0; border-radius:8px; padding:20px; background-color:#fafafa;'>");
+		} else {	
+			subject = "Sub Task  Updated  Notification For: " + subtask.getSubTaskName();
+			body = "<!DOCTYPE html>"
+			    + "<html><head><meta charset='UTF-8'><title>Sub Task Updated</title></head>"
+			    + "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;'>"
+			    + "<table width='100%' cellpadding='0' cellspacing='0' style='padding: 30px 0;'>"
+			    + "<tr><td align='center'>"
+			    + "<table width='600' cellpadding='0' cellspacing='0' style='background-color: #ffffff; border-radius: 6px;'>"
+			    + "<tr><td style='background-color: #0468b4; padding: 20px; color: #ffffff; text-align: center; border-top-left-radius: 6px; border-top-right-radius: 6px;'>"
+			    + "<h2 style='margin: 0;'>Narvee Technologies</h2>"
+			    + "</td></tr>"
+			    + "<tr><td style='padding: 30px; color: #333;'>"
+			    + "<p style='font-size: 16px;'>Hi,</p>"
+			    + "<p style='font-size: 15px;'>The Sub Task has been updated. Please find the updated details below:</p>"
+			    + "<table cellpadding='6' cellspacing='0' style='font-size: 14px;'>"
+			    + "<tr><td style='font-weight: bold;'>Ticket ID:</td><td>" + subTaskDetails.getTicketid() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Project Name:</td><td>" + subTaskDetails.getProjectname() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Task Name :</td><td>" + subTaskDetails.getTaskname() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Sub Task name :</td><td>" + subtask.getSubTaskName() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Created Date :</td><td>" + subtask.getCreateddate().format(myFormatObj) + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Assigned Users:</td><td>" +users+ "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Target Date :</td><td>" + subtask.getTargetDate() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Status:</td><td>" + subtask.getStatus() + "</td></tr>"
+			    + "<tr><td style='font-weight: bold;'>Priority:</td><td>" + subtask.getPriority() + "</td></tr>"
+			    + "</table>"
+			    + "<p style='font-size: 14px; margin-top: 20px;'>Please check the portal for updated information.</p>"
+			    + "</td></tr>"
+			    + "<tr><td style='background-color: #f0f0f0; padding: 20px; text-align: center; color: #555; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;'>"
+			    + "<p style='margin: 0; font-size: 13px;'>Best Regards,<br/>Task Management System Team</p>"
+			    + "</td></tr>"
+			    + "</table></td></tr></table></body></html>";
 
-	    sb.append("<p style='margin:3px 0;'><strong> Ticket ID:</strong> ").append(task.getTicketid()).append("</p>");
-	    sb.append("<p style='margin:5px 0;'><strong> Task Name:</strong> ").append(task.getTaskname()).append("</p>");
-	    sb.append("<p style='margin:5px 0;'><strong> Description:</strong> ").append(task.getDescription()).append("</p>");
-	    sb.append("<p style='margin:5px 0;'><strong> Target Date:</strong> ").append(task.getTargetdate()).append("</p>");
-	    sb.append("<p style='margin:5px 0;'><strong>Status:</strong> ").append(task.getStatus()).append("</p>");
-	    sb.append("<p style='margin:5px 0;'><strong> Updated By:</strong> ").append(updatedBy).append("</p>");
-	    sb.append("<p style='margin:5px 0;'><strong> Assigned Users:</strong> ").append(users).append("</p>");
-	    sb.append("<p style='margin:5px 0;'><strong>Updated Date:</strong> ").append(task.getUpdateddate().format(myFormatObj)).append("</p>");
+			 
+		}
+		helper.setSubject(subject);
+		helper.setText(body, true);
+		mailSender.send(message);
+		logger.info("!!! inside class: EmailServiceImpl, !! method: End sendSubTaskCreationEmail");
 
-	    sb.append("</div>");
+	}
+	
+	public void sendSubtaskEmailTms(TmsSubTask subTask) throws MessagingException, UnsupportedEncodingException {
+		logger.info("!!! inside class: EmailServiceIml, !! method: End sendSubtaskEmail");
+		List<GetUsersDTO> userdetails = subTaskRepository.getSubtaskAssignUsersTms(subTask.getSubTaskId());
+		userdetails = userdetails.stream().filter(user -> user.getEmail() != null).collect(Collectors.toList());
 
-	    sb.append("<p style='margin-top:20px; font-size:15px;'>Please login to the <strong>Task Management System</strong> to view or take action.</p>");
+		GetUsersDTO getUsersDTO = taskRepository.getTmsUser(subTask.getUpdatedBy());
 
-	    sb.append("<p style='color:#777; font-size:13px;'>This is an automated email. Do not reply.</p>");
-	    sb.append("<p style='font-size:14px; color:#444;'>Best Regards,<br><strong>Task Management System Team</strong></p>");
+		StringBuilder users = new StringBuilder();
+		int i = 0;
+		String emails[] = new String[userdetails.size()];
 
-	    sb.append("</div></div>");
-	    sb.append("</body></html>");
+		for (GetUsersDTO userDTO : userdetails) {
+			if (i != 0) {
+				users.append(", ");
+			}
+			//users.append(userDTO.getPseudoname());
+			users.append(userDTO.getFullname());
+			emails[i] = userDTO.getEmail();
+			i++;
 
+		}
 
+		Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
 
-	    helper.setText(sb.toString(), true);
-	    mailSender.send(message);
+		String[] uniqueEmails = emailSet.toArray(new String[0]);
 
-	    logger.info("Email sent for updated task: " + task.getTaskname());
+		MimeMessage message = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(message);
+		helper.setFrom(narveemail, shortMessage);
+		helper.setTo(uniqueEmails);
+//		helper.setCc(ccmail);
+
+		String subject = "SubTask Status Updated: " + subTask.getSubTaskName();
+
+		StringBuilder body = new StringBuilder();
+		body.append("<html><body style='font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;background-color:#f4f4f4;padding:20px;'>")
+		    .append("<div style='background-color:#ffffff;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.1);padding:20px;max-width:600px;margin:auto;'>")
+
+		    .append("<div style='font-size:20px;font-weight:600;color:#333;margin-bottom:15px;'>📌 Task Status Update</div>")
+
+		    .append("<div style='margin:10px 0;'>Hi <strong>").append(users).append("</strong>,</div>")
+
+		    .append("<div style='margin:10px 0;'>The status of the task <strong>")
+		    .append(subTask.getSubTaskName())
+		    .append("</strong> has been updated to: <strong style='color:#d9534f;'>")
+		    .append(subTask.getStatus())
+		    .append("</strong> by <strong>")
+		    .append(getUsersDTO.getFullname())
+		    .append("</strong>.</div>")
+
+		    .append("<div style='margin:10px 0;'><span style='font-weight:600;color:#555;'>Task ID:</span> ")
+		    .append("<span style='color:#000;'>").append(subTask.getTask().getTicketid()).append("</span></div>")
+
+		    .append("<div style='margin:10px 0;'><span style='font-weight:600;color:#555;'>Sub-Task Name:</span> ")
+		    .append("<span style='color:#000;'>").append(subTask.getSubTaskName()).append("</span></div>")
+
+		    .append("<div style='margin-top:30px;font-size:14px;color:#888;text-align:center;'>")
+		    .append("Best Regards,<br><strong>Narvee Technologies</strong></div>")
+
+		    .append("</div></body></html>");
+
+		helper.setSubject(subject);
+		helper.setText(body.toString(), true);
+		mailSender.send(message);
+
+		logger.info("!!! inside class: EmailServiceImpl, !! method: End sendStatusUpdateSubtaskEmail");
+	}
+	
+	//--------------------sending email  when user commented ---------------------
+	
+	public void sendTmsCommentEmail(UpdateTask updateTask) throws MessagingException, UnsupportedEncodingException {
+		logger.info("!!! inside class: EmailServiceImpl, !! method:  sendCommentEmail");
+		List<GetUsersDTO> userdetails = null;
+		String createdByDetails = null;
+		if (updateTask.getTaskid() == null) {
+			userdetails = subTaskRepository.getSubtaskAssignUsersTms(updateTask.getSubTaskId());
+
+			createdByDetails = userdetails.stream().filter(user -> user.getCemail() != null).map(GetUsersDTO::getCemail)
+					.findFirst().orElse("No Email found");
+
+			userdetails = userdetails.stream().filter(user -> user.getEmail() != null).collect(Collectors.toList());
+
+		} else {
+			userdetails = taskRepository.getTmsAssignUsers(updateTask.getTaskid());
+			createdByDetails = userdetails.stream().filter(user -> user.getCemail() != null).map(GetUsersDTO::getCemail)
+					.findFirst().orElse("No Email found");
+			userdetails = userdetails.stream().filter(user -> user.getEmail() != null).collect(Collectors.toList());
+
+		}
+		GetUsersDTO getUsersDTO = taskRepository.gettmsUser(updateTask.getUpdatedby());
+
+		StringBuilder users = new StringBuilder();
+		int i = 0;
+		String emails[] = new String[userdetails.size() + 1];
+
+		for (GetUsersDTO userDTO : userdetails) {
+			if (i != 0) {
+				users.append(", ");
+			}
+
+			users.append(userDTO.getFullname());
+			emails[i] = userDTO.getEmail();
+			i++;
+
+		}
+		emails[i] = createdByDetails;
+
+		Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
+		String[] uniqueEmails = emailSet.toArray(new String[0]);
+
+		MimeMessage message = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(message);
+		helper.setTo(uniqueEmails);
+//		helper.setCc(ccmail);
+		helper.setFrom(narveemail, shortMessage);
+		String subject = "Task Comment Added: " + updateTask.getTicketid();
+		String body = "<html><body>" + "<div>Hi " + users + ",</div> <br>" + "<div>The Ticket  Id : <strong>"
+				+ updateTask.getTicketid() + "</strong> has a new comment:</div>" + "<div><strong>Comment: </strong> "
+				+ updateTask.getComments() + " <strong>Commented by: </strong> " + getUsersDTO.getFullname() + "</div>"
+				+ "<div><strong>Status:</strong> " + updateTask.getStatus() + "</div>" + "<div>Ticket ID: <strong>"
+				+ updateTask.getTicketid() + "</strong></div> <br>" + "<div>Best Regards,</div>"
+				+ "<div>Narvee Technologies</div>" + "</body></html>";
+		helper.setSubject(subject);
+		helper.setText(body, true);
+		mailSender.send(message);
+		logger.info("!!! inside class: EmailServiceImpl, !! method: End sendCommentEmail");
 	}
 
+	
 
 }

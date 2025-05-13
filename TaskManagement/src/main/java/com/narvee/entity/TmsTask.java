@@ -19,6 +19,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -53,7 +54,7 @@ public class TmsTask extends AuditModel {
 
 	private Long updatedby;
 	
-	private String prioriry;
+	private String priority;
 	
 	private Long duration;
 
@@ -63,7 +64,7 @@ public class TmsTask extends AuditModel {
 	private LocalDate startDate;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	private LocalDate targetdate;
+	private LocalDate targetDate;
 
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "taskid")
@@ -90,7 +91,10 @@ public class TmsTask extends AuditModel {
 	@JoinColumn(name = "task_id")
 	private List<TmsSubTask> subTasks = new ArrayList<>();
 	
-	
+	@OneToMany(mappedBy = "task", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ToString.Exclude
+	@JsonManagedReference(value = "task-file")
+	    private List<TmsFileUpload> files = new ArrayList<>();
 	
 
 }

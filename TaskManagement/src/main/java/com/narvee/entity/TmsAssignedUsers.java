@@ -22,7 +22,7 @@ public class TmsAssignedUsers {
 	private Long userid;
 	private Long tmsUserId;
 	private boolean completed ;
-	private String userstatus ="To Do";
+	private String userstatus = "open";
 	
 	@Transient
 	private String fullname;

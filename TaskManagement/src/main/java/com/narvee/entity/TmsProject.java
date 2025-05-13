@@ -1,5 +1,7 @@
 package com.narvee.entity;
 
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -15,6 +17,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.narvee.commons.AuditModel;
 
@@ -22,11 +25,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 
 @Entity
-@Data
-@AllArgsConstructor
+@Data@AllArgsConstructor
 @NoArgsConstructor
 @Table
 @EqualsAndHashCode(callSuper = true)
@@ -50,10 +53,17 @@ public class TmsProject extends AuditModel {
 	private String status="To Do";
 	@Column(name = "projectdescription", columnDefinition = "MEDIUMTEXT")
 	private String description;
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	private LocalDate startDate;
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	private LocalDate targetDate;
+	
 
 	private String department;
 	
-	@OneToMany
+	@OneToMany(cascade = CascadeType.ALL)
 	@JsonManagedReference
 	@JoinColumn(name = "pid")
     private List<TmsTask> tasks = new ArrayList<>();
@@ -61,5 +71,10 @@ public class TmsProject extends AuditModel {
 	@OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
 	@JoinColumn(name = "pid")
     private Set<TmsAssignedUsers> assignedto;
+	
+	 @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	 @JsonManagedReference(value = "project-file")
+     @ToString.Exclude
+	    private List<TmsFileUpload> files = new ArrayList<>();
 	
 }

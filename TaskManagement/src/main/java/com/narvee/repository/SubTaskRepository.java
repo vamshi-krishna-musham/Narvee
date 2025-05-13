@@ -29,7 +29,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	public Page<SubTaskUserDTO> getSubTaskUserFiltering(Pageable pageable, @Param("keyword") String keyword);
 
 	@Query(value = "select * from tms_sub_task s WHERE (s.subTaskName LIKE CONCAT('%', :keyword, '%') OR s.subTaskDescription LIKE CONCAT('%', :keyword, '%') or s.status LIKE CONCAT('%', :keyword, '%') "
-			+ " or s.targetDate LIKE CONCAT('%', :keyword, '%')) ", nativeQuery = true)
+			+ " or s.targetDate LIKE CONCAT('%', :keyword, '%') OR s.startDate LIKE CONCAT('%', :keyword, '%')) ", nativeQuery = true)
 	public Page<TmsSubTask> getAllSubTasksSortingAndFiltering(Pageable pageable, @Param("keyword") String keyword);
 
 	public List<TmsSubTask> findByTaskTicketid(String ticketid);
@@ -63,4 +63,47 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	@Query(value = "SELECT st.subtaskid, st.status,u.fullname, u.pseudoname, st.subtaskname, st.targetdate, t.ticketid, u.email FROM tms_sub_task st JOIN tms_assigned_users au ON st.subtaskid = au.subtaskid\r\n"
 			+ "JOIN users u ON au.userid = u.userid JOIN tms_task t ON st.taskid = t.taskid WHERE date(st.targetdate) < :currentDate AND st.status!='to do' AND st.status!='Completed'  ", nativeQuery = true)
 	public List<TaskTrackerDTO> getExceededTargetDateSubTasks(LocalDate currentDate);
+	
+	
+	
+	//----------------------------tms   replicated methods --------------
+	@Query(value = "select st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.targetdate,st.addedby,st.duration,DATE(st.createddate) AS createddate ,st.priority,st.status, "
+			+ " st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname  , t.start_date "
+			+ "        from tms_sub_task  st join tms_task t where st.taskid =t.taskid and t.ticketid = :ticketId Order by t.updateddate DESC ", nativeQuery = true)
+	public Page<TaskTrackerDTO> findSubTaskByTicketid(@Param("ticketId") String ticketId,Pageable pageable);
+	
+	
+	
+	@Query(value = "SELECT  st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.targetdate,st.addedby,st.duration,DATE(st.createddate) AS createddate ,"
+			+ "  st.priority,st.status,st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname , t.start_date "
+			+ "FROM  tms_sub_task  st join tms_task t where st.taskid = t.taskid and t.ticketid = :ticketId AND ( st.subtaskid LIKE CONCAT('%',:keyword, '%') OR "
+			+ "  st.subtaskdescription LIKE CONCAT('%',:keyword, '%') OR st.subtaskname LIKE CONCAT('%',:keyword,  '%') OR DATE_FORMAT(t.targetdate, '%Y-%m-%d') LIKE CONCAT('%',:keyword,  '%')  OR DATE_FORMAT(t.start_date, '%Y-%m-%d')_date LIKE CONCAT('%',:keyword,  '%') "
+			+ "OR st.status LIKE CONCAT('%',:keyword, '%') OR st.priority LIKE CONCAT('%',:keyword, '%') OR st.duration LIKE CONCAT('%',:keyword, '%') OR st.taskid LIKE CONCAT('%',:keyword, '%'))", nativeQuery = true)
+	public Page<TaskTrackerDTO> findSubTaskByTicketIdWithSearching(@Param("ticketId") String ticketId,
+			@Param("keyword") String keyword,Pageable pageable);
+	
+	@Query(value = "       SELECT \r\n"
+			+ "			    st.subtaskid,  \r\n"
+			+ "			    NULL AS fullname,   \r\n"
+			+ "			    NULL AS email,   \r\n"
+			+ "			    creator.full_name as cfullname ,  \r\n"
+			+ "			    creator.email as cemail   \r\n"
+			+ "			FROM tms_sub_task st  \r\n"
+			+ "			JOIN tms_users creator ON st.addedby = creator.user_id    \r\n"
+			+ "			WHERE st.subtaskid = :subtaskid \r\n"
+			+ "			  \r\n"
+			+ "			UNION ALL  \r\n"
+			+ "			  \r\n"
+			+ "			SELECT   \r\n"
+			+ "			    st.subtaskid,   \r\n"
+			+ "			    u.full_name ,   \r\n"
+			+ "			    u.email,   \r\n"
+			+ "			    NULL AS fullname,   \r\n"
+			+ "			    NULL AS email  \r\n"
+			+ "			FROM tms_sub_task st \r\n"
+			+ "			\r\n"
+			+ "			JOIN tms_assigned_users au ON st.subtaskid = au.subtaskid  \r\n"
+			+ "			JOIN tms_users u ON au.tms_user_id = u.user_id    \r\n"
+			+ "			WHERE st.subtaskid = :subtaskid ", nativeQuery = true)
+	public List<GetUsersDTO> getSubtaskAssignUsersTms(Long subtaskid);
 }

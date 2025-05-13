@@ -19,6 +19,7 @@ import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.narvee.commons.AuditModel;
 
 import lombok.AllArgsConstructor;
@@ -42,7 +43,7 @@ public class TmsSubTask extends AuditModel {
 	private Long subTaskId;
 	@Column(name = "subtaskname")
 	private String subTaskName;
-	@Column(name = "subtaskdescription")
+	@Column(name = "subtaskdescription",  columnDefinition = "TEXT")
 	private String subTaskDescription;
 	@Column(name = "addedby")
 	private Long addedby;
@@ -53,6 +54,13 @@ public class TmsSubTask extends AuditModel {
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@Column(name = "targetdate")
 	private LocalDate targetDate;
+	
+	@Column(name = "startDate")
+	private LocalDate startDate;
+	
+	private Long duration;
+	
+	private String priority;
 
 	@JsonBackReference
 	@ToString.Exclude
@@ -71,4 +79,8 @@ public class TmsSubTask extends AuditModel {
   
 	@Transient
 	private Long taskId;
+	
+	@OneToMany(mappedBy = "subtask", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference(value = "subTask-file")
+	    private List<TmsFileUpload> files = new ArrayList<>();
 }
