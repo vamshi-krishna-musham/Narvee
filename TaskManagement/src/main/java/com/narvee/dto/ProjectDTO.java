@@ -1,5 +1,6 @@
 package com.narvee.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
@@ -20,4 +21,11 @@ public interface ProjectDTO {
 	public String getProjectid();
 	
 	public LocalDateTime getCreateddate();
+	
+	public LocalDate getstartDate();
+	
+	public LocalDate gettargetDate();
+	
+	
+	
 }

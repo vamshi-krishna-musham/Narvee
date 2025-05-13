@@ -40,7 +40,7 @@ public class TasksResponseDTO {
 	        this.taskName = dto.getTaskName();
 	        this.description = dto.getDescription();
 	        this.createddate = dto.getCreateddate();
-	        this.targetdate = dto.getTargetdate();
+	        this.targetdate = dto.gettarget_date();
 	        this.taskdescription = dto.getTaskdescription();
 	        this.pseudoname = dto.getPseudoname();
 	        this.duration = dto.getDuration();

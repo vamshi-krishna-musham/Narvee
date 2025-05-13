@@ -255,7 +255,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	
 
 	
-	@Query(value = "SELECT  t.taskid,DATE(t.createddate) As createddate,DATE(t.updateddate) AS updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,"
+	@Query(value = "SELECT  t.taskid,DATE(t.createddate) As createddate,DATE(t.updateddate) AS updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.target_date,t.ticketid,t.updatedby,"
 			+ " t.taskname,p.projectid,p.pid,t.duration,t.priority ,t.start_date "
 			+ "			FROM tms_task t  Join tms_project p ON t.pid = p.pid WHERE p.projectid = :projectid ", nativeQuery = true)
 	public Page<TaskTrackerDTO> findTaskByTmsProjectid(@Param("projectid") String projectid,Pageable pageable);
