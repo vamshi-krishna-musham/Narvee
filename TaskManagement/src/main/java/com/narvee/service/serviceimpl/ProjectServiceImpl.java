@@ -265,8 +265,6 @@ public class ProjectServiceImpl implements ProjectService {
 		@Override
 		public Page<ProjectDTO> findTmsAllProjects(RequestDTO requestresponsedto) {
 			logger.info("!!! inside class: ProjectServiceImpl , !! method: findTmsAllProjects" );
-			
-	 System.err.println(requestresponsedto );
 			String sortorder = requestresponsedto.getSortOrder();
 			String sortfield = requestresponsedto.getSortField();
 			String keyword = requestresponsedto.getKeyword();
