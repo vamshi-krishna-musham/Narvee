@@ -337,5 +337,10 @@ public class TaskController {
 
 	}
 	
-	
+	@RequestMapping(value = "/updateTmsTaskStatus/{taskid}/{status}/{updatedby}", method = RequestMethod.GET, produces = "application/json")
+	public ResponseEntity<RestAPIResponse> updateTmsTaskStatus(@PathVariable Long taskid, @PathVariable String status,@PathVariable Long updatedby) {
+		logger.info("!!! inside class: TaskController , !! method: updateTmsTaskStatus--tms");
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Updated status  successfully",
+				service.updateTmsTaskStatus(taskid, status,updatedby)), HttpStatus.OK);
+	}
 }

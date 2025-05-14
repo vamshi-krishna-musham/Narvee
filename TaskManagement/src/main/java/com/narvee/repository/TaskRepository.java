@@ -292,4 +292,10 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			+ "         t.taskid = tu.taskid join tms_assigned_users au on au.assignid = tu.assignedto join tms_users u on au.tms_user_id = u.user_id where u.user_id = :userid and t.pid = :pid"
 			+ "         GROUP BY status",nativeQuery = true)	
 	public List<Object[]> getTaskCountByUserAndPid(Long pid, Long userid);
+	
+	@Modifying
+	@Transactional
+	@Query(value = "UPDATE tms_task SET status=:status, updatedby=:updatedby , updateddate = :updateddate WHERE taskid =:taskid ", nativeQuery = true)
+	public int updateTmsTaskStatus(@Param("taskid") Long taskid, @Param("status") String status,
+			@Param("updatedby") Long updatedby, LocalDateTime updateddate);
 }
