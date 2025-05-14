@@ -32,7 +32,7 @@ public interface TaskTrackerDTO {
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	public LocalDate getCreateddate();
 	
-	public LocalDate getTargetdate();
+	public LocalDate gettarget_date();
 	
 	public LocalDate getstart_date();
 

@@ -53,6 +53,7 @@ public class TmsSubTask extends AuditModel {
 	private String status;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@Column(name = "targetdate")
+	
 	private LocalDate targetDate;
 	
 	@Column(name = "startDate")

@@ -469,7 +469,7 @@ public class EmailServiceImpl {
 			subject = "Task Target Exceeded " + task.getTaskName();
 			body.append("<div><strong>Task Name:</strong> " + task.getTaskName() + "</div>");
 		}
-		body.append("<div><strong style='color: red;'>Target Date:</strong> " + task.getTargetdate() + "</div>");
+		body.append("<div><strong style='color: red;'>Target Date:</strong> " + task.gettarget_date() + "</div>");
 
 		body.append(
 				"If there are any challenges or issues preventing completion within the specified time frame, feel free to reach out so we can discuss potential solutions.<br>"

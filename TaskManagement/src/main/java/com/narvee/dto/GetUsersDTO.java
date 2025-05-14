@@ -13,6 +13,8 @@ public interface GetUsersDTO {
 	public String getTicketid();
 	public String getUpdatedby();
 	public String getCemail();
+	public String getStart_date();
+	public String getTarget_date();
 	
 	
 	

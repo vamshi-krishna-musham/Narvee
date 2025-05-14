@@ -39,7 +39,7 @@ public class SubTaskResponseDTO {
 	        this.startDate = dto.getstart_date();
 	        this.subTaskDescription = dto.getDescription();
 	        this.createddate = dto.getCreateddate();
-	        this.targetdate = dto.getTargetdate();
+	        this.targetdate = dto.gettarget_date();
 	        this.taskdescription = dto.getTaskdescription();
 	        this.pseudoname = dto.getPseudoname();
 	        this.duration = dto.getDuration();
