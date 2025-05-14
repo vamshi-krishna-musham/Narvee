@@ -815,6 +815,26 @@ public class TaskServiceImpl implements TaskService {
 	    }
 	    return statusCount;
 	}
+   
+	
+	@Override
+	public boolean updateTmsTaskStatus(Long taskid, String status, Long updatedby) {
+		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTaskStatus");
 
+		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
+		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
+
+		try {
+			taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);
+			TmsTask taskInfo = taskRepo.findById(taskid).get();
+			emailService.sendStatusUpdateEmail(taskInfo);
+
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+
+		return true;
+
+	}
 	
 }

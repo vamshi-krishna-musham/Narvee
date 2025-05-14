@@ -357,21 +357,21 @@ public class ProjectServiceImpl implements ProjectService {
 		
 
 
-		Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
-		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
-				.collect(Collectors.toList());
-
-		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(project.getUpdatedBy(), usersids);
-		TmsProject tmsProject = projectrepository.save(project);
-		try {
-			emailService.sendCreateProjectEmail(project, user, false);
-		} catch (UnsupportedEncodingException | MessagingException e) {
-			e.printStackTrace();
-		}
-
-		return tmsProject;
-
-	}
+//		Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
+//		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
+//				.collect(Collectors.toList());
+//
+//		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(project.getUpdatedBy(), usersids);
+//		TmsProject tmsProject = projectrepository.save(project);
+//		try {
+//			emailService.sendCreateProjectEmail(project, user, false);
+//		} catch (UnsupportedEncodingException | MessagingException e) {
+//			e.printStackTrace();
+//		}
+//
+//		return tmsProject;
+//
+//	}
 
 
 	@Override

@@ -78,6 +78,9 @@ public interface TaskService {
 	public void deleteTmsTaskFileIpload(Long id);
 	
 	public Map<String, Long> getTaskCountByStatus(Long pid,Long userid);
+	 
+	 
+	 public boolean updateTmsTaskStatus(Long taskid, String status,Long updatedby);
 	
 	
 	
