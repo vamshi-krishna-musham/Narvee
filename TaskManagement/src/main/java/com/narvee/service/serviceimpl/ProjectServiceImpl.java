@@ -352,8 +352,10 @@ public class ProjectServiceImpl implements ProjectService {
 
 			project.getFiles().addAll(uploadedFiles);
 		}
-        
+		return project;
+	}       
 		
+
 
 		Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
 		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
@@ -370,6 +372,7 @@ public class ProjectServiceImpl implements ProjectService {
 		return tmsProject;
 
 	}
+
 
 	@Override
 	public Page<ProjectResponseDto> findTmsAllProjects(RequestDTO requestresponsedto) {
