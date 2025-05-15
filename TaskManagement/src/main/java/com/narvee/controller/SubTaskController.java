@@ -151,7 +151,7 @@ public class SubTaskController {
 					HttpStatus.OK);
 		}catch(Exception exception){
 			
-			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("fail", "SubTask not found"), HttpStatus.OK);
+			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("fail", "SubTask not found",exception), HttpStatus.OK);
 	  }
 	}
 	

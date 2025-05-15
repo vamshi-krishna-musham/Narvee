@@ -366,6 +366,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 		    subtask.setUpdatedBy(updatesubtask.getUpdatedBy());
 		    subtask.setStatus(updatesubtask.getStatus());
 		    subtask.setTargetDate(updatesubtask.getTargetDate());
+		    subtask.setAssignedto(updatesubtask.getAssignedto());
 		    subtask.setSubTaskDescription(updatesubtask.getSubTaskDescription());
 
 			if (files != null && !files.isEmpty()) {
