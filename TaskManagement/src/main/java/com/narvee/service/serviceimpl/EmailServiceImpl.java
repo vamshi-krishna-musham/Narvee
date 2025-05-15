@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.narvee.dto.GetUsersDTO;
@@ -345,7 +346,7 @@ public class EmailServiceImpl {
 	}
 
 	
-	
+	@Async
 	public void sendCreateProjectEmail(TmsProject project, List<GetUsersDTO> userdetails, boolean projectUpdate)   //----------->  this is used for both Tms superate project and Ats TMS
 			throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: EmailServiceImpl, !! method: sendCreateProjectEmail");
@@ -445,6 +446,7 @@ public class EmailServiceImpl {
 
 	}
 
+	@Async
 	public void targetExceededEmail(TaskTrackerDTO task, String taskType)
 			throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: TaskEmailServiceIml, !! method: targetExceededEmail");
@@ -485,7 +487,7 @@ public class EmailServiceImpl {
 	
 	
 	
-	
+	@Async
 	public void TaskAssigningEmailForTMS(TmsTask task, List<GetUsersDTO> userdetails,boolean isTask)  //   task created and updated email for TMS project 
 			throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: TaskEmailServiceIml, !! method: TaskAssigningEmailForTMS --- tms ");
@@ -597,6 +599,7 @@ public class EmailServiceImpl {
 	
 	
 	// --------------------------for tms sub task  --------------------------------
+	@Async
 	public void sendCreateSubTaskEmail(TmsSubTask subtask, List<GetUsersDTO> userdetails, boolean  SubTaskUpdate)
 			throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: SubTaskServiceImpl, !! method: SubTaskAssigningEmail");
@@ -707,6 +710,7 @@ public class EmailServiceImpl {
 
 	}
 	
+	@Async
 	public void sendSubtaskEmailTms(TmsSubTask subTask) throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: EmailServiceIml, !! method: End sendSubtaskEmail");
 		List<GetUsersDTO> userdetails = subTaskRepository.getSubtaskAssignUsersTms(subTask.getSubTaskId());
@@ -777,6 +781,7 @@ public class EmailServiceImpl {
 	
 	//--------------------sending email  when user commented ---------------------
 	
+	@Async
 	public void sendTmsCommentEmail(UpdateTask updateTask) throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: EmailServiceImpl, !! method:  sendCommentEmail");
 		List<GetUsersDTO> userdetails = null;

@@ -78,9 +78,14 @@ public class ProjectController {
 	@DeleteMapping("/delete/{pid}")
 	public ResponseEntity<RestAPIResponse> deleteProjectById(@PathVariable Long pid) {
 		logger.info("!!! inside class: ProjectController , !! method: deleteProjectById");
+		try {
 		projectservice.deleteProject(pid);
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Deleted successfully"),
-				HttpStatus.OK);
+			HttpStatus.OK);
+		}catch(Exception e) {
+			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("Failed", "Cannot delete this Project because it has associated Task"),
+					HttpStatus.OK);
+		}
 	}
 
 	@PutMapping("/update")
