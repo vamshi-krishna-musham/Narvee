@@ -1,6 +1,8 @@
 package com.narvee.repository;
 
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.narvee.dto.ProjectDTO;
+import com.narvee.dto.ProjectDropDownDTO;
 import com.narvee.entity.TmsProject;
 
 @Repository
@@ -68,4 +71,12 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
 	@Query(value = "SELECT  p.pid , p.projectname , p.projectdescription ,  DATE(p.start_date) AS startDate , DATE(p.target_date) AS targetDate,p.addedby , p.status , p.updatedby , p.projectid , p.createddate , p.department FROM tms_project p  , tms_assigned_users au where au.pid= p.pid AND"
 			+ " au.tms_user_id=:userid AND (p.projectname LIKE CONCAT('%', :keyword, '%') OR p.projectdescription LIKE CONCAT('%', :keyword, '%') or p.addedby LIKE CONCAT('%', :keyword, '%') OR DATE_FORMAT(p.start_date, '%Y-%m-%d') LIKE CONCAT('%', :keyword, '%') OR  DATE_FORMAT(p.target_date, '%Y-%m-%d') LIKE CONCAT('%', :keyword, '%'))", nativeQuery = true)
 	public Page<ProjectDTO> getAllProjectsByTmsUserFilter(Pageable pageable, @Param("keyword") String keyword , Long userid); // --- QUERY FOR GET ALL PROJECT BY USER ID FOR TMS USERS ADDED BY KEERTHI
+
+
+	@Query(value="select distinct p.pid, p.projectid ,p.projectname from tms_project p join tms_assigned_users au ON au.pid=p.pid",nativeQuery =true)
+	public List<ProjectDropDownDTO> projectDropDownWithAdmin();
+	
+
+	@Query(value="select distinct p.pid, p.projectid ,p.projectname from tms_project p join tms_assigned_users au ON au.pid=p.pid where au.tms_user_id=:userId",nativeQuery =true)
+	public List<ProjectDropDownDTO> projectDropDownWithOutAdmin(@Param("userId") Long userId);
 }

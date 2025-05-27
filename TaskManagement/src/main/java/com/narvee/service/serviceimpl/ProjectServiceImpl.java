@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.ProjectDTO;
+import com.narvee.dto.ProjectDropDownDTO;
 import com.narvee.dto.ProjectResponseDto;
 import com.narvee.dto.RequestDTO;
 import com.narvee.entity.TmsAssignedUsers;
@@ -516,4 +517,13 @@ public class ProjectServiceImpl implements ProjectService {
 
 	}
 
+	@Override
+	public List<ProjectDropDownDTO> projectDropDownWithOutAdmin(Long userId, Boolean isAdmin) {
+		 if (isAdmin) {
+	            return projectrepository.projectDropDownWithAdmin();
+	        } else {
+	            return projectrepository.projectDropDownWithOutAdmin(userId);
+	        }
+	    }
+	
 }

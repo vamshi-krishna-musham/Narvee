@@ -51,7 +51,6 @@ public class ProjectController {
 	
 	@Value("${AppFilesDir}")
     private String UPLOAD_DIR;
-
 	
 	 //private final Path fileStorageLocation = Paths.get("project-files").toAbsolutePath().normalize();
 	 
@@ -179,6 +178,12 @@ public class ProjectController {
         }
 
 
+		@GetMapping("/dropDown/{userId}/{isAdmin}")
+		public ResponseEntity<RestAPIResponse> projectDropDownWithOutAdmin(@PathVariable Long userId,@PathVariable boolean isAdmin){
+		 return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched projectDropDownWithOutAdmin successfully",
+					projectservice.projectDropDownWithOutAdmin(userId, false)), HttpStatus.OK);
+			
+		}
 		
 
 }
