@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.narvee.dto.ProjectDTO;
+import com.narvee.dto.ProjectDropDownDTO;
 import com.narvee.dto.ProjectResponseDto;
 import com.narvee.dto.RequestDTO;
 import com.narvee.entity.TmsProject;
@@ -34,5 +35,6 @@ public interface ProjectService {
 	public TmsProject updateprojectTms(TmsProject updateproject,List<MultipartFile> files) ;
 	
 	public Page<ProjectResponseDto> findTmsAllProjects(RequestDTO requestresponsedto);
+	public List<ProjectDropDownDTO> projectDropDownWithOutAdmin(Long userId, Boolean isAdmin);
 	
 }
