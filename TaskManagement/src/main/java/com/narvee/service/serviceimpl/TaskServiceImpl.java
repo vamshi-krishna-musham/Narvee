@@ -419,7 +419,7 @@ public class TaskServiceImpl implements TaskService {
 		            try {
 		            	
 		                String originalFileName = file.getOriginalFilename();
-		                if (file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isBlank()) {
+		                if (file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isEmpty()) {
 			                continue;
 			            }
 		                String nameWithoutExt = originalFileName;
@@ -515,6 +515,7 @@ public class TaskServiceImpl implements TaskService {
 		update.setAssignedto(task.getAssignedto());
 		update.setUpdatedby(task.getUpdatedby());
 		update.setStatus(task.getStatus());
+		update.setStartDate(task.getStartDate());
 		
 		   //Path path = Paths.get(UPLOAD_DIR + getOriginalFilename);
 		if (files != null && !files.isEmpty()) {
@@ -630,10 +631,9 @@ public class TaskServiceImpl implements TaskService {
 
 		
 		if (keyword.equalsIgnoreCase("empty")) {
-
+			logger.info("!!! inside class: TaskServiceImpl , !! method: findTaskByProjectid -- tms with empty ");
 			Page<TaskTrackerDTO> res = taskRepo.findTaskByTmsProjectid(projectid,pageable);
 			
-			logger.info("!!! inside class: TaskServiceImpl , !! method: findTaskByProjectid -- tms with empty keyword ");
 			List<TasksResponseDTO> tasksList = new ArrayList<>();
 
 			for (TaskTrackerDTO order : res) {
@@ -645,7 +645,8 @@ public class TaskServiceImpl implements TaskService {
 						.collect(Collectors.toList());
 				result.setAssignUsers(filteredAssignUsers);
 				
-				  List<TmsFileUpload> fileEntities = fileUploadRepository.getTaskFiles(order.getTaskid()); // Implement this
+				  List<TmsFileUpload> fileEntities = fileUploadRepository.getTaskFiles(order.getTaskid());
+				  // Implement this
 				    List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
 				        FileUploadDto dto = new FileUploadDto();
 				        dto.setId(file.getId());
@@ -658,6 +659,7 @@ public class TaskServiceImpl implements TaskService {
 
 				tasksList.add(result);
 
+				
 			}
 			  Page<TasksResponseDTO> tasksPage = new PageImpl<>(tasksList, pageable, res.getTotalElements());
 			Long pid = taskRepo.findPid(projectid);

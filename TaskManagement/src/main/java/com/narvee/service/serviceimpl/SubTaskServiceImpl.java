@@ -312,7 +312,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 		            try {
 		                String originalFileName = file.getOriginalFilename();
 		                
-		                if (file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isBlank()) {
+		                if (file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isEmpty()) {
 			                continue;
 			            }
 		                String nameWithoutExt = originalFileName;
@@ -368,6 +368,8 @@ public class SubTaskServiceImpl implements SubTaskService {
 		    subtask.setTargetDate(updatesubtask.getTargetDate());
 		    subtask.setAssignedto(updatesubtask.getAssignedto());
 		    subtask.setSubTaskDescription(updatesubtask.getSubTaskDescription());
+		    subtask.setStartDate(updatesubtask.getStartDate());
+		    subtask.setDuration(updatesubtask.getDuration());;
 
 			if (files != null && !files.isEmpty()) {
 			    List<TmsFileUpload> uploadedFiles = files.stream().filter(file -> file != null && !file.isEmpty()).map(file -> {

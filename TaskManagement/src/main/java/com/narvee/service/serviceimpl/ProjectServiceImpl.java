@@ -6,12 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.mail.MessagingException;
@@ -28,16 +25,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.narvee.dto.AssignedUsersDto;
-import com.narvee.dto.FileUploadDto;
 import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.ProjectDTO;
 import com.narvee.dto.ProjectResponseDto;
 import com.narvee.dto.RequestDTO;
-import com.narvee.dto.TaskResponse;
-import com.narvee.dto.TaskTrackerDTO;
-import com.narvee.dto.TasksResponseDTO;
-import com.narvee.dto.TmsProjectResponseDto;
 import com.narvee.entity.TmsAssignedUsers;
 import com.narvee.entity.TmsFileUpload;
 import com.narvee.entity.TmsProject;
@@ -229,7 +220,7 @@ public class ProjectServiceImpl implements ProjectService {
 			for (MultipartFile file : files) {
 				try {
 					String originalFilename = file.getOriginalFilename();
-					  if (file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isBlank()) {
+					  if (file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isEmpty()) {
 			                continue;
 			            }
 
@@ -315,6 +306,8 @@ public class ProjectServiceImpl implements ProjectService {
 	//	project.setTasks(updateproject.getTasks());
 		project.setAssignedto(updateproject.getAssignedto());
 		project.setDepartment(updateproject.getDepartment());
+		project.setStartDate(updateproject.getStartDate());
+		project.setTargetDate(updateproject.getTargetDate());		
 		// project.setFiles(updateproject.getFiles());
 		
 		projectrepository.save(project);
