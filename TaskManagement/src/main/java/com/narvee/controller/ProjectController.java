@@ -179,9 +179,10 @@ public class ProjectController {
 
 
 		@GetMapping("/dropDown/{userId}/{isAdmin}")
-		public ResponseEntity<RestAPIResponse> projectDropDownWithOutAdmin(@PathVariable Long userId,@PathVariable boolean isAdmin){
+		public ResponseEntity<RestAPIResponse> projectDropDownWithOutAdmin(@PathVariable Long userId,@PathVariable String isAdmin){
+			logger.info("!!! inside class: ProjectController , !! method: projectDropDownWithOutAdmin");
 		 return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched projectDropDownWithOutAdmin successfully",
-					projectservice.projectDropDownWithOutAdmin(userId, false)), HttpStatus.OK);
+					projectservice.projectDropDownWithOutAdmin(userId, isAdmin)), HttpStatus.OK);
 			
 		}
 		

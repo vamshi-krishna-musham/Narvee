@@ -35,6 +35,6 @@ public interface ProjectService {
 	public TmsProject updateprojectTms(TmsProject updateproject,List<MultipartFile> files) ;
 	
 	public Page<ProjectResponseDto> findTmsAllProjects(RequestDTO requestresponsedto);
-	public List<ProjectDropDownDTO> projectDropDownWithOutAdmin(Long userId, Boolean isAdmin);
+	public List<ProjectDropDownDTO> projectDropDownWithOutAdmin(Long userId, String isAdmin);
 	
 }
