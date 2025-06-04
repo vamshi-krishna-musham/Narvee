@@ -509,13 +509,15 @@ public class TaskServiceImpl implements TaskService {
 		TmsTask update = taskRepo.findById(task.getTaskid()).get();
 		
 		update.setTargetDate(task.getTargetDate());
+		update.setStartDate(task.getStartDate());
 		update.setTaskname(task.getTaskname());
 		update.setPriority(task.getPriority());
 		update.setDescription(task.getDescription());
 		update.setAssignedto(task.getAssignedto());
 		update.setUpdatedby(task.getUpdatedby());
 		update.setStatus(task.getStatus());
-		update.setStartDate(task.getStartDate());
+		update.setDuration(task.getDuration());
+
 		
 		   //Path path = Paths.get(UPLOAD_DIR + getOriginalFilename);
 		if (files != null && !files.isEmpty()) {

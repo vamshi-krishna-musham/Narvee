@@ -102,12 +102,11 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 
 	@Override
-	public void deleteProject(Long pid) { // it will work for bith Ats And tms users --------
-		logger.info(
-				"!!! inside class: ProjectSe                                                                                                                                                                                                    rviceImpl , !! method: deleteProject");
-		projectrepository.deleteById(pid);
-
+	public void deleteProject(Long pid) { // it will work for both ATS and TMS users
+	    logger.info("!!! inside class: ProjectServiceImpl , !! method: deleteProject");
+	    projectrepository.deleteById(pid);
 	}
+
 
 	@Override
 	public boolean updateproject(TmsProject updateproject) {
@@ -308,7 +307,8 @@ public class ProjectServiceImpl implements ProjectService {
 		project.setAssignedto(updateproject.getAssignedto());
 		project.setDepartment(updateproject.getDepartment());
 		project.setStartDate(updateproject.getStartDate());
-		project.setTargetDate(updateproject.getTargetDate());		
+		project.setTargetDate(updateproject.getTargetDate());
+
 		// project.setFiles(updateproject.getFiles());
 		
 		projectrepository.save(project);

@@ -63,7 +63,7 @@ public class TmsProject extends AuditModel {
 
 	private String department;
 	
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany(fetch = FetchType.LAZY)
 	@JsonManagedReference
 	@JoinColumn(name = "pid")
     private List<TmsTask> tasks = new ArrayList<>();
