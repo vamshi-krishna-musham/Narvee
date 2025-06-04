@@ -66,9 +66,9 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	
 	
 	
-	//----------------------------tms   replicated methods --------------
+	//----------------------------tms   replicated methods --------------sta
 	@Query(value = "select st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.target_date,st.addedby,st.duration,DATE(st.createddate) AS createddate ,st.priority,st.status, "
-			+ " st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname  , t.start_date "
+			+ " st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname  , st.start_date "
 			+ "        from tms_sub_task  st join tms_task t where st.taskid =t.taskid and t.ticketid = :ticketId Order by t.updateddate DESC ", nativeQuery = true)
 	public Page<TaskTrackerDTO> findSubTaskByTicketid(@Param("ticketId") String ticketId,Pageable pageable);
 	
