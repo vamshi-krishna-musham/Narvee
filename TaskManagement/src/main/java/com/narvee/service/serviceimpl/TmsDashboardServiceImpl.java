@@ -48,4 +48,12 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 		return dashboardRepository.getTaskCountByPidAndUserIdAndTime(pid, userId,IntervelTime);
 	}
 
+	@Override
+	public List<TmsTaskCountData> getTaskStatusCountByMonth(String status) {
+		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getTaskStatusCountByMonth");	
+		return dashboardRepository.getTaskCountByMonth(status);
+	}
+	
+	
+
 }

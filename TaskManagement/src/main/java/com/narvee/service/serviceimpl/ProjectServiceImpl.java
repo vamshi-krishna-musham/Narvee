@@ -111,10 +111,9 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public void deleteProject(Long pid) { // it will work for both ATS and TMS users
-	    logger.info("!!! inside class: ProjectServiceImpl , !! method: deleteProject");
-	    projectrepository.deleteById(pid);
+		logger.info("!!! inside class: ProjectServiceImpl , !! method: deleteProject");
+		projectrepository.deleteById(pid);
 	}
-
 
 	@Override
 	public boolean updateproject(TmsProject updateproject) {
@@ -207,7 +206,7 @@ public class ProjectServiceImpl implements ProjectService {
 	// --------------------------------------- all methods replicated foor tms users
 	// Added By keerthi ----------------------
 	@Override
-	public TmsProject saveTmsproject(TmsProject project, List<MultipartFile> files) throws IOException {
+	public String saveTmsproject(TmsProject project, List<MultipartFile> files) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: saveTmsproject");
 
 		Long pmaxnumber = projectrepository.pmaxNumber();
@@ -223,39 +222,44 @@ public class ProjectServiceImpl implements ProjectService {
 		if (files != null && !files.isEmpty()) {
 			List<TmsFileUpload> projectFiles = new ArrayList<>();
 
-			Files.createDirectories(Paths.get(UPLOAD_DIR));
+			try {
+				Files.createDirectories(Paths.get(UPLOAD_DIR));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
 			for (MultipartFile file : files) {
-				try {
-					String originalFilename = file.getOriginalFilename();
-					  if (file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isBlank()) {
-			                continue;
-			            }
-
-					String nameWithoutExt = originalFilename;
-					String ext = "";
-
-					int dotIndex = originalFilename.lastIndexOf('.');
-					if (dotIndex != -1) {
-						nameWithoutExt = originalFilename.substring(0, dotIndex);
-						ext = originalFilename.substring(dotIndex);
-					}
-
-					String newFileName = nameWithoutExt + "-" + savedProject.getProjectid() + ext;
-					Path filePath = Paths.get(UPLOAD_DIR, newFileName);
-					Files.write(filePath, file.getBytes());
-
-					TmsFileUpload projectFile = new TmsFileUpload();
-					projectFile.setFileName(newFileName);
-					projectFile.setFilePath(filePath.toAbsolutePath().toString());
-					projectFile.setFileType(file.getContentType());
-					projectFile.setProject(savedProject);
-
-					projectFiles.add(projectFile);
-
-				} catch (IOException e) {
-					logger.error("Failed to save file: " + file.getOriginalFilename(), e);
+				String originalFilename = file.getOriginalFilename();
+				if (file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isBlank()) {
+					continue;
 				}
+
+				String nameWithoutExt = originalFilename;
+				String ext = "";
+
+				int dotIndex = originalFilename.lastIndexOf('.');
+				if (dotIndex != -1) {
+					nameWithoutExt = originalFilename.substring(0, dotIndex);
+					ext = originalFilename.substring(dotIndex);
+				}
+
+				String newFileName = nameWithoutExt + "-" + savedProject.getProjectid() + ext;
+				Path filePath = Paths.get(UPLOAD_DIR, newFileName);
+				try {
+					Files.write(filePath, file.getBytes());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				TmsFileUpload projectFile = new TmsFileUpload();
+				projectFile.setFileName(newFileName);
+				projectFile.setFilePath(filePath.toAbsolutePath().toString());
+				projectFile.setFileType(file.getContentType());
+				projectFile.setProject(savedProject);
+
+				projectFiles.add(projectFile);
+
 			}
 
 			savedProject.getFiles().addAll(projectFiles);
@@ -270,11 +274,15 @@ public class ProjectServiceImpl implements ProjectService {
 
 		try {
 			emailService.sendCreateProjectEmail(project, user, true);
-		} catch (UnsupportedEncodingException | MessagingException e) {
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		return project;
+		return "";
 	}
 
 	@Override
@@ -282,7 +290,7 @@ public class ProjectServiceImpl implements ProjectService {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: findByprojectId For Tms ");
 		TmsProject project = projectrepository.findById(pid).get();
 		for (TmsAssignedUsers aUser : project.getAssignedto()) {
-			GetUsersDTO user = repository.getTmsUser(aUser.getTmsUserId());
+			GetUsersDTO user = repository.gettmsUser(aUser.getTmsUserId());
 			aUser.setFullname(user.getFullname());
 
 		}
@@ -305,55 +313,55 @@ public class ProjectServiceImpl implements ProjectService {
 			throw new RuntimeException("project Id  not found with ID: " + updateproject.getPId());
 		}
 
- 		TmsProject project = optionalProject.get();
+		TmsProject project = optionalProject.get();
 		project.setProjectName(updateproject.getProjectName());
 		project.setAddedBy(updateproject.getAddedBy());
 		project.setUpdatedBy(updateproject.getUpdatedBy());
 		project.setDescription(updateproject.getDescription());
 		project.setStatus(updateproject.getStatus());
-	//	project.setTasks(updateproject.getTasks());
+		// project.setTasks(updateproject.getTasks());
 		project.setAssignedto(updateproject.getAssignedto());
 		project.setDepartment(updateproject.getDepartment());
 		project.setStartDate(updateproject.getStartDate());
 		project.setTargetDate(updateproject.getTargetDate());
 		// project.setFiles(updateproject.getFiles());
-		
+
 		projectrepository.save(project);
 
 		if (files != null && !files.isEmpty()) {
-			List<TmsFileUpload> uploadedFiles = files.stream().filter(file -> file != null && !file.isEmpty()).map(file -> {
-				String ext = Optional.ofNullable(file.getOriginalFilename()).filter(f -> f.contains("."))
-						.map(f -> f.substring(f.lastIndexOf("."))).orElse("");
-				String baseName = file.getOriginalFilename().replace(ext, "");
-				String fileName = baseName + "-" + project.getProjectid() + ext;
-				String fullPath = UPLOAD_DIR + fileName;
+			List<TmsFileUpload> uploadedFiles = files.stream().filter(file -> file != null && !file.isEmpty())
+					.map(file -> {
+						String ext = Optional.ofNullable(file.getOriginalFilename()).filter(f -> f.contains("."))
+								.map(f -> f.substring(f.lastIndexOf("."))).orElse("");
+						String baseName = file.getOriginalFilename().replace(ext, "");
+						String fileName = baseName + "-" + project.getProjectid() + ext;
+						String fullPath = UPLOAD_DIR + fileName;
 
-				try {
-					Files.write(Paths.get(fullPath), file.getBytes());
-				} catch (IOException e) {
-					throw new RuntimeException("Failed to save file: " + fileName, e);
-				}
-				 TmsFileUpload existing = fileUploadRepository
-			                .findByFileNameAndProject(fileName,updateproject );
-			            if (existing != null) {
-			                
-			                existing.setFileType(file.getContentType());
-			                existing.setFilePath(fullPath);
-			                return existing;
-			            } else {
-			                
-			                TmsFileUpload f = new TmsFileUpload();
-			                f.setFileName(fileName);
-			                f.setFilePath(fullPath);
-			                f.setFileType(file.getContentType());
-			                f.setProject(updateproject);
-			                return f;
-			            }
-			}).collect(Collectors.toList());
+						try {
+							Files.write(Paths.get(fullPath), file.getBytes());
+						} catch (IOException e) {
+							throw new RuntimeException("Failed to save file: " + fileName, e);
+						}
+						TmsFileUpload existing = fileUploadRepository.findByFileNameAndProject(fileName, updateproject);
+						if (existing != null) {
+
+							existing.setFileType(file.getContentType());
+							existing.setFilePath(fullPath);
+							return existing;
+						} else {
+
+							TmsFileUpload f = new TmsFileUpload();
+							f.setFileName(fileName);
+							f.setFilePath(fullPath);
+							f.setFileType(file.getContentType());
+							f.setProject(updateproject);
+							return f;
+						}
+					}).collect(Collectors.toList());
 
 			project.getFiles().addAll(uploadedFiles);
 		}
-		
+
 		Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
 		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
 				.collect(Collectors.toList());
@@ -369,7 +377,6 @@ public class ProjectServiceImpl implements ProjectService {
 		return tmsProject;
 
 	}
-
 
 	@Override
 	public Page<ProjectResponseDto> findTmsAllProjects(RequestDTO requestresponsedto) {
@@ -392,6 +399,10 @@ public class ProjectServiceImpl implements ProjectService {
 			sortfield = "projectdescription";
 		else if (sortfield.equalsIgnoreCase("addedBy"))
 			sortfield = "addedBy";
+		else if (sortfield.equalsIgnoreCase("StartDate"))
+			sortfield = "startDate";
+		else if (sortfield.equalsIgnoreCase("DueDate"))
+			sortfield = "targetDate";
 		else
 			sortfield = "createdDate";
 
@@ -414,27 +425,25 @@ public class ProjectServiceImpl implements ProjectService {
 				res = page.stream().map(projectDTO -> {
 					TmsProject project = projectrepository.findById(projectDTO.getPid()).orElse(null);
 					ProjectResponseDto proj = new ProjectResponseDto();
-					proj.setProjePage(projectDTO);		
-					
-				      if (project != null) {
-				            Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
-				                .map(assignUser -> {
-				                    GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
-				                    if (user != null) {
-				                        assignUser.setFullname(user.getFullname());
-				                       
-				                    }
-				                    return assignUser;
-				                })
-				                .collect(Collectors.toSet());
+					proj.setProjePage(projectDTO);
 
-				            proj.setAssignUsers(assignedUsersWithNames);
-				            proj.setFiles(project.getFiles());
-				        }
+					if (project != null) {
+						Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
+								.map(assignUser -> {
+									GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
+									if (user != null) {
+										assignUser.setFullname(user.getFullname());
 
-				        return proj;
-				    }).collect(Collectors.toList());
-				
+									}
+									return assignUser;
+								}).collect(Collectors.toSet());
+
+						proj.setAssignUsers(assignedUsersWithNames);
+						proj.setFiles(project.getFiles());
+					}
+
+					return proj;
+				}).collect(Collectors.toList());
 
 			} else {
 				logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllTmsProjectWithFiltering, Filter");
@@ -444,23 +453,22 @@ public class ProjectServiceImpl implements ProjectService {
 					ProjectResponseDto proj = new ProjectResponseDto();
 					proj.setProjePage(projectDTO);
 					if (project != null) {
-					            Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
-					                .map(assignUser -> {
-					                    GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
-					                    if (user != null) {
-					                        assignUser.setFullname(user.getFullname());
-					                       
-					                    }
-					                    return assignUser;
-					                })
-					                .collect(Collectors.toSet());
+						Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
+								.map(assignUser -> {
+									GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
+									if (user != null) {
+										assignUser.setFullname(user.getFullname());
 
-					            proj.setAssignUsers(assignedUsersWithNames);
-					            proj.setFiles(project.getFiles());
-					        }
+									}
+									return assignUser;
+								}).collect(Collectors.toSet());
 
-					        return proj;
-					    }).collect(Collectors.toList());
+						proj.setAssignUsers(assignedUsersWithNames);
+						proj.setFiles(project.getFiles());
+					}
+
+					return proj;
+				}).collect(Collectors.toList());
 			}
 		} else {
 
@@ -473,23 +481,22 @@ public class ProjectServiceImpl implements ProjectService {
 					ProjectResponseDto proj = new ProjectResponseDto();
 					proj.setProjePage(projectDTO);
 					if (project != null) {
-			            Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
-			                .map(assignUser -> {
-			                    GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
-			                    if (user != null) {
-			                        assignUser.setFullname(user.getFullname());
-			                       
-			                    }
-			                    return assignUser;
-			                })
-			                .collect(Collectors.toSet());
+						Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
+								.map(assignUser -> {
+									GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
+									if (user != null) {
+										assignUser.setFullname(user.getFullname());
 
-			            proj.setAssignUsers(assignedUsersWithNames);
-			            proj.setFiles(project.getFiles());
-			        }
+									}
+									return assignUser;
+								}).collect(Collectors.toSet());
 
-			        return proj;
-			    }).collect(Collectors.toList());
+						proj.setAssignUsers(assignedUsersWithNames);
+						proj.setFiles(project.getFiles());
+					}
+
+					return proj;
+				}).collect(Collectors.toList());
 			} else {
 				logger.info("!!! inside class: ProjectServiceImpl , !! method: getAllProjectsByTmsUserFilter, Filter");
 				page = projectrepository.getAllProjectsByTmsUserFilter(pageable, keyword, userid); // chenged Query Ats
@@ -500,23 +507,22 @@ public class ProjectServiceImpl implements ProjectService {
 					ProjectResponseDto proj = new ProjectResponseDto();
 					proj.setProjePage(projectDTO);
 					if (project != null) {
-			            Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
-			                .map(assignUser -> {
-			                    GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
-			                    if (user != null) {
-			                        assignUser.setFullname(user.getFullname());
-			                       
-			                    }
-			                    return assignUser;
-			                })
-			                .collect(Collectors.toSet());
+						Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
+								.map(assignUser -> {
+									GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
+									if (user != null) {
+										assignUser.setFullname(user.getFullname());
 
-			            proj.setAssignUsers(assignedUsersWithNames);
-			            proj.setFiles(project.getFiles());
-			        }
+									}
+									return assignUser;
+								}).collect(Collectors.toSet());
 
-			        return proj;
-			    }).collect(Collectors.toList());
+						proj.setAssignUsers(assignedUsersWithNames);
+						proj.setFiles(project.getFiles());
+					}
+
+					return proj;
+				}).collect(Collectors.toList());
 			}
 
 		}

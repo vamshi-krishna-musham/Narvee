@@ -10,4 +10,6 @@ public interface TmsDashboardService {
 	public List<TmsTaskCountData> getTaskCountByProjectId(Long pid);
 	public List<TmsTaskCountData> getTaskCountByProjectIdAndUserId(Long pid , Long userId);	
 	public List<TmsTaskCountData> getTaskCountByProjectIdAndUserIdAndTime(Long pid, Long userId,String IntervelTime);
+	
+	public List<TmsTaskCountData> getTaskStatusCountByMonth(String status);
 }
