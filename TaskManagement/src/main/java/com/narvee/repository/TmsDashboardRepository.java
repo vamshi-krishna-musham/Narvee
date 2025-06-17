@@ -249,4 +249,8 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	public List<TmsTaskCountData> getTaskCountByPidAndUserIdAndTime(Long pid ,Long userId,String interval);
 	
 	
+	@Query(value = "SELECT DATE_FORMAT(updateddate, '%Y-%m') AS month, COUNT(*) AS count  "
+			+ "FROM  tms_task WHERE  status = :Status AND updateddate IS NOT NULL  GROUP BY  month "
+			+ "ORDER BY month ",nativeQuery = true)
+	public List<TmsTaskCountData> getTaskCountByMonth(String Status);
 }

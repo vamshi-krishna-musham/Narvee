@@ -1,6 +1,5 @@
 package com.narvee.service.service;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -28,7 +27,7 @@ public interface ProjectService {
 	
 	 //------------------------ All tms code replicate for tms users  Added by keerthi-------------------
 	
-	public TmsProject saveTmsproject(TmsProject project,List<MultipartFile> files) throws IOException; 
+	public String saveTmsproject(TmsProject project,List<MultipartFile> files) ; 
 	
 	public TmsProject findByprojectIdTms(Long projectid); 
 	

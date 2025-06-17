@@ -616,7 +616,7 @@ public class TaskServiceImpl implements TaskService {
 		else if (sortfield.equalsIgnoreCase("TaskDescription"))
 			sortfield = "description";
 		else if (sortfield.equalsIgnoreCase("DueDate"))
-			sortfield = "targetdate";
+			sortfield = "target_date";
 		else if (sortfield.equalsIgnoreCase("StartDate"))
 			sortfield = "start_date";
 		else if (sortfield.equalsIgnoreCase("status"))
