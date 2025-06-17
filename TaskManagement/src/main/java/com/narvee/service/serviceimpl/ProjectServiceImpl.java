@@ -6,12 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.mail.MessagingException;
@@ -28,16 +25,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.narvee.dto.AssignedUsersDto;
-import com.narvee.dto.FileUploadDto;
 import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.ProjectDTO;
+import com.narvee.dto.ProjectDropDownDTO;
 import com.narvee.dto.ProjectResponseDto;
 import com.narvee.dto.RequestDTO;
-import com.narvee.dto.TaskResponse;
-import com.narvee.dto.TaskTrackerDTO;
-import com.narvee.dto.TasksResponseDTO;
-import com.narvee.dto.TmsProjectResponseDto;
 import com.narvee.entity.TmsAssignedUsers;
 import com.narvee.entity.TmsFileUpload;
 import com.narvee.entity.TmsProject;
@@ -230,37 +222,38 @@ public class ProjectServiceImpl implements ProjectService {
 			}
 
 			for (MultipartFile file : files) {
-				String originalFilename = file.getOriginalFilename();
-				if (file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isBlank()) {
-					continue;
-				}
-
-				String nameWithoutExt = originalFilename;
-				String ext = "";
-
-				int dotIndex = originalFilename.lastIndexOf('.');
-				if (dotIndex != -1) {
-					nameWithoutExt = originalFilename.substring(0, dotIndex);
-					ext = originalFilename.substring(dotIndex);
-				}
-
-				String newFileName = nameWithoutExt + "-" + savedProject.getProjectid() + ext;
-				Path filePath = Paths.get(UPLOAD_DIR, newFileName);
 				try {
+					String originalFilename = file.getOriginalFilename();
+					  if (file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isEmpty()) {
+			                continue;
+			            }
+
+					String nameWithoutExt = originalFilename;
+					String ext = "";
+
+					int dotIndex = originalFilename.lastIndexOf('.');
+					if (dotIndex != -1) {
+						nameWithoutExt = originalFilename.substring(0, dotIndex);
+						ext = originalFilename.substring(dotIndex);
+					}
+
+					String newFileName = nameWithoutExt + "-" + savedProject.getProjectid() + ext;
+					Path filePath = Paths.get(UPLOAD_DIR, newFileName);
 					Files.write(filePath, file.getBytes());
+
+					TmsFileUpload projectFile = new TmsFileUpload();
+					projectFile.setFileName(newFileName);
+					projectFile.setFilePath(filePath.toAbsolutePath().toString());
+					projectFile.setFileType(file.getContentType());
+					projectFile.setProject(savedProject);
+
+					projectFiles.add(projectFile);
+
 				} catch (IOException e) {
-					e.printStackTrace();
+					logger.error("Failed to save file: " + file.getOriginalFilename(), e);
 				}
 
-				TmsFileUpload projectFile = new TmsFileUpload();
-				projectFile.setFileName(newFileName);
-				projectFile.setFilePath(filePath.toAbsolutePath().toString());
-				projectFile.setFileType(file.getContentType());
-				projectFile.setProject(savedProject);
-
-				projectFiles.add(projectFile);
-
-			}
+ 
 
 			savedProject.getFiles().addAll(projectFiles);
 			fileUploadRepository.saveAll(projectFiles);
@@ -280,9 +273,9 @@ public class ProjectServiceImpl implements ProjectService {
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		   }
 		}
-
-		return "";
+		return "project saved !";
 	}
 
 	@Override
@@ -324,6 +317,7 @@ public class ProjectServiceImpl implements ProjectService {
 		project.setDepartment(updateproject.getDepartment());
 		project.setStartDate(updateproject.getStartDate());
 		project.setTargetDate(updateproject.getTargetDate());
+
 		// project.setFiles(updateproject.getFiles());
 
 		projectrepository.save(project);
@@ -530,4 +524,14 @@ public class ProjectServiceImpl implements ProjectService {
 
 	}
 
+	@Override
+	public List<ProjectDropDownDTO> projectDropDownWithOutAdmin(Long userId, String isAdmin) {
+		logger.info("!!! inside class: ProjectServiceImpl , !! method: projectDropDownWithOutAdmin");
+		 if (isAdmin.equalsIgnoreCase("admin")) {
+	            return projectrepository.projectDropDownWithAdmin();
+	        } else {
+	            return projectrepository.projectDropDownWithOutAdmin(userId);
+	        }
+	    }
+	
 }

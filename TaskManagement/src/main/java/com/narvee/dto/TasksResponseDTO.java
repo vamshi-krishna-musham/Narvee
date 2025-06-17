@@ -34,13 +34,13 @@ public class TasksResponseDTO {
 	        this.trackid = dto.getTrackid();
 	        this.taskid = dto.getTaskid();
 	        this.status = dto.getStatus();
-	        this.startdate = dto.getstart_date();
+	        this.startdate = dto.getStart_date();
 	        this.fullname = dto.getFullname();
 	        this.ticketid = dto.getTicketid();
 	        this.taskName = dto.getTaskName();
 	        this.description = dto.getDescription();
 	        this.createddate = dto.getCreateddate();
-	        this.targetdate = dto.gettarget_date();
+	        this.targetdate = dto.getTarget_date();
 	        this.taskdescription = dto.getTaskdescription();
 	        this.pseudoname = dto.getPseudoname();
 	        this.duration = dto.getDuration();

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -29,7 +28,6 @@ import com.narvee.commons.RestAPIResponse;
 import com.narvee.dto.RequestDTO;
 import com.narvee.dto.UpdateTask;
 import com.narvee.entity.TmsSubTask;
-import com.narvee.entity.TmsTask;
 import com.narvee.service.service.SubTaskService;
 
 @RestController
