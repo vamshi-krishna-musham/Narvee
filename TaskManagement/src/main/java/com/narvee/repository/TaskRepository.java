@@ -204,7 +204,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	@Query(value = "select u.full_name FROM tms_users u  JOIN tms_task t ON t.updatedby = u.user_id WHERE t.updatedby = :updatedby and t.taskid = :taskid ",nativeQuery = true)
 	public String getUpdatedByName(Long updatedby,Long taskid);
 	
-	@Query(value = "SELECT u.user_id As userId ,concat(u.first_name,' ',u.middle_name,' ',u.last_name)   As fullName FROM tms_users u , tms_project p , tms_assigned_users au WHERE  au.pid=p.pid AND  u.user_id=au.tms_user_id AND p.projectid =:projectId", nativeQuery = true)
+	@Query(value = "SELECT u.user_id As userId ,concat(u.first_name,' ',COALESCE(u.middle_name, ''),' ',u.last_name)   As fullName FROM tms_users u , tms_project p , tms_assigned_users au WHERE  au.pid=p.pid AND  u.user_id=au.tms_user_id AND p.projectid =:projectId", nativeQuery = true)
 	public List<GetUsersDTO> getProjectByTmsUsers(String projectId);
 	
 	@Query(value = "SELECT t.taskid,t.createddate,t.updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,t.pid,t.duration "
@@ -223,7 +223,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			+ "			  t.taskid,  "
 			+ "			    NULL AS fullname, "
 			+ "			   NULL AS email,\r\n"
-			+ "			    concat(creator.first_name,' ',creator.middle_name,' ',creator.last_name)  as cfullname ,"
+			+ "			    concat(creator.first_name,' ',COALESCE(creator.middle_name, ''),' ',creator.last_name)  as cfullname ,"
 			+ "			  creator.email as cemail "
 			+ "			FROM tms_task t\r\n"
 			+ "			JOIN tms_users creator ON t.addedby = creator.user_id  "
@@ -233,7 +233,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 		  
 			+ "			SELECT  "
 			+ "			    t.taskid,  "
-			+ "		   concat(u.first_name,' ',u.middle_name,' ',u.last_name) AS full_name  , "
+			+ "		   concat(u.first_name,' ',COALESCE(u.middle_name, ''),' ',u.last_name) AS full_name  , "
 			+ "			    u.email, "
 			+ "			   NULL AS fullname,  "
 			+ "			  NULL AS email  "
@@ -245,7 +245,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	public List<GetUsersDTO> getTmsAssignUsers(Long taskId);
 	
 	
-	@Query(value = " select concat(u.first_name,' ',u.middle_name,' ',u.last_name) AS fullname ,u.email from tms_users u where u.user_id = :userid ", nativeQuery = true)
+	@Query(value = " select concat(u.first_name,' ', COALESCE(u.middle_name, ''),' ',u.last_name) AS fullname ,u.email from tms_users u where u.user_id = :userid ", nativeQuery = true)
 	public GetUsersDTO gettmsUser(Long userid);
 	
 	@Query(value = "select ad.full_name as createdby, t.ticketid, u.full_name, t.createddate, t.targetdate,au.userstatus as  status from tms_task t\r\n"
@@ -263,7 +263,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	@Query(value = "SELECT t.taskid, DATE(t.createddate) As createddate, DATE(t.updateddate) AS updateddate,t.addedby,t.department,t.description,t.maxnum, "
 			+ " t.status,t.target_date,t.ticketid,t.updatedby,t.taskname,p.projectid,t.pid, t.duration , t.priority  ,t.start_date "
 			+ " FROM tms_task t JOIN tms_project p ON t.pid = p.pid WHERE p.projectid =:projectid AND (t.ticketid LIKE CONCAT('%',:keyword, '%') OR DATE_FORMAT(t.start_date,'%d-%m-%Y') LIKE CONCAT('%',:keyword,  '%')  OR "
-			+ " t.taskname LIKE CONCAT('%',:keyword, '%') OR t.description LIKE CONCAT('%',:keyword,  '%') OR DATE_FORMAT(t.targetdate, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') "
+			+ " t.taskname LIKE CONCAT('%',:keyword, '%') OR t.description LIKE CONCAT('%',:keyword,  '%') OR DATE_FORMAT(t.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') "
 			+ " OR t.status LIKE CONCAT('%',:keyword, '%'))", nativeQuery = true)
 	public Page<TaskTrackerDTO> findTaskByTmsProjectIdWithSearching(@Param("projectid") String projectid,
 			@Param("keyword") String keyword,Pageable pageable);

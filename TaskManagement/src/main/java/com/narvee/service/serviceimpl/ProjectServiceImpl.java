@@ -198,7 +198,7 @@ public class ProjectServiceImpl implements ProjectService {
 	// --------------------------------------- all methods replicated foor tms users
 	// Added By keerthi ----------------------
 	@Override
-	public String saveTmsproject(TmsProject project, List<MultipartFile> files) {
+	public TmsProject saveTmsproject(TmsProject project, List<MultipartFile> files) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: saveTmsproject");
 
 		Long pmaxnumber = projectrepository.pmaxNumber();
@@ -207,10 +207,10 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 		String valueWithPadding = String.format("%0" + DIGIT_PADDING + "d", pmaxnumber + 1);
 		String value = "PROJ" + valueWithPadding;
-		project.setProjectid(value);
-		TmsProject savedProject = projectrepository.save(project);
-
+		project.setProjectid(value);	
 		project.setPmaxnum(pmaxnumber + 1);
+		TmsProject savedProject = projectrepository.save(project);
+		 		
 		if (files != null && !files.isEmpty()) {
 			List<TmsFileUpload> projectFiles = new ArrayList<>();
 
@@ -275,7 +275,7 @@ public class ProjectServiceImpl implements ProjectService {
 			e.printStackTrace();
 		   }
 		}
-		return "project saved !";
+		return project ;
 	}
 
 	@Override

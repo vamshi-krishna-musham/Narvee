@@ -27,7 +27,7 @@ public interface ProjectService {
 	
 	 //------------------------ All tms code replicate for tms users  Added by keerthi-------------------
 	
-	public String saveTmsproject(TmsProject project,List<MultipartFile> files) ; 
+	public TmsProject saveTmsproject(TmsProject project,List<MultipartFile> files) ; 
 	
 	public TmsProject findByprojectIdTms(Long projectid); 
 	

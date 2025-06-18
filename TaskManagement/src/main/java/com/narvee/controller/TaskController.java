@@ -208,7 +208,7 @@ public class TaskController {
 	public ResponseEntity<RestAPIResponse> getProjectUsers(@PathVariable String projectId) {
 		logger.info("!!! inside class: TaskController , !! method: getProjectUsers");
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success",
-				"fetched by deparatmentWise users successfully", service.getProjectUsers(projectId)),
+				"fetched by Project Wise users successfully", service.getProjectUsers(projectId)),
 				HttpStatus.OK);
 	}
 	

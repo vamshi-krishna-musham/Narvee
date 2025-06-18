@@ -677,7 +677,9 @@ public class TaskServiceImpl implements TaskService {
 			for (TaskTrackerDTO order : res) {
 				TasksResponseDTO result = new TasksResponseDTO(order);
 				List<GetUsersDTO> assignUsers = taskRepo.getTmsAssignUsers(order.getTaskid());
-				result.setAssignUsers(assignUsers);
+				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
+						.collect(Collectors.toList());
+				result.setAssignUsers(filteredAssignUsers);
 				
 				  List<TmsFileUpload> fileEntities = fileUploadRepository.getTaskFiles(order.getTaskid()); // Implement this
 				    List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
@@ -688,6 +690,7 @@ public class TaskServiceImpl implements TaskService {
 				        dto.setFileType(file.getFileType());
 				        return dto;
 				    }).collect(Collectors.toList());
+				    
 				    result.setFiles(fileDtos);
 
 				   
