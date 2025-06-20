@@ -208,6 +208,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 			order.setTaskId(order.getTask().getTaskid());
 			for (TmsAssignedUsers assignUsers : order.getAssignedto()) {
 				GetUsersDTO user = repository.gettmsUser(assignUsers.getTmsUserId());
+				
 				assignUsers.setFullname(user.getFullname());
 			//	assignUsers.setPseudoname(user.getPseudoname());
 			}
@@ -602,7 +603,9 @@ public class SubTaskServiceImpl implements SubTaskService {
 			for (TaskTrackerDTO order : res) {
 				SubTaskResponseDTO result = new SubTaskResponseDTO(order);
 				List<GetUsersDTO> assignUsers = subtaskrepository.getSubtaskAssignUsersTms(order.getSubtaskid());
-				result.setAssignUsers(assignUsers);
+				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
+						.collect(Collectors.toList());
+				result.setAssignUsers(filteredAssignUsers);
 				
 				  List<TmsFileUpload> fileEntities = fileUploadRepository.getFilesBySubTaskId(order.getSubtaskid()); // Implement this
 				    List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
