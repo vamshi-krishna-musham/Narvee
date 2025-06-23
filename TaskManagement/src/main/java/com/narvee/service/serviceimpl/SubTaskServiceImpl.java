@@ -539,10 +539,10 @@ public class SubTaskServiceImpl implements SubTaskService {
 			sortfield = "subTaskDescription";
 		else if (sortfield.equalsIgnoreCase("status"))
 			sortfield = "status";
-		else if (sortfield.equalsIgnoreCase("targetDate"))
-			sortfield = "targetDate";
+		else if (sortfield.equalsIgnoreCase("DueDate"))
+			sortfield = "target_date";
 		else if (sortfield.equalsIgnoreCase("startDate"))
-			sortfield = "startDate";
+			sortfield = "start_date";
 		else if (sortfield.equalsIgnoreCase("priority"))
 			sortfield = "priority";
 		else if (sortfield.equalsIgnoreCase("duration"))
