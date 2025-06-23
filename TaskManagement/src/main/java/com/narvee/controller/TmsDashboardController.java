@@ -1,5 +1,7 @@
 package com.narvee.controller;
 
+import java.util.List;
+
 import javax.ws.rs.Path;
 
 import org.slf4j.Logger;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.narvee.commons.RestAPIResponse;
+
 import com.narvee.service.service.TmsDashboardService;
 
 @RestController
@@ -69,4 +72,22 @@ public class TmsDashboardController {
 				new RestAPIResponse("success", " All tms Task count By Month fetched  successfully", dashboardService.getTaskStatusCountByMonth(status)),       
 				HttpStatus.OK); 
 	 }
+	
+	@GetMapping("/getUserTrackerByAdmin/{adminId}/{projectId}/{timeIntervel}")
+	 public ResponseEntity<RestAPIResponse> getUserTrackerByAdmin( @PathVariable Long  adminId ,@PathVariable  Long projectId, @PathVariable String timeIntervel ){
+		logger.info("!!! inside class: TmsDashboardController , !! method: getUserTrackerByAdmin"); 
+	//	List<TmsTaskCountData>   data =	  dashboardService.getUserTracker(adminId,projectId,timeIntervel);
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", " User Tracker Report fetched Successfully ",dashboardService.getUserTracker(adminId,projectId,timeIntervel)),       
+				HttpStatus.OK); 
+	 }
+	
+
+	@GetMapping("/dropDown/{userId}")
+	public ResponseEntity<RestAPIResponse> projectDropDownWithOutAdmin(@PathVariable Long userId){
+		logger.info("!!! inside class: ProjectController , !! method: projectDropDownWithOutAdmin");
+	 return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched projectDropDownWithOutAdmin successfully",
+			 dashboardService.projectDropDownWithOutAdmin(userId)), HttpStatus.OK);
+		
+	}
 }

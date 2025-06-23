@@ -73,10 +73,5 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
 	public Page<ProjectDTO> getAllProjectsByTmsUserFilter(Pageable pageable, @Param("keyword") String keyword , Long userid); // --- QUERY FOR GET ALL PROJECT BY USER ID FOR TMS USERS ADDED BY KEERTHI
 
 
-	@Query(value="select distinct p.pid, p.projectid ,p.projectname from tms_project p join tms_assigned_users au ON au.pid=p.pid",nativeQuery =true)
-	public List<ProjectDropDownDTO> projectDropDownWithAdmin();
 	
-
-	@Query(value="select distinct p.pid, p.projectid ,p.projectname from tms_project p join tms_assigned_users au ON au.pid=p.pid where au.tms_user_id=:userId",nativeQuery =true)
-	public List<ProjectDropDownDTO> projectDropDownWithOutAdmin(@Param("userId") Long userId);
 }

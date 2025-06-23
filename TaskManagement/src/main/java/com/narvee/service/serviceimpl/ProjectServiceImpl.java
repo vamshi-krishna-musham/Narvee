@@ -524,14 +524,6 @@ public class ProjectServiceImpl implements ProjectService {
 
 	}
 
-	@Override
-	public List<ProjectDropDownDTO> projectDropDownWithOutAdmin(Long userId, String isAdmin) {
-		logger.info("!!! inside class: ProjectServiceImpl , !! method: projectDropDownWithOutAdmin");
-		 if (isAdmin.equalsIgnoreCase("admin")) {
-	            return projectrepository.projectDropDownWithAdmin();
-	        } else {
-	            return projectrepository.projectDropDownWithOutAdmin(userId);
-	        }
-	    }
+	
 	
 }

@@ -6,4 +6,17 @@ public interface TmsTaskCountData {
 	public String getStatus();
 	public Long getCount();
 	public String getMonth();
+	public Long getClosedTaskCount();
+	public Long getInProgressTaskCount();
+	public Long getOverDueTaskCount();
+	public Long getBlockedTaskCount();
+	public Long getOnHoldTaskCount();
+	public Long getOpenTaskCount();
+	public Long getToBeTestedTaskCount();
+	public Long getInReviewCount();
+	public String getFirstName();
+	public Long getTotalAssignedTasks();
+	public String getPosition();
+	
+	
 }

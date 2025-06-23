@@ -5,8 +5,10 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.narvee.dto.ProjectDropDownDTO;
 import com.narvee.dto.TmsTaskCountData;
 import com.narvee.entity.TmsProject;
 
@@ -253,4 +255,119 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 			+ "FROM  tms_task WHERE  status = :Status AND updateddate IS NOT NULL  GROUP BY  month "
 			+ "ORDER BY month ",nativeQuery = true)
 	public List<TmsTaskCountData> getTaskCountByMonth(String Status);
+	
+	@Query(value = "select tms.first_name ,"
+			+ "tms.position AS position ,"
+			+ " COUNT(tt.taskid) AS total_assigned_tasks, "
+			+ " \r\n"
+			+ "    COUNT(CASE WHEN tt.status = 'In Progress' THEN 1 END) AS inprogress_count, "
+			+ "    COUNT(CASE WHEN tt.status = 'Open' THEN 1 END) AS open_count, "
+			+ "    COUNT(CASE WHEN tt.status = 'On Hold' THEN 1 END) AS OnHold_count  ,   "
+			+ "    COUNT(CASE WHEN tt.status = 'Blocked' THEN 1 END) AS Blocked_count  ,  "
+			+ "    COUNT(CASE WHEN tt.status = 'To be Tested' THEN 1 END) AS ToBeTested_count ,   "
+			+ "    COUNT(CASE WHEN tt.status = 'In Review' THEN 1 END) AS InReview_count , "
+			+ "     COUNT(CASE WHEN tt.status = 'Closed' THEN 1 END) AS Closed_count , "
+			+ "     COUNT(CASE WHEN tt.status = 'Overdue' THEN 1 END) AS Overdue_count "
+			+ "from tms_task  tt join  tms_task_users tu on tt.taskid  = tu.taskid join  tms_assigned_users ttu  on tu.assignedto = ttu.assignid join tms_users  tms on tms.user_id = ttu.tms_user_id "
+			+ "where  (tms.added_by = :adminId or tms .user_id =:adminId)    GROUP BY  "
+			+ "    tms.first_name,tms.position",nativeQuery = true )
+	public List<TmsTaskCountData> getUserTrackerByAdmin(Long adminId );
+	
+	@Query(value = "select tms.first_name ,"
+			+ "tms.position AS position ,"
+			+ " COUNT(tt.taskid) AS total_assigned_tasks, "
+			+ " \r\n"
+			+ "    COUNT(CASE WHEN tt.status = 'In Progress' THEN 1 END) AS inprogress_count, "
+			+ "    COUNT(CASE WHEN tt.status = 'Open' THEN 1 END) AS open_count, "
+			+ "    COUNT(CASE WHEN tt.status = 'On Hold' THEN 1 END) AS OnHold_count  ,   "
+			+ "    COUNT(CASE WHEN tt.status = 'Blocked' THEN 1 END) AS Blocked_count  ,  "
+			+ "    COUNT(CASE WHEN tt.status = 'To be Tested' THEN 1 END) AS ToBeTested_count ,   "
+			+ "    COUNT(CASE WHEN tt.status = 'In Review' THEN 1 END) AS InReview_count , "
+			+ "     COUNT(CASE WHEN tt.status = 'Closed' THEN 1 END) AS Closed_count , "
+			+ "     COUNT(CASE WHEN tt.status = 'Overdue' THEN 1 END) AS Overdue_count "
+			+ "from tms_task  tt join  tms_task_users tu on tt.taskid  = tu.taskid join  tms_assigned_users ttu  on tu.assignedto = ttu.assignid join tms_users  tms on tms.user_id = ttu.tms_user_id "
+			+ "where  (tms.added_by = :adminId or tms .user_id =:adminId)   and tt.pid = :pid GROUP BY  "
+			+ "    tms.first_name,tms.position ",nativeQuery = true )
+	public List<TmsTaskCountData> getUserTrackerByAdminAndPid(Long adminId,Long pid );
+	
+	@Query(value = "SELECT  "
+			+ "    tms.first_name AS firstName , "
+			+ " tms.position AS position ,"
+			
+			+ "    COUNT(tt.taskid) AS totalAssignedTasks, "
+		
+			+ "    SUM(CASE WHEN tt.status = 'In Progress' AND ( "
+			+ "                    (:interval = 'DAILY' AND DATE(tt.updateddate) = CURDATE()) OR "
+			+ "                    (:interval = 'WEEKLY' AND YEARWEEK(tt.updateddate, 1) = YEARWEEK(CURDATE(), 1)) OR "
+			+ "                    (:interval = 'MONTHLY' AND YEAR(tt.updateddate) = YEAR(CURDATE()) AND MONTH(tt.updateddate) = MONTH(CURDATE())) "
+			+ "                ) "
+			+ "             THEN 1 ELSE 0 END) AS inProgressTaskCount, "
+			
+			+ "    SUM(CASE WHEN tt.status = 'Open' AND ( "
+			+ "                    (:interval = 'DAILY' AND DATE(tt.updateddate) = CURDATE()) OR "
+			+ "                    (:interval = 'WEEKLY' AND YEARWEEK(tt.updateddate, 1) = YEARWEEK(CURDATE(), 1)) OR "
+			+ "                    (:interval = 'MONTHLY' AND YEAR(tt.updateddate) = YEAR(CURDATE()) AND MONTH(tt.updateddate) = MONTH(CURDATE())) "
+			+ "                ) "
+			+ "             THEN 1 ELSE 0 END) AS openTaskCount, " 
+
+			+ "    SUM(CASE WHEN tt.status = 'On Hold' AND ( "
+			+ "                    (:interval = 'DAILY' AND DATE(tt.updateddate) = CURDATE()) OR "
+			+ "                    (:interval = 'WEEKLY' AND YEARWEEK(tt.updateddate, 1) = YEARWEEK(CURDATE(), 1)) OR "
+			+ "                    (:interval = 'MONTHLY' AND YEAR(tt.updateddate) = YEAR(CURDATE()) AND MONTH(tt.updateddate) = MONTH(CURDATE())) "
+			+ "                ) "
+			+ "             THEN 1 ELSE 0 END) AS onHoldTaskCount, "
+		
+			+ "    SUM(CASE WHEN tt.status = 'Blocked' AND ( "
+			+ "                    (:interval = 'DAILY' AND DATE(tt.updateddate) = CURDATE()) OR "
+			+ "                    (:interval = 'WEEKLY' AND YEARWEEK(tt.updateddate, 1) = YEARWEEK(CURDATE(), 1)) OR "
+			+ "                    (:interval = 'MONTHLY' AND YEAR(tt.updateddate) = YEAR(CURDATE()) AND MONTH(tt.updateddate) = MONTH(CURDATE())) "
+			+ "                ) "
+			+ "             THEN 1 ELSE 0 END) AS blockedTaskCount, "
+
+			+ "    SUM(CASE WHEN tt.status = 'To be Tested' AND ( "
+			+ "                    (:interval = 'DAILY' AND DATE(tt.updateddate) = CURDATE()) OR "
+			+ "                    (:interval = 'WEEKLY' AND YEARWEEK(tt.updateddate, 1) = YEARWEEK(CURDATE(), 1)) OR "
+			+ "                    (:interval = 'MONTHLY' AND YEAR(tt.updateddate) = YEAR(CURDATE()) AND MONTH(tt.updateddate) = MONTH(CURDATE())) "
+			+ "                ) "
+			+ "             THEN 1 ELSE 0 END) AS toBeTestedTaskCount, "
+			
+			+ "    SUM(CASE WHEN tt.status = 'In Review' AND ( "
+			+ "                    (:interval = 'DAILY' AND DATE(tt.updateddate) = CURDATE()) OR "
+			+ "                    (:interval = 'WEEKLY' AND YEARWEEK(tt.updateddate, 1) = YEARWEEK(CURDATE(), 1)) OR "
+			+ "                    (:interval = 'MONTHLY' AND YEAR(tt.updateddate) = YEAR(CURDATE()) AND MONTH(tt.updateddate) = MONTH(CURDATE())) "
+			+ "                ) "
+			+ "             THEN 1 ELSE 0 END) AS inReviewCount, "
+		
+			+ "    SUM(CASE WHEN tt.status = 'Closed' AND ( "
+			+ "                    (:interval = 'DAILY' AND DATE(tt.updateddate) = CURDATE()) OR "
+			+ "                    (:interval = 'WEEKLY' AND YEARWEEK(tt.updateddate, 1) = YEARWEEK(CURDATE(), 1)) OR "
+			+ "                    (:interval = 'MONTHLY' AND YEAR(tt.updateddate) = YEAR(CURDATE()) AND MONTH(tt.updateddate) = MONTH(CURDATE())) "
+			+ "                ) "
+			+ "             THEN 1 ELSE 0 END) AS closedTaskCount, "
+
+			+ "    SUM(CASE WHEN tt.status = 'Overdue' AND ( "
+			+ "                    (:interval = 'DAILY' AND DATE(tt.updateddate) = CURDATE()) OR "
+			+ "                    (:interval = 'WEEKLY' AND YEARWEEK(tt.updateddate, 1) = YEARWEEK(CURDATE(), 1)) OR "
+			+ "                    (:interval = 'MONTHLY' AND YEAR(tt.updateddate) = YEAR(CURDATE()) AND MONTH(tt.updateddate) = MONTH(CURDATE())) "
+			+ "                ) "
+			+ "             THEN 1 ELSE 0 END) AS overDueTaskCount "
+	
+			+ "FROM tms_task tt "
+			+ "JOIN tms_task_users tu ON tt.taskid = tu.taskid "
+			+ "JOIN tms_assigned_users ttu ON tu.assignedto = ttu.assignid "
+			+ "JOIN tms_users tms ON tms.user_id = ttu.tms_user_id "
+			+ "WHERE (tms.added_by = :adminId OR tms.user_id = :adminId)  AND tt.pid = :pid "
+			+ "GROUP BY tms.first_name,tms.position",nativeQuery = true)
+	public  List<TmsTaskCountData> getUserTrackerByAdminAndPidAndTimeInterval(Long adminId, Long pid, String interval );
+	
+	@Query(value="select distinct p.pid, p.projectid ,p.projectname from tms_project p join tms_assigned_users au ON au.pid=p.pid where addedby = :addedBy",nativeQuery =true)
+	public List<ProjectDropDownDTO> projectDropDownWithAdmin(Long addedBy);
+	
+
+	@Query(value="select distinct p.pid, p.projectid ,p.projectname from tms_project p join tms_assigned_users au ON au.pid=p.pid where au.tms_user_id = :userId",nativeQuery =true)
+	public List<ProjectDropDownDTO> projectDropDownWithOutAdmin(@Param("userId") Long userId);
+	
+	@Query(value = "select addedby from tms_project ",nativeQuery = true)
+	public List<Long> getAddedBy();
+	
 }

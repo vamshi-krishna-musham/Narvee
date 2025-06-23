@@ -8,11 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.narvee.controller.ProjectController;
+import com.narvee.dto.ProjectDropDownDTO;
 import com.narvee.dto.TmsTaskCountData;
+
 import com.narvee.repository.TmsDashboardRepository;
 import com.narvee.service.service.TmsDashboardService;
 
-import io.swagger.v3.oas.annotations.servers.Server;
+
 
 @Service
 public class TmsDashboardServiceImpl implements TmsDashboardService {
@@ -52,6 +54,32 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	public List<TmsTaskCountData> getTaskStatusCountByMonth(String status) {
 		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getTaskStatusCountByMonth");	
 		return dashboardRepository.getTaskCountByMonth(status);
+	}
+	@Override
+	public List<TmsTaskCountData> getUserTracker(Long adminId, Long projectId, String timeIntervel) {
+		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getUserTracker");	
+		
+		if(projectId == null && timeIntervel == null) {
+			return	dashboardRepository.getUserTrackerByAdmin(adminId)	;
+		}else if (timeIntervel == null) {
+			return dashboardRepository.getUserTrackerByAdminAndPid(adminId, projectId);
+		}else {
+			return dashboardRepository.getUserTrackerByAdminAndPidAndTimeInterval(adminId, projectId, timeIntervel);
+		}
+		
+	}
+	@Override
+	public List<ProjectDropDownDTO> projectDropDownWithOutAdmin(Long userId) {
+		logger.info("!!! inside class: ProjectServiceImpl , !! method: projectDropDownWithOutAdmin");
+		List<Long> addedBtId = dashboardRepository.getAddedBy();
+		for (Long userIds : addedBtId) {
+		 if (userId == userIds) {
+	            return dashboardRepository.projectDropDownWithAdmin(userId);
+	        } else {
+	            return dashboardRepository.projectDropDownWithOutAdmin(userId);
+	        }
+	    }
+		return null;
 	}
 	
 	
