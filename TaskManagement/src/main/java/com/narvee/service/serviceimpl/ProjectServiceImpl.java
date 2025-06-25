@@ -104,6 +104,12 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public void deleteProject(Long pid) { // it will work for both ATS and TMS users
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: deleteProject");
+		  TmsProject project = projectrepository.findById(pid)
+			        .orElseThrow(() -> new RuntimeException("Project not found"));
+
+			    if (!project.getTasks().isEmpty()) {
+			        throw new IllegalStateException("Cannot delete project: It has associated tasks.");
+			    }
 		projectrepository.deleteById(pid);
 	}
 

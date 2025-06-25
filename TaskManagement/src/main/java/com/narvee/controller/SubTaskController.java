@@ -133,7 +133,7 @@ public class SubTaskController {
 		 TmsSubTask subTask = mapper.readValue(tmsSubTask, TmsSubTask.class);
 
 		return new ResponseEntity<RestAPIResponse>(
-				new RestAPIResponse("success", "SubTask created successfully", subtaskservice.createTmsSubTask(subTask,subTaskFile)),
+				new RestAPIResponse("success", "Sub-Task added successfully", subtaskservice.createTmsSubTask(subTask,subTaskFile)),
 				HttpStatus.CREATED);
 
 	}
@@ -145,11 +145,11 @@ public class SubTaskController {
 		
 		try {
 			TmsSubTask UpdateTmsSubTask	 = subtaskservice.updateTmsSubTask(subTask,subTaskFile);
-			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success",  "Updated successfully",UpdateTmsSubTask),
+			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success",  "Sub-Task Updated successfully",UpdateTmsSubTask),
 					HttpStatus.OK);
 		}catch(Exception exception){
 			
-			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("fail", "SubTask not found",exception), HttpStatus.OK);
+			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("fail", "Failed to update Sub-Task",exception), HttpStatus.OK);
 	  }
 	}
 	
@@ -164,7 +164,7 @@ public class SubTaskController {
 	public ResponseEntity<RestAPIResponse> deleteSubTaskByIdTms(@PathVariable Long subtaskid) {
 		logger.info("!!! inside class: SubTaskController , !! method: deleteSubTaskById--Tms");
 		subtaskservice.deleteSubTaskTms(subtaskid);
-		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Deleted successfully"),
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", " Sub-Task deleted successfully"),
 				HttpStatus.OK);
 
 	}
