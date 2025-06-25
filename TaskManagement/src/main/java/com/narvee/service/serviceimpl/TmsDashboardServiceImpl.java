@@ -32,9 +32,9 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	}
 
 	@Override
-	public List<TmsTaskCountData> getTaskCountByProjectId(Long pid) {
+	public List<TmsTaskCountData> getTaskCountByAdminId(Long adminId) {
 		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getTaskCountByProjectId");
-		return	dashboardRepository.getTaskCountByProjectId(pid);
+		return	dashboardRepository.getTaskCountByadminId(adminId);
 	}
 
 	
