@@ -121,7 +121,7 @@ public class ProjectController {
 		// save tms project 
 		logger.info("!!! inside class: ProjectController , !! method: TmscreateProject , !! for tms project ");
 		return new ResponseEntity<RestAPIResponse>(
-				new RestAPIResponse("success", " project created successfully", projectservice.saveTmsproject(project,projectFile)),
+				new RestAPIResponse("success", " Project added successfully", projectservice.saveTmsproject(project,projectFile)),
 				HttpStatus.CREATED);
 	}
 
@@ -139,10 +139,10 @@ public class ProjectController {
 			    TmsProject project = mapper.readValue(tmsProject, TmsProject.class);
 			   
 			 try {
-				return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Updated successfully",projectservice.updateprojectTms(project,projectFile)),
+				return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", " Project updated successfully",projectservice.updateprojectTms(project,projectFile)),
 						HttpStatus.OK);
 			} catch(Exception e) {
-				return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("fail", "Project not found----",e), HttpStatus.OK);
+				return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("fail", "Project updation failed  ",e), HttpStatus.OK);
 			}
 
 		}
