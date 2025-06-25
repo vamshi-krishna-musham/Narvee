@@ -37,12 +37,12 @@ public class TmsDashboardController {
 				HttpStatus.OK); 
 	 }
 	
-	@GetMapping("/getTaskCountByProjectId/{pid}")
-	 public ResponseEntity<RestAPIResponse> getTaskCountByPid( @PathVariable Long pid){
+	@GetMapping("/getTaskCountByAdminId/{adminId}")
+	 public ResponseEntity<RestAPIResponse> getTaskCountByPid( @PathVariable Long adminId){
 		logger.info("!!! inside class: TmsDashboardController , !! method: getTaskCountByPid");
 		dashboardService.getAllTaskCount();
 		return new ResponseEntity<RestAPIResponse>(
-				new RestAPIResponse("success", " All tms Task count By project Id fetched  successfully", dashboardService.getTaskCountByProjectId(pid)),       
+				new RestAPIResponse("success", " All tms Task count By project Id fetched  successfully", dashboardService.getTaskCountByAdminId(adminId)),       
 				HttpStatus.OK); 
 	 }
 	

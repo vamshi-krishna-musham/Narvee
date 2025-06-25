@@ -309,6 +309,7 @@ public class ProjectServiceImpl implements ProjectService {
 		TmsProject project = optionalProject.get();
 		project.setProjectName(updateproject.getProjectName());
 		project.setAddedBy(updateproject.getAddedBy());
+		project.setAdminId(updateproject.getAdminId());
 		project.setUpdatedBy(updateproject.getUpdatedBy());
 		project.setDescription(updateproject.getDescription());
 		project.setStatus(updateproject.getStatus());
@@ -411,7 +412,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 		List<ProjectResponseDto> res = new ArrayList<>();
 
-		if (access.equalsIgnoreCase("ADMIN")) {
+		if (access.equalsIgnoreCase("ADMIN" ) || access.equalsIgnoreCase("project manager")) {
 			if (keyword.equalsIgnoreCase("empty")) {
 				logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllTmsProjects, Empty");
 

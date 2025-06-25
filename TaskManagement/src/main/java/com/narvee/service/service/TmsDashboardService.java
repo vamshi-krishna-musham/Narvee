@@ -8,7 +8,7 @@ import com.narvee.dto.TmsTaskCountData;
 public interface TmsDashboardService {
   
 	public List<TmsTaskCountData> getAllTaskCount();
-	public List<TmsTaskCountData> getTaskCountByProjectId(Long pid);
+	public List<TmsTaskCountData> getTaskCountByAdminId(Long pid);
 	public List<TmsTaskCountData> getTaskCountByProjectIdAndUserId(Long pid , Long userId);	
 	public List<TmsTaskCountData> getTaskCountByProjectIdAndUserIdAndTime(Long pid, Long userId,String IntervelTime);
 	

@@ -47,6 +47,7 @@ public class TmsProject extends AuditModel {
 	private String projectName;
 	@Column(name ="addedby" )
 	private Long addedBy;
+	private Long adminId;
 	@Column(name ="updatedby")
 	private Long updatedBy;
 	private Long pmaxnum;

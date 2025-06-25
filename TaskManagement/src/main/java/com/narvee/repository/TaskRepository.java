@@ -263,7 +263,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	@Query(value = "SELECT t.taskid, DATE(t.createddate) As createddate, DATE(t.updateddate) AS updateddate,t.addedby,t.department,t.description,t.maxnum, "
 			+ " t.status,t.target_date,t.ticketid,t.updatedby,t.taskname,p.projectid,t.pid, t.duration , t.priority  ,t.start_date "
 			+ " FROM tms_task t JOIN tms_project p ON t.pid = p.pid WHERE p.projectid =:projectid AND (t.ticketid LIKE CONCAT('%',:keyword, '%') OR DATE_FORMAT(t.start_date,'%d-%m-%Y') LIKE CONCAT('%',:keyword,  '%')  OR "
-			+ " t.taskname LIKE CONCAT('%',:keyword, '%') OR t.description LIKE CONCAT('%',:keyword,  '%') OR DATE_FORMAT(t.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') "
+			+ " t.taskname LIKE CONCAT('%',:keyword, '%')  OR DATE_FORMAT(t.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') "
 			+ " OR t.status LIKE CONCAT('%',:keyword, '%'))", nativeQuery = true)
 	public Page<TaskTrackerDTO> findTaskByTmsProjectIdWithSearching(@Param("projectid") String projectid,
 			@Param("keyword") String keyword,Pageable pageable);
