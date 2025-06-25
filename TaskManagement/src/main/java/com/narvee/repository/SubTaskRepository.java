@@ -76,9 +76,9 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	
 	@Query(value = "SELECT  st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.target_date,st.addedby,st.duration,DATE(st.createddate) AS createddate ,"
 			+ "  st.priority,st.status,st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname , st.start_date "
-			+ "FROM  tms_sub_task  st join tms_task t where st.taskid = t.taskid and t.ticketid = :ticketId AND ( st.subtaskid LIKE CONCAT('%',:keyword, '%') OR "
-			+ "  st.subtaskdescription LIKE CONCAT('%',:keyword, '%') OR st.subtaskname LIKE CONCAT('%',:keyword,  '%') OR DATE_FORMAT(st.targetdate, '%Y-%m-%d') LIKE CONCAT('%',:keyword,  '%')  OR DATE_FORMAT(st.start_date, '%Y-%m-%d') LIKE CONCAT('%',:keyword, '%') "
-			+ "OR st.status LIKE CONCAT('%',:keyword, '%') OR st.priority LIKE CONCAT('%',:keyword, '%') OR st.duration LIKE CONCAT('%',:keyword, '%') OR st.taskid LIKE CONCAT('%',:keyword, '%') OR st.duration LIKE CONCAT('%',:keyword,  '%') )", nativeQuery = true)
+			+ "FROM  tms_sub_task  st join tms_task t where st.taskid = t.taskid and t.ticketid = :ticketId AND ( "
+			+ "   st.subtaskname LIKE CONCAT('%',:keyword,  '%') OR DATE_FORMAT(st.targetdate, '%Y-%m-%d') LIKE CONCAT('%',:keyword,  '%')  OR DATE_FORMAT(st.start_date, '%Y-%m-%d') LIKE CONCAT('%',:keyword, '%') "
+			+ "OR st.status LIKE CONCAT('%',:keyword, '%') OR st.priority LIKE CONCAT('%',:keyword, '%') OR st.duration LIKE CONCAT('%',:keyword,  '%') )", nativeQuery = true)
 	public Page<TaskTrackerDTO> findSubTaskByTicketIdWithSearching(@Param("ticketId") String ticketId,
 			@Param("keyword") String keyword,Pageable pageable);
 	
