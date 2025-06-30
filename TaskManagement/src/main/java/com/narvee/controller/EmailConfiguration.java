@@ -33,21 +33,25 @@ public class EmailConfiguration {
 	
      
 	@PostMapping("/saveEmailNotifications")
-	   public ResponseEntity<RestAPIResponse> saveEmailConfiguration(@RequestBody List<TmsEmailConfigurationDto> configurationDto){
-		   logger.info("!!! inside class: EmailConfiguration , !! method: saveEmailConfiguration");	   
-		   Map<String, Object> resultMap = configurationService.saveEmailConfiguration(configurationDto);
-		    String message = "Email configuration saved successfully.";
-		    List<String> duplicates = (List<String>) resultMap.get("duplicates");
-		    if (!duplicates.isEmpty()) {
-		        message += " Skipped duplicates: " + String.join("; ", duplicates);
-		        return new ResponseEntity<>( new RestAPIResponse("success", message, resultMap),
-				        HttpStatus.CREATED );
-		    }else {
-		    	return new ResponseEntity<>( new RestAPIResponse("failed", "Failed to add the Email configuration"),
-				        HttpStatus.CREATED );
-		    }	    
-	   }
-	
+	public ResponseEntity<RestAPIResponse> saveEmailConfiguration(
+	        @RequestBody List<TmsEmailConfigurationDto> configurationDto) {
+
+	    logger.info("!!! inside class: EmailConfiguration , !! method: saveEmailConfiguration");
+
+	    Map<String, Object> resultMap = configurationService.saveEmailConfiguration(configurationDto);
+
+	    List<TmsEmailConfiguration> saved = (List<TmsEmailConfiguration>) resultMap.get("saved");
+	    List<String> duplicates = (List<String>) resultMap.get("duplicates");
+	    if (saved.isEmpty()) {
+	        return new ResponseEntity<>(  new RestAPIResponse("failed", "No configurations saved. All entries may already exist.", resultMap), HttpStatus.BAD_REQUEST);
+	    }
+	    String message = "Email configuration saved successfully.";
+	    if (!duplicates.isEmpty()) {
+	        message += " Skipped duplicates: " + String.join("; ", duplicates);
+	    }
+	    return new ResponseEntity<>(  new RestAPIResponse("success", message, resultMap), HttpStatus.CREATED );
+	}
+
 	@PutMapping("/updateEmailNotification")
 	public ResponseEntity<RestAPIResponse> updateEmailNotification( @RequestBody TmsEmailConfigurationDto dto) {
 	   logger.info("!!! inside class: EmailConfiguration , !! method: updateEmailNotification");
