@@ -40,7 +40,7 @@ public class TmsDashboardController {
 	@GetMapping("/getTaskCountByAdminId/{adminId}")
 	 public ResponseEntity<RestAPIResponse> getTaskCountByPid( @PathVariable Long adminId){
 		logger.info("!!! inside class: TmsDashboardController , !! method: getTaskCountByPid");
-		dashboardService.getAllTaskCount();
+		dashboardService.getTaskCountByAdminId(adminId);
 		return new ResponseEntity<RestAPIResponse>(
 				new RestAPIResponse("success", " All tms Task count By project Id fetched  successfully", dashboardService.getTaskCountByAdminId(adminId)),       
 				HttpStatus.OK); 
@@ -49,7 +49,7 @@ public class TmsDashboardController {
 	@GetMapping("/getTaskCountByPidAndUserId/{pid}/{userId}")
 	 public ResponseEntity<RestAPIResponse> getTaskCountByPidAndUserId( @PathVariable Long pid,@PathVariable Long userId){
 		logger.info("!!! inside class: TmsDashboardController , !! method: getTaskCountByPidAndUserId");
-		dashboardService.getAllTaskCount();
+		dashboardService.getTaskCountByProjectIdAndUserId(pid,userId);
 		return new ResponseEntity<RestAPIResponse>(
 				new RestAPIResponse("success", " All tms Task count By project Id AND User Id  fetched  successfully", dashboardService.getTaskCountByProjectIdAndUserId(pid,userId)),       
 				HttpStatus.OK); 
@@ -58,7 +58,7 @@ public class TmsDashboardController {
 	@GetMapping("/getTaskCountByPidAndUserIdAndTime/{pid}/{userId}/{time}")
 	 public ResponseEntity<RestAPIResponse> getTaskCountByPidAndUserIdAndTime( @PathVariable Long pid,@PathVariable Long userId,@PathVariable String time){
 		logger.info("!!! inside class: TmsDashboardController , !! method: getTaskCountByPidAndUserIdAndTime");
-		dashboardService.getAllTaskCount();
+		dashboardService.getTaskCountByProjectIdAndUserIdAndTime(pid,userId,time);
 		return new ResponseEntity<RestAPIResponse>(
 				new RestAPIResponse("success", " All tms Task count By project Id AND User Id  and Time fetched  successfully", dashboardService.getTaskCountByProjectIdAndUserIdAndTime(pid,userId,time)),       
 				HttpStatus.OK); 
@@ -67,7 +67,7 @@ public class TmsDashboardController {
 	@GetMapping("/getTaskCountByMonth/{status}")
 	 public ResponseEntity<RestAPIResponse> getTaskStatusCountByMonth( @PathVariable String status){
 		logger.info("!!! inside class: TmsDashboardController , !! method: getTaskStatusCountByMonth"); 
-		dashboardService.getAllTaskCount();
+		dashboardService.getTaskStatusCountByMonth(status);
 		return new ResponseEntity<RestAPIResponse>(
 				new RestAPIResponse("success", " All tms Task count By Month fetched  successfully", dashboardService.getTaskStatusCountByMonth(status)),       
 				HttpStatus.OK); 

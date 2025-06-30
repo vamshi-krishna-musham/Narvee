@@ -57,6 +57,9 @@ public class SubTaskServiceImpl implements SubTaskService {
 
 	@Autowired
 	private EmailServiceImpl emailService;
+	
+	@Autowired
+	private TmsEmailServiceImpl tmsEmailService;
 
 	@Autowired
 	private TaskRepository repository;
@@ -344,7 +347,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 		        fileUploadRepository.saveAll(taskFiles);
 		    }
 		try {
-			emailService.sendCreateSubTaskEmail(subtasks, user,true);
+			tmsEmailService.sendCreateSubTaskEmail(subtasks, user,true);
 		} catch (UnsupportedEncodingException | MessagingException e) {
 			e.printStackTrace();
 		}
@@ -420,7 +423,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 			TmsSubTask subtasks = subtaskrepository.save(subtask);
 	 
 			try {
-				emailService.sendCreateSubTaskEmail(subtasks, user,false);
+				tmsEmailService.sendCreateSubTaskEmail(subtasks, user,false);
 			} catch (UnsupportedEncodingException | MessagingException e) {
 				e.printStackTrace();
 			}
@@ -510,7 +513,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 		try {
 			subtaskrepository.updateTaskStatus(subTaskId, staus, updatedby, indiaDateTime);
 			TmsSubTask subtasks = subtaskrepository.findById(subTaskId).get();
-			emailService.sendSubtaskEmailTms(subtasks);
+			tmsEmailService.sendSubtaskStatusUpdateEmailTms(subtasks);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		} catch (MessagingException e) {
@@ -649,7 +652,7 @@ logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskTrac
 			
 			
 			try {
-				emailService.sendTmsCommentEmail(updateTask);
+				tmsEmailService.sendTmsCommentEmail(updateTask,false);
 			} catch (MessagingException | UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}

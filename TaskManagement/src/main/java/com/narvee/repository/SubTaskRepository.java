@@ -68,17 +68,39 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	
 	//----------------------------tms   replicated methods --------------sta
 	@Query(value = "select st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.target_date,st.addedby,st.duration,DATE(st.createddate) AS createddate ,st.priority,st.status, "
-			+ " st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname  , st.start_date "
-			+ "        from tms_sub_task  st join tms_task t where st.taskid =t.taskid and t.ticketid = :ticketId Order by t.updateddate DESC ", nativeQuery = true)
+			+ " st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname  , st.start_date,"
+			+ " CONCAT( "
+			+ "        COALESCE(u1.first_name, u2.first_name), ' ', "
+			+ "        COALESCE(u1.middle_name, u2.middle_name, ''), ' ', "
+			+ "        COALESCE(u1.last_name, u2.last_name) "
+			+ "    ) AS fullname "
+			+ "        from tms_sub_task st JOIN tms_task t ON st.taskid = t.taskid "
+			+ "        LEFT JOIN tms_users u1 ON st.updatedby = u1.user_id "
+			+ "        LEFT JOIN tms_users u2 ON st.addedby = u2.user_id "
+			+ "        WHERE t.ticketid = :ticketId  "
+			+ " ", nativeQuery = true)
 	public Page<TaskTrackerDTO> findSubTaskByTicketid(@Param("ticketId") String ticketId,Pageable pageable);
 	
 	
 	
 	@Query(value = "SELECT  st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.target_date,st.addedby,st.duration,DATE(st.createddate) AS createddate ,"
-			+ "  st.priority,st.status,st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname , st.start_date "
-			+ "FROM  tms_sub_task  st join tms_task t where st.taskid = t.taskid and t.ticketid = :ticketId AND ( "
+			+ "  st.priority,st.status,st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname , st.start_date ,"
+			+ "CONCAT( "
+			+ "			       COALESCE(u1.first_name, u2.first_name), ' ', "
+			+ "			       COALESCE(u1.middle_name, u2.middle_name, ''), ' ', "
+			+ "			       COALESCE(u1.last_name, u2.last_name)  "
+			+ "			       ) AS fullname "
+			+ "         from tms_sub_task st JOIN tms_task t ON st.taskid = t.taskid "
+			+ "         LEFT JOIN tms_users u1 ON st.updatedby = u1.user_id "
+			+ "         LEFT JOIN tms_users u2 ON st.addedby = u2.user_id "
+			+ "          WHERE t.ticketid = :ticketId  AND ( "
 			+ "   st.subtaskname LIKE CONCAT('%',:keyword,  '%') OR DATE_FORMAT(st.target_date, '%Y-%m-%d') LIKE CONCAT('%',:keyword,  '%')  OR DATE_FORMAT(st.start_date, '%Y-%m-%d') LIKE CONCAT('%',:keyword, '%') "
-			+ "OR st.status LIKE CONCAT('%',:keyword, '%') OR st.priority LIKE CONCAT('%',:keyword, '%') OR st.duration LIKE CONCAT('%',:keyword,  '%') )", nativeQuery = true)
+			+ " OR st.status LIKE CONCAT('%',:keyword, '%') OR st.priority LIKE CONCAT('%',:keyword, '%') OR st.duration LIKE CONCAT('%',:keyword,  '%') "
+			+ " OR    CONCAT( "
+			+ "            COALESCE(u1.first_name, u2.first_name), ' ', "
+			+ "            COALESCE(u1.middle_name, u2.middle_name, ''), ' ', "
+			+ "            COALESCE(u1.last_name, u2.last_name) "
+			+ "        ) LIKE CONCAT('%', :keyword, '%') )", nativeQuery = true)
 	public Page<TaskTrackerDTO> findSubTaskByTicketIdWithSearching(@Param("ticketId") String ticketId,
 			@Param("keyword") String keyword,Pageable pageable);
 	
@@ -106,4 +128,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 			+ "			JOIN tms_users u ON au.tms_user_id = u.user_id    \r\n"
 			+ "			WHERE st.subtaskid = :subtaskid ", nativeQuery = true)
 	public List<GetUsersDTO> getSubtaskAssignUsersTms(Long subtaskid);
+	
+	@Query(value = "select subtaskname from tms_sub_task where subtaskid = :subTaskId",nativeQuery = true)
+	public String getSubTaskName(Long subTaskId);
 }
