@@ -116,32 +116,32 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			+ "select concat(first_name,' ',middle_name,' ',last_name) as createdby,email, null as fullname from tms_users where user_id = :userid ", nativeQuery = true)
 	public List<GetUsersDTO> getTaskAssinedTmsUsersAndCreatedBy(long userid, List<Long> auserid);   // tms Users 
 
-	@Query(value = "SELECT \r\n"
-			+ "    t.taskid, \r\n"
-			+ "    NULL AS fullname, \r\n"
-			+ "    NULL AS pseudoname, \r\n"
-			+ "    NULL AS email, \r\n"
-			+ "    creator.fullname as cfullname ,\r\n"
-			+ "    creator.pseudoname as cpseudoname , \r\n"
-			+ "    creator.email as cemail \r\n"
-			+ "FROM tms_task t\r\n"
-			+ "JOIN users creator ON t.addedby = creator.userid  \r\n"
-			+ "WHERE t.taskid =:taskId \r\n"
-			+ "\r\n"
-			+ "UNION ALL\r\n"
-			+ "\r\n"
-			+ "SELECT \r\n"
-			+ "    t.taskid, \r\n"
-			+ "    u.fullname , \r\n"
-			+ "    u.pseudoname , \r\n"
+	@Query(value = "SELECT "
+			+ "    t.taskid, "
+			+ "    NULL AS fullname, "
+			+ "    NULL AS pseudoname, "
+			+ "    NULL AS email, "
+			+ "    creator.fullname as cfullname ,"
+			+ "    creator.pseudoname as cpseudoname , "
+			+ "    creator.email as cemail "
+			+ "FROM tms_task t "
+			+ "JOIN users creator ON t.addedby = creator.userid  "
+			+ "WHERE t.taskid =:taskId "
+		
+			+ "UNION ALL "
+		
+			+ "SELECT "
+			+ "    t.taskid, "
+			+ "    u.fullname , "
+			+ "    u.pseudoname , "
 			+ "    u.email, \r\n"
-			+ "    NULL AS fullname, \r\n"
-			+ "    NULL AS pseudoname, \r\n"
-			+ "    NULL AS email\r\n"
-			+ "FROM tms_task t\r\n"
-			+ "JOIN tms_task_users tu ON t.taskid = tu.taskid\r\n"
-			+ "JOIN tms_assigned_users au ON tu.assignedto = au.assignid\r\n"
-			+ "JOIN users u ON au.userid = u.userid  \r\n"
+			+ "    NULL AS fullname, "
+			+ "    NULL AS pseudoname, "
+			+ "    NULL AS email "
+			+ "FROM tms_task t "
+			+ "JOIN tms_task_users tu ON t.taskid = tu.taskid "
+			+ "JOIN tms_assigned_users au ON tu.assignedto = au.assignid "
+			+ "JOIN users u ON au.userid = u.userid  "
 			+ "WHERE t.taskid =:taskId ", nativeQuery = true)
 	public List<GetUsersDTO> getAssignUsers(Long taskId);
 
@@ -195,6 +195,18 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			+ "	join tms_assigned_users au on au.assignid =tu.assignedto\r\n" + "	join users u on au.userid=u.userid\r\n"
 			+ "	WHERE date(t.targetdate) < :currentDate AND t.status!='to do' AND t.status!='Completed'", nativeQuery = true)
 	public List<TaskTrackerDTO> getExceededTargetDateSubTasks(LocalDate currentDate);
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	//----------------------------all methods replicated for tms project -------------------
 	
@@ -256,15 +268,35 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 
 	
 	@Query(value = "SELECT  t.taskid,DATE(t.createddate) As createddate,DATE(t.updateddate) AS updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.target_date,t.ticketid,t.updatedby,"
-			+ " t.taskname,p.projectid,p.pid,t.duration,t.priority ,t.start_date "
-			+ "			FROM tms_task t  Join tms_project p ON t.pid = p.pid WHERE p.projectid = :projectid ", nativeQuery = true)
+			+ " t.taskname,p.projectid,p.pid,t.duration,t.priority ,t.start_date , CONCAT( "
+			+ "        COALESCE(u1.first_name, u2.first_name), ' ',"
+			+ "        COALESCE(u1.middle_name, u2.middle_name, ''), ' ',"
+			+ "        COALESCE(u1.last_name, u2.last_name) "
+			+ "    ) AS fullname "
+			+ "	  FROM tms_task t  Join tms_project p ON t.pid = p.pid "
+			+ "    LEFT JOIN tms_users u1 ON t.updatedby = u1.user_id  "
+			+ "    LEFT JOIN tms_users u2 ON t.addedby = u2.user_id  "
+			+ "    WHERE p.projectid = :projectid ", nativeQuery = true)
 	public Page<TaskTrackerDTO> findTaskByTmsProjectid(@Param("projectid") String projectid,Pageable pageable);
 	
 	@Query(value = "SELECT t.taskid, DATE(t.createddate) As createddate, DATE(t.updateddate) AS updateddate,t.addedby,t.department,t.description,t.maxnum, "
-			+ " t.status,t.target_date,t.ticketid,t.updatedby,t.taskname,p.projectid,t.pid, t.duration , t.priority  ,t.start_date "
-			+ " FROM tms_task t JOIN tms_project p ON t.pid = p.pid WHERE p.projectid =:projectid AND (t.ticketid LIKE CONCAT('%',:keyword, '%') OR DATE_FORMAT(t.start_date,'%d-%m-%Y') LIKE CONCAT('%',:keyword,  '%')  OR "
+			+ " t.status,t.target_date,t.ticketid,t.updatedby,t.taskname,p.projectid,t.pid, t.duration , t.priority  ,t.start_date , "
+			+ " CONCAT(  "
+			+ "			     COALESCE(u1.first_name, u2.first_name), ' ',"
+			+ "			     COALESCE(u1.middle_name, u2.middle_name, ''), ' ', "
+			+ "			     COALESCE(u1.last_name, u2.last_name)  "
+			+ "		     ) AS fullname "
+			+ "  FROM tms_task t JOIN tms_project p ON t.pid = p.pid  "
+			+ "  LEFT JOIN tms_users u1 ON t.updatedby = u1.user_id   "
+			+ "  LEFT JOIN tms_users u2 ON t.addedby = u2.user_id  "
+			+ "  WHERE p.projectid =:projectid AND (t.ticketid LIKE CONCAT('%',:keyword, '%') OR DATE_FORMAT(t.start_date,'%d-%m-%Y') LIKE CONCAT('%',:keyword,  '%')  OR "
 			+ " t.taskname LIKE CONCAT('%',:keyword, '%')  OR DATE_FORMAT(t.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') "
-			+ " OR t.status LIKE CONCAT('%',:keyword, '%') OR t.priority LIKE CONCAT('%',:keyword, '%') OR t.duration LIKE CONCAT('%',:keyword, '%')  )", nativeQuery = true)
+			+ " OR t.status LIKE CONCAT('%',:keyword, '%') OR t.priority LIKE CONCAT('%',:keyword, '%') OR t.duration LIKE CONCAT('%',:keyword, '%')  OR "
+			+ "   CONCAT( "
+			+ "			          COALESCE(u1.first_name, u2.first_name), ' ', "
+			+ "		            COALESCE(u1.middle_name, u2.middle_name, ''), ' ', "
+			+ "			           COALESCE(u1.last_name, u2.last_name)  "
+			+ "			        ) LIKE CONCAT('%', :keyword, '%') )", nativeQuery = true)
 	public Page<TaskTrackerDTO> findTaskByTmsProjectIdWithSearching(@Param("projectid") String projectid,
 			@Param("keyword") String keyword,Pageable pageable);
 	
@@ -298,4 +330,8 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	@Query(value = "UPDATE tms_task SET status=:status, updatedby=:updatedby , updateddate = :updateddate WHERE taskid =:taskid ", nativeQuery = true)
 	public int updateTmsTaskStatus(@Param("taskid") Long taskid, @Param("status") String status,
 			@Param("updatedby") Long updatedby, LocalDateTime updateddate);
+	
+	
+	@Query(value = "     select taskname from tms_task where taskid  =  :TaskId",nativeQuery = true)
+	public String getTaskName(Long TaskId);
 }

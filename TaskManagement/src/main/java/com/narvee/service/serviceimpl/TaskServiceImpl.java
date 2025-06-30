@@ -64,6 +64,9 @@ public class TaskServiceImpl implements TaskService {
 	@Autowired
 	private EmailServiceImpl emailService;
 	
+	@Autowired
+	private TmsEmailServiceImpl tmsEmailService;
+	
 	@Autowired 
 	private fileUploadRepository fileUploadRepository;
 
@@ -457,7 +460,7 @@ public class TaskServiceImpl implements TaskService {
 
 		List<GetUsersDTO> user = taskRepo.getTaskAssinedTmsUsersAndCreatedBy(task.getAddedby(), usersids);
 		try {
-			emailService.TaskAssigningEmailForTMS(task, user,true);
+			tmsEmailService.TaskAssigningEmailForTMS(task, user,true);
 		} catch (UnsupportedEncodingException | MessagingException e) {
 			e.printStackTrace();
 		}
@@ -492,7 +495,7 @@ public class TaskServiceImpl implements TaskService {
 			task.setTrack(listTicketTracker);
 			taskRepo.save(task);
 			try {
-				emailService.sendTmsCommentEmail(updateTask);
+				tmsEmailService.sendTmsCommentEmail(updateTask,true);
 			} catch (MessagingException | UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
@@ -565,7 +568,7 @@ public class TaskServiceImpl implements TaskService {
 		
 		List<GetUsersDTO> user = taskRepo.getTaskAssinedTmsUsersAndCreatedBy(task.getAddedby(), usersids);
 		try {
-			emailService.TaskAssigningEmailForTMS(update,user,false);
+			tmsEmailService.TaskAssigningEmailForTMS(update,user,false);
 		} catch (UnsupportedEncodingException | MessagingException e) {
 			e.printStackTrace();
 		}
@@ -834,7 +837,7 @@ public class TaskServiceImpl implements TaskService {
 		try {
 			taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);
 			TmsTask taskInfo = taskRepo.findById(taskid).get();
-			emailService.sendStatusUpdateEmail(taskInfo);
+			tmsEmailService.sendStatusUpdateEmail(taskInfo);
 
 		} catch (Exception e) {
 			// TODO: handle exception

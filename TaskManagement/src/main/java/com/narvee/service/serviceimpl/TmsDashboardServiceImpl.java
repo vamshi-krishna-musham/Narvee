@@ -34,21 +34,33 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	@Override
 	public List<TmsTaskCountData> getTaskCountByAdminId(Long adminId) {
 		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getTaskCountByProjectId");
+	  String userRole = 	dashboardRepository.roleName(adminId);
+		if(userRole .equalsIgnoreCase("Admin")) {
 		return	dashboardRepository.getTaskCountByadminId(adminId);
+		}else 
+		return  dashboardRepository.getTaskCountByUserId(adminId);
 	}
 
 	
 	@Override
 	public List<TmsTaskCountData> getTaskCountByProjectIdAndUserId(Long pid, Long userId) {
 		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getTaskCountByProjectIdAndUserId");
-		return dashboardRepository.getTaskCountByPidAndUserId(pid, userId);
-	}
-
+		  String userRole = 	dashboardRepository.roleName(userId);
+		  if(userRole .equalsIgnoreCase("Admin")) {
+		  return dashboardRepository.getTaskCountByPidAndAdminId(pid, userId);
+	     } else 
+		 return dashboardRepository.getTaskCountByPidAndUserId(pid, userId);
+	  }
+	
 	@Override
 	public List<TmsTaskCountData> getTaskCountByProjectIdAndUserIdAndTime(Long pid, Long userId,String IntervelTime) {
 		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getTaskCountByProjectIdAndUserId");
-		return dashboardRepository.getTaskCountByPidAndUserIdAndTime(pid, userId,IntervelTime);
-	}
+		 String userRole = 	dashboardRepository.roleName(userId);
+		  if(userRole .equalsIgnoreCase("Admin")) {
+		  return dashboardRepository.getTaskCountByPidAndAdminIdAndTime(pid, userId,IntervelTime);
+	      }else
+		  return dashboardRepository.getTaskCountByPidAndUserIdAndTime(pid, userId,IntervelTime);
+	     }
 
 	@Override
 	public List<TmsTaskCountData> getTaskStatusCountByMonth(String status) {

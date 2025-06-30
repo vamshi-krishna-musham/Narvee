@@ -46,6 +46,10 @@ public class ProjectServiceImpl implements ProjectService {
 	@Autowired
 	private EmailServiceImpl emailService;
 
+	
+	@Autowired
+	private TmsEmailServiceImpl TmsEmailService;
+	
 	@Autowired
 	private TaskRepository repository;
 
@@ -217,6 +221,21 @@ public class ProjectServiceImpl implements ProjectService {
 		project.setPmaxnum(pmaxnumber + 1);
 		TmsProject savedProject = projectrepository.save(project);
 		 		
+		Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
+
+		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
+				.collect(Collectors.toList());
+		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(project.getAddedBy(), usersids);		
+		try {
+			TmsEmailService.sendCreateProjectEmail(project, user, true);
+			
+		} catch (UnsupportedEncodingException e) {
+	
+			e.printStackTrace();
+		} catch (MessagingException e) {
+		
+			e.printStackTrace();
+		   }
 		if (files != null && !files.isEmpty()) {
 			List<TmsFileUpload> projectFiles = new ArrayList<>();
 
@@ -259,27 +278,10 @@ public class ProjectServiceImpl implements ProjectService {
 					logger.error("Failed to save file: " + file.getOriginalFilename(), e);
 				}
 
- 
 
 			savedProject.getFiles().addAll(projectFiles);
 			fileUploadRepository.saveAll(projectFiles);
 		}
-
-		Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
-
-		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
-				.collect(Collectors.toList());
-		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(project.getAddedBy(), usersids);
-
-		try {
-			emailService.sendCreateProjectEmail(project, user, true);
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (MessagingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		   }
 		}
 		return project ;
 	}
@@ -370,7 +372,7 @@ public class ProjectServiceImpl implements ProjectService {
 		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(project.getUpdatedBy(), usersids);
 		TmsProject tmsProject = projectrepository.save(project);
 		try {
-			emailService.sendCreateProjectEmail(project, user, false);
+			TmsEmailService.sendCreateProjectEmail(project, user, false);
 		} catch (UnsupportedEncodingException | MessagingException e) {
 			e.printStackTrace();
 		}
