@@ -2,6 +2,7 @@ package com.narvee.service.serviceimpl;
 
 import java.io.UnsupportedEncodingException;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -64,10 +65,10 @@ public class TmsEmailServiceImpl {
 	
 	//---------Send email for project Create and update for task management ----------
 	@Async
-	public void sendCreateProjectEmail(TmsProject project, List<GetUsersDTO> userdetails, boolean projectUpdate)  
+	public void sendCreateProjectEmail(TmsProject project, List<GetUsersDTO> userdetails, boolean projectUpdate,String Emailsubject,List<String> bccMails , List<String> CcMails)  
 			throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: EmailServiceImpl, !! method: sendCreateProjectEmail");
-		System.err.println("userdetails :"+userdetails.toString());
+	System.err.println("Emailsubject  "+ Emailsubject + " bccMails " +bccMails + " CcMails"+CcMails);
 
 		StringBuilder assignedUsers = new StringBuilder();
 		StringBuilder createdby = new StringBuilder();
@@ -106,9 +107,13 @@ public class TmsEmailServiceImpl {
 		helper.setFrom(narveemail, shortMessage);
 		String subject;
 		String body;
+		List<String> ccList = new ArrayList<>();
+		List<String> bccList = new ArrayList<>();
 
 		if (projectUpdate) {
-			subject = "New Project Assignment: " + project.getProjectid();
+			subject = (Emailsubject != null && !Emailsubject.isBlank())
+			        ? Emailsubject
+			        : "Project Create: " + project.getProjectid();
 			body = "<!DOCTYPE html>"
 			    + "<html><head><meta charset='UTF-8'><title>New Project Assigned</title></head>"
 			    + "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;'>"
@@ -140,9 +145,15 @@ public class TmsEmailServiceImpl {
 			    + "<p style='margin: 0; font-size: 13px;'>Best Regards,<br/>Task Management</p>"
 			    + "</td></tr>"
      		    + "</table></td></tr></table></body></html>";
+			
+			ccList = CcMails; 
+		    bccList = bccMails;
+		    
 
 		} else {	
-			subject = "Project Updated: " + project.getProjectid();
+			subject = (Emailsubject != null && !Emailsubject.isBlank())
+			        ? Emailsubject
+			        : "Project Updated: " + project.getProjectid();
 			body = "<!DOCTYPE html>"
 			    + "<html><head><meta charset='UTF-8'><title>Project Updated</title></head>"
 			    + "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;'>"
@@ -174,9 +185,18 @@ public class TmsEmailServiceImpl {
 			    + "<p style='margin: 0; font-size: 13px;'>Best Regards,<br/>Task Management</p>"
 			    + "</td></tr>"
 			    + "</table></td></tr></table></body></html>";
+			
+			ccList = CcMails; 
+		    bccList = bccMails;
 		}
 		helper.setSubject(subject);
 		helper.setText(body, true);
+		if (ccList != null && !ccList.isEmpty()) {
+		    helper.setCc(ccList.toArray(new String[0]));
+		}
+		if (bccList != null && !bccList.isEmpty()) {
+		    helper.setBcc(bccList.toArray(new String[0]));
+		}
 		mailSender.send(message);
 		logger.info("!!! inside class: EmailServiceImpl, !! method: End sendCreateProjectEmail");
 	}
@@ -184,7 +204,7 @@ public class TmsEmailServiceImpl {
 	
 	//------------------Send email for task create and update for task management-----------------
 	@Async
-	public void TaskAssigningEmailForTMS(TmsTask task, List<GetUsersDTO> userdetails,boolean isTask)  //   task created and updated email for TMS project 
+	public void TaskAssigningEmailForTMS(TmsTask task, List<GetUsersDTO> userdetails,boolean isTask,String Emailsubject,List<String> bccMails , List<String> CcMails)  //   task created and updated email for TMS project 
 			throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: TaskEmailServiceIml, !! method: TaskAssigningEmailForTMS --- tms ");
       String projectId =  projectRepository.getProjectName(task.getTaskid());
@@ -227,12 +247,14 @@ public class TmsEmailServiceImpl {
 		helper.setFrom(narveemail, shortMessage);
 		String subject = "Assigned Task Info ";
 		StringBuilder stringBuilder = new StringBuilder();
-		
+		List<String> ccList = new ArrayList<>();
+		List<String> bccList = new ArrayList<>();
 		String body;
 		
 		if(isTask) {
-			subject = " New Task Created " + task.getTaskname();
-			
+				subject = (Emailsubject != null && !Emailsubject.isBlank())
+				        ? Emailsubject
+				        : "Task Create: " + task.getTicketid();			
 		body = "<!DOCTYPE html>"
 			    + "<html><head><meta charset='UTF-8'><title>Task Created </title></head>"
 			    + "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;'>"
@@ -265,8 +287,12 @@ public class TmsEmailServiceImpl {
 			    + "<p style='margin: 0; font-size: 13px;'>Best Regards,<br/>Task Management Team</p>"
 			    + "</td></tr>"
 			    + "</table></td></tr></table></body></html>";
+		ccList = CcMails; 
+	    bccList = bccMails;
 		}else {
-			subject = " Task Updated " + task.getTaskname();
+			subject = (Emailsubject != null && !Emailsubject.isBlank())
+			        ? Emailsubject
+			        : "Task Update: " + task.getTicketid();	
 			
 			body = "<!DOCTYPE html>"
 				    + "<html><head><meta charset='UTF-8'><title>Task  Updated</title></head>"
@@ -300,16 +326,25 @@ public class TmsEmailServiceImpl {
 				    + "<p style='margin: 0; font-size: 13px;'>Best Regards,<br/>Task Management Team</p>"
 				    + "</td></tr>"
 				    + "</table></td></tr></table></body></html>";
+			
+			ccList = CcMails; 
+		    bccList = bccMails;
 		}
 		helper.setSubject(subject);
 		helper.setText(body.toString(), true);
+		if (ccList != null && !ccList.isEmpty()) {
+		    helper.setCc(ccList.toArray(new String[0]));
+		}
+		if (bccList != null && !bccList.isEmpty()) {
+		    helper.setBcc(bccList.toArray(new String[0]));
+		}
 		mailSender.send(message);
 		logger.info("!!! inside class: TaskEmailServiceIml, !! method: End TaskAssigningEmail");
 	}
 	
 	//----------------send email for create and update sub task in task management ---------------------
 	@Async
-	public void sendCreateSubTaskEmail(TmsSubTask subtask, List<GetUsersDTO> userdetails, boolean  SubTaskUpdate)
+	public void sendCreateSubTaskEmail(TmsSubTask subtask, List<GetUsersDTO> userdetails, boolean  SubTaskUpdate,String Emailsubject,List<String> bccMails , List<String> CcMails)
 			throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: SubTaskServiceImpl, !! method: SubTaskAssigningEmail");
 		GetUsersDTO subTaskDetails = subTaskRepository.GetPorjectNameAndTaskName(subtask.getSubTaskId());
@@ -353,9 +388,12 @@ public class TmsEmailServiceImpl {
 //		helper.setCc(ccmail);
 		String subject;
 		String body;
-
+		List<String> ccList = new ArrayList<>();
+		List<String> bccList = new ArrayList<>();
 		if (SubTaskUpdate) {
-			subject = "New Sub Task Assignment ";
+			subject = (Emailsubject != null && !Emailsubject.isBlank())
+			        ? Emailsubject
+			        : "SubTask Create: " + subtask.getSubTaskName();	
 			body = "<!DOCTYPE html>"
 			    + "<html><head><meta charset='UTF-8'><title>New Sub Task Assigned</title></head>"
 			    + "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;'>"
@@ -389,9 +427,14 @@ public class TmsEmailServiceImpl {
 			    + "<p style='margin: 0; font-size: 13px;'>Best Regards,<br/>Task Management Team</p>"
 			    + "</td></tr>"
      		    + "</table></td></tr></table></body></html>";
+			
+			ccList = CcMails; 
+		    bccList = bccMails;
 
 		} else {	
-			subject = "Sub Task  Updated  Notification For: " + subtask.getSubTaskName();
+			subject = (Emailsubject != null && !Emailsubject.isBlank())
+			        ? Emailsubject
+			        : "SubTask Update: " + subtask.getSubTaskName();	
 			body = "<!DOCTYPE html>"
 			    + "<html><head><meta charset='UTF-8'><title>Sub Task Updated</title></head>"
 			    + "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;'>"
@@ -424,10 +467,17 @@ public class TmsEmailServiceImpl {
 			    + "<p style='margin: 0; font-size: 13px;'>Best Regards,<br/>Task Management System Team</p>"
 			    + "</td></tr>"
 			    + "</table></td></tr></table></body></html>";
-
+			ccList = CcMails; 
+		    bccList = bccMails;
 		}
 		helper.setSubject(subject);
 		helper.setText(body, true);
+		if (ccList != null && !ccList.isEmpty()) {
+		    helper.setCc(ccList.toArray(new String[0]));
+		}
+		if (bccList != null && !bccList.isEmpty()) {
+		    helper.setBcc(bccList.toArray(new String[0]));
+		}
 		mailSender.send(message);
 		logger.info("!!! inside class: EmailServiceImpl, !! method: End sendSubTaskCreationEmail");
 	}
@@ -435,7 +485,7 @@ public class TmsEmailServiceImpl {
 	
 	//----------------------send comment email for task --------------------------
 	@Async
-	public void sendTmsCommentEmail(UpdateTask updateTask , boolean task) throws MessagingException, UnsupportedEncodingException {
+	public void sendTmsCommentEmail(UpdateTask updateTask , boolean task,String Emailsubject,List<String> bccMails , List<String> CcMails) throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: EmailServiceImpl, !! method:  sendCommentEmail");
 		List<GetUsersDTO> userdetails = null;
 		String createdByDetails = null;
@@ -482,8 +532,14 @@ public class TmsEmailServiceImpl {
 		helper.setTo(uniqueEmails);
 		helper.setFrom(narveemail, shortMessage);
 		String subject = "Task Comment Added: " + updateTask.getTicketid();
+		List<String> ccList = new ArrayList<>();
+		List<String> bccList = new ArrayList<>();
+		
 		String body;
 		if(task) {
+			 	subject = (Emailsubject != null && !Emailsubject.isBlank())
+				        ? Emailsubject
+				        : "Task Comment Added: " + updateTask.getTicketid();	
 	      body  = "<!DOCTYPE html>"
 			    + "<html><head><meta charset='UTF-8'><title>New Comment</title></head>"
 			    + "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;'>"
@@ -508,7 +564,13 @@ public class TmsEmailServiceImpl {
 			    + "<p style='margin: 0; font-size: 13px;'>Best Regards,<br/>Task Management Team</p>"
 			    + "</td></tr>"
 			    + "</table></td></tr></table></body></html>";
+	      ccList = CcMails; 
+		    bccList = bccMails;
 		}else {
+			
+			subject = (Emailsubject != null && !Emailsubject.isBlank())
+			        ? Emailsubject
+			        : "SubTask Comment Added: " + updateTask.getTicketid();
 			 body  = "<!DOCTYPE html>"
 					    + "<html><head><meta charset='UTF-8'><title>New Comment</title></head>"
 					    + "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;'>"
@@ -533,9 +595,17 @@ public class TmsEmailServiceImpl {
 					    + "<p style='margin: 0; font-size: 13px;'>Best Regards,<br/>Task Management Team</p>"
 					    + "</td></tr>"
 					    + "</table></td></tr></table></body></html>";
+			 ccList = CcMails; 
+			    bccList = bccMails;
 		}
 		helper.setSubject(subject);
 		helper.setText(body, true);
+		if (ccList != null && !ccList.isEmpty()) {
+		    helper.setCc(ccList.toArray(new String[0]));
+		}
+		if (bccList != null && !bccList.isEmpty()) {
+		    helper.setBcc(bccList.toArray(new String[0]));
+		}
 		mailSender.send(message);
 		logger.info("!!! inside class: EmailServiceImpl, !! method: End sendCommentEmail");
 	}
@@ -543,7 +613,7 @@ public class TmsEmailServiceImpl {
 	
 	// ---- send email  when udated status of task in task management -------------
 	@Async
-	public void sendStatusUpdateEmail(TmsTask task) throws MessagingException, UnsupportedEncodingException {
+	public void sendStatusUpdateEmail(TmsTask task,String Emailsubject,List<String> bccMails , List<String> CcMails) throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: TaskEmailServiceIml, !! method: sendStatusUpdateEmail");
 
 		List<GetUsersDTO> userdetails = taskRepository.getTmsAssignUsers(task.getTaskid());
@@ -580,11 +650,14 @@ public class TmsEmailServiceImpl {
 		MimeMessage message = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message);
 		helper.setTo(uniqueEmails);
-		System.err.println(uniqueEmails.toString());
 //		helper.setCc(ccmail);
 		helper.setFrom(narveemail, shortMessage);
-
-		String subject = "Task Status Updated: " + task.getTaskname();
+		List<String> ccList = new ArrayList<>();
+		List<String> bccList = new ArrayList<>();
+		
+		 String	subject = (Emailsubject != null && !Emailsubject.isBlank())
+			        ? Emailsubject
+			        : "Task Status Updated: " +task.getTaskname();	
 		
 		String	body = "<!DOCTYPE html>"
 			    + "<html><head><meta charset='UTF-8'><title>New Comment</title></head>"
@@ -612,6 +685,12 @@ public class TmsEmailServiceImpl {
 			    + "</table></td></tr></table></body></html>";
 		helper.setSubject(subject);
 		helper.setText(body, true);
+		if (ccList != null && !ccList.isEmpty()) {
+		    helper.setCc(ccList.toArray(new String[0]));
+		}
+		if (bccList != null && !bccList.isEmpty()) {
+		    helper.setBcc(bccList.toArray(new String[0]));
+		}
 		mailSender.send(message);
 		logger.info("!!! inside class: TaskEmailServiceIml, !! method: End sendStatusUpdateEmail");
 	}
@@ -619,7 +698,7 @@ public class TmsEmailServiceImpl {
 	
 	// ---------------------- send sub task Status Update email------------
 	@Async
-	public void sendSubtaskStatusUpdateEmailTms(TmsSubTask subTask) throws MessagingException, UnsupportedEncodingException {
+	public void sendSubtaskStatusUpdateEmailTms(TmsSubTask subTask,String Emailsubject,List<String> bccMails , List<String> CcMails) throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: EmailServiceIml, !! method: End sendSubtaskEmail");
 		List<GetUsersDTO> userdetails = subTaskRepository.getSubtaskAssignUsersTms(subTask.getSubTaskId());
 		userdetails = userdetails.stream().filter(user -> user.getEmail() != null).collect(Collectors.toList());
@@ -652,9 +731,11 @@ public class TmsEmailServiceImpl {
 		MimeMessageHelper helper = new MimeMessageHelper(message);
 		helper.setFrom(narveemail, shortMessage);
 		helper.setTo(uniqueEmails);
-//		helper.setCc(ccmail);
-
-		String subject = "SubTask Status Updated: " + subTask.getSubTaskName();
+		List<String> ccList = new ArrayList<>();
+		List<String> bccList = new ArrayList<>();
+	   String	subject = (Emailsubject != null && !Emailsubject.isBlank())
+		        ? Emailsubject
+		        : "SubTask Status Updated: " + subTask.getSubTaskName();	
 
 		String	body = "<!DOCTYPE html>"
 			    + "<html><head><meta charset='UTF-8'><title>New Comment</title></head>"
@@ -681,6 +762,12 @@ public class TmsEmailServiceImpl {
 			    + "</table></td></tr></table></body></html>";
 		helper.setSubject(subject);
 		helper.setText(body.toString(), true);
+		if (ccList != null && !ccList.isEmpty()) {
+		    helper.setCc(ccList.toArray(new String[0]));
+		}
+		if (bccList != null && !bccList.isEmpty()) {
+		    helper.setBcc(bccList.toArray(new String[0]));
+		}
 		mailSender.send(message);
 
 		logger.info("!!! inside class: EmailServiceImpl, !! method: End sendStatusUpdateSubtaskEmail");

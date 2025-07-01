@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -25,11 +26,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.narvee.dto.EmailConfigResponseDto;
 import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.ProjectDTO;
 import com.narvee.dto.ProjectDropDownDTO;
 import com.narvee.dto.ProjectResponseDto;
 import com.narvee.dto.RequestDTO;
+import com.narvee.dto.TmsEmailConfigurationDto;
 import com.narvee.entity.TmsAssignedUsers;
 import com.narvee.entity.TmsFileUpload;
 import com.narvee.entity.TmsProject;
@@ -46,10 +49,9 @@ public class ProjectServiceImpl implements ProjectService {
 	@Autowired
 	private EmailServiceImpl emailService;
 
-	
 	@Autowired
 	private TmsEmailServiceImpl TmsEmailService;
-	
+
 	@Autowired
 	private TaskRepository repository;
 
@@ -84,7 +86,9 @@ public class ProjectServiceImpl implements ProjectService {
 				.collect(Collectors.toList());
 		List<GetUsersDTO> user = repository.getTaskAssinedUsersAndCreatedBy(project.getAddedBy(), usersids);
 		try {
+
 			emailService.sendCreateProjectEmail(project, user, true);
+
 		} catch (UnsupportedEncodingException | MessagingException e) {
 			e.printStackTrace();
 		}
@@ -108,12 +112,12 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public void deleteProject(Long pid) { // it will work for both ATS and TMS users
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: deleteProject");
-		  TmsProject project = projectrepository.findById(pid)
-			        .orElseThrow(() -> new RuntimeException("Project not found"));
+		TmsProject project = projectrepository.findById(pid)
+				.orElseThrow(() -> new RuntimeException("Project not found"));
 
-			    if (!project.getTasks().isEmpty()) {
-			        throw new IllegalStateException("Cannot delete project: It has associated tasks.");
-			    }
+		if (!project.getTasks().isEmpty()) {
+			throw new IllegalStateException("Cannot delete project: It has associated tasks.");
+		}
 		projectrepository.deleteById(pid);
 	}
 
@@ -217,25 +221,35 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 		String valueWithPadding = String.format("%0" + DIGIT_PADDING + "d", pmaxnumber + 1);
 		String value = "PROJ" + valueWithPadding;
-		project.setProjectid(value);	
+		project.setProjectid(value);
 		project.setPmaxnum(pmaxnumber + 1);
 		TmsProject savedProject = projectrepository.save(project);
-		 		
+
 		Set<TmsAssignedUsers> addedByToAssignedUsers = project.getAssignedto();
 
 		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
 				.collect(Collectors.toList());
-		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(project.getAddedBy(), usersids);		
+		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(project.getAddedBy(), usersids);
 		try {
-			TmsEmailService.sendCreateProjectEmail(project, user, true);
 			
+			EmailConfigResponseDto dto = projectrepository.getEmailNotificationStatus(project.getAdminId(), "PROJECT_CREATE");
+			if(dto != null) {
+			System.err.println("is enable  " + dto.getIsEnabled());
+			if (Boolean.TRUE.equals(dto.getIsEnabled())) {
+				String subject = dto.getSubject();
+				List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
+						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+
+				List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
+						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+				TmsEmailService.sendCreateProjectEmail(project, user, true, subject, ccList, bccList);
+			}
+		}
 		} catch (UnsupportedEncodingException e) {
-	
 			e.printStackTrace();
 		} catch (MessagingException e) {
-		
 			e.printStackTrace();
-		   }
+		}
 		if (files != null && !files.isEmpty()) {
 			List<TmsFileUpload> projectFiles = new ArrayList<>();
 
@@ -249,9 +263,9 @@ public class ProjectServiceImpl implements ProjectService {
 			for (MultipartFile file : files) {
 				try {
 					String originalFilename = file.getOriginalFilename();
-					  if (file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isEmpty()) {
-			                continue;
-			            }
+					if (file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isEmpty()) {
+						continue;
+					}
 
 					String nameWithoutExt = originalFilename;
 					String ext = "";
@@ -278,12 +292,11 @@ public class ProjectServiceImpl implements ProjectService {
 					logger.error("Failed to save file: " + file.getOriginalFilename(), e);
 				}
 
-
-			savedProject.getFiles().addAll(projectFiles);
-			fileUploadRepository.saveAll(projectFiles);
+				savedProject.getFiles().addAll(projectFiles);
+				fileUploadRepository.saveAll(projectFiles);
+			}
 		}
-		}
-		return project ;
+		return project;
 	}
 
 	@Override
@@ -372,11 +385,24 @@ public class ProjectServiceImpl implements ProjectService {
 		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(project.getUpdatedBy(), usersids);
 		TmsProject tmsProject = projectrepository.save(project);
 		try {
-			TmsEmailService.sendCreateProjectEmail(project, user, false);
-		} catch (UnsupportedEncodingException | MessagingException e) {
+			
+			EmailConfigResponseDto dto = projectrepository.getEmailNotificationStatus(project.getAdminId(), "PROJECT_UPDATE");
+			if(dto != null) {
+			if (Boolean.TRUE.equals(dto.getIsEnabled())) {
+				String subject = dto.getSubject();
+				List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
+						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+
+				List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
+						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+				TmsEmailService.sendCreateProjectEmail(project, user, false, subject, ccList, bccList);
+			}
+		}
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (MessagingException e) {
 			e.printStackTrace();
 		}
-
 		return tmsProject;
 
 	}
@@ -420,7 +446,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 		List<ProjectResponseDto> res = new ArrayList<>();
 
-		if (access.equalsIgnoreCase("ADMIN" ) || access.equalsIgnoreCase("project manager")) {
+		if (access.equalsIgnoreCase("ADMIN") || access.equalsIgnoreCase("project manager")) {
 			if (keyword.equalsIgnoreCase("empty")) {
 				logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllTmsProjects, Empty");
 
@@ -533,6 +559,4 @@ public class ProjectServiceImpl implements ProjectService {
 
 	}
 
-	
-	
 }

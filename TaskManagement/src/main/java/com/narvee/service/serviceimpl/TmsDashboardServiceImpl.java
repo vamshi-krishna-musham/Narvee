@@ -54,11 +54,14 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	
 	@Override
 	public List<TmsTaskCountData> getTaskCountByProjectIdAndUserIdAndTime(Long pid, Long userId,String IntervelTime) {
-		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getTaskCountByProjectIdAndUserId");
+		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getTaskCountByProjectIdAndUser");
 		 String userRole = 	dashboardRepository.roleName(userId);
 		  if(userRole .equalsIgnoreCase("Admin")) {
+			  System.err.println("userRole "+userRole  +"userId  " +userId );
+			  logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getTaskCountByProjectIdAndAdminId");
 		  return dashboardRepository.getTaskCountByPidAndAdminIdAndTime(pid, userId,IntervelTime);
 	      }else
+	    	  logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getTaskCountByProjectIdAndUserId");
 		  return dashboardRepository.getTaskCountByPidAndUserIdAndTime(pid, userId,IntervelTime);
 	     }
 

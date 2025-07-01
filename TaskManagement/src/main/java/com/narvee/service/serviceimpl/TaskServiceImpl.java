@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.narvee.dto.DateSearchDTO;
+import com.narvee.dto.EmailConfigResponseDto;
 import com.narvee.dto.FileUploadDto;
 import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.RequestDTO;
@@ -44,6 +46,7 @@ import com.narvee.entity.TmsAssignedUsers;
 import com.narvee.entity.TmsFileUpload;
 import com.narvee.entity.TmsTask;
 import com.narvee.entity.TmsTicketTracker;
+import com.narvee.repository.ProjectRepository;
 import com.narvee.repository.TaskRepository;
 import com.narvee.repository.fileUploadRepository;
 import com.narvee.service.service.TaskService;
@@ -51,23 +54,24 @@ import com.narvee.service.service.TaskService;
 @Service
 public class TaskServiceImpl implements TaskService {
 	private static final Logger logger = LoggerFactory.getLogger(TaskServiceImpl.class);
-	
-	
+
 	@Value("${AppFilesDir}")
-    private String UPLOAD_DIR;
-	
-	
+	private String UPLOAD_DIR;
+
 	@Autowired
 	private TaskRepository taskRepo;
 	private static final int DIGIT_PADDING = 5;
 
 	@Autowired
 	private EmailServiceImpl emailService;
-	
+
 	@Autowired
 	private TmsEmailServiceImpl tmsEmailService;
 	
-	@Autowired 
+	@Autowired
+	private ProjectRepository projectRepository;
+
+	@Autowired
 	private fileUploadRepository fileUploadRepository;
 
 	@Override
@@ -164,7 +168,7 @@ public class TaskServiceImpl implements TaskService {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: getAllTasks");
 		return taskRepo.findAll(Sort.by("taskid").descending());
 	}
-	
+
 	@Override
 	public List<TaskAssignDTO> taskAssignInfo(Long taskid) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: taskAssignInfo");
@@ -308,7 +312,7 @@ public class TaskServiceImpl implements TaskService {
 
 			Long pid = taskRepo.findPid(projectid);
 			TaskResponse taskResp = new TaskResponse();
-			//taskResp.setTasks(tasksList);
+			// taskResp.setTasks(tasksList);
 			taskResp.setPid(pid);
 
 			return taskResp;
@@ -326,14 +330,11 @@ public class TaskServiceImpl implements TaskService {
 
 			Long pid = taskRepo.findPid(projectid);
 			TaskResponse taskResp = new TaskResponse();
-		//	taskResp.setTasks(tasksList);
+			// taskResp.setTasks(tasksList);
 			taskResp.setPid(pid);
 			return taskResp;
 		}
 	}
-	
-	
-	
 
 	@Override
 	public TmsTask findByTicketId(String taskid) {
@@ -376,19 +377,12 @@ public class TaskServiceImpl implements TaskService {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: ticketTracker");
 		return taskRepo.getProjectByTmsUsers(projectID);
 	}
-  
-	
-	
-	
-	
-	
-	
-	//  ---------------  all methods replicated for the  task under thr project  for tms  -----------------------------------------------------------------------------------------------------------------------
-	
-	
+
+	// --------------- all methods replicated for the task under thr project for tms
+	// -----------------------------------------------------------------------------------------------------------------------
 
 	@Override
-	public TmsTask createTmsTask(TmsTask task, String token,List<MultipartFile> files) {
+	public TmsTask createTmsTask(TmsTask task, String token, List<MultipartFile> files) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: createTmsTask-tms");
 		Long maxnumber = taskRepo.maxNumber();
 		if (maxnumber == null) {
@@ -411,63 +405,71 @@ public class TaskServiceImpl implements TaskService {
 //		assignedUsers.add(asg);
 //		List<AssignedUsers> addedByToAssignedUsers = task.getAssignedto();
 //		addedByToAssignedUsers.addAll(assignedUsers);
-		TmsTask savedtask =	taskRepo.save(task);
+		TmsTask savedtask = taskRepo.save(task);
 
-		
-		  if (files != null && !files.isEmpty()) {
-		        List<TmsFileUpload> taskFiles = new ArrayList<>();     
+		if (files != null && !files.isEmpty()) {
+			List<TmsFileUpload> taskFiles = new ArrayList<>();
 
-		        for (MultipartFile file : files) {
-		        	
-		            try {
-		            	
-		                String originalFileName = file.getOriginalFilename();
-		                if (file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isEmpty()) {
-			                continue;
-			            }
-		                String nameWithoutExt = originalFileName;
-		                String ext = "";
+			for (MultipartFile file : files) {
+				try {
+					String originalFileName = file.getOriginalFilename();
+					if (file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isEmpty()) {
+						continue;
+					}
+					String nameWithoutExt = originalFileName;
+					String ext = "";
 
-						int dotIndex = originalFileName.lastIndexOf('.');
-						if (dotIndex != -1) {
-							nameWithoutExt = originalFileName.substring(0, dotIndex);
-							ext = originalFileName.substring(dotIndex);
-						}
-		                String newFileName = nameWithoutExt + "-" + value + ext;
-		                Path path = Paths.get(UPLOAD_DIR + newFileName);
-		                Files.createDirectories(path.getParent());
-		                Files.write(path, file.getBytes());
+					int dotIndex = originalFileName.lastIndexOf('.');
+					if (dotIndex != -1) {
+						nameWithoutExt = originalFileName.substring(0, dotIndex);
+						ext = originalFileName.substring(dotIndex);
+					}
+					String newFileName = nameWithoutExt + "-" + value + ext;
+					Path path = Paths.get(UPLOAD_DIR + newFileName);
+					Files.createDirectories(path.getParent());
+					Files.write(path, file.getBytes());
 
-		                TmsFileUpload taskFile = new TmsFileUpload();
-		                taskFile.setFileName(newFileName);
-		                taskFile.setFilePath(path.toAbsolutePath().toString());
-		                taskFile.setFileType(file.getContentType());
-		                taskFile.setTask(task);
+					TmsFileUpload taskFile = new TmsFileUpload();
+					taskFile.setFileName(newFileName);
+					taskFile.setFilePath(path.toAbsolutePath().toString());
+					taskFile.setFileType(file.getContentType());
+					taskFile.setTask(task);
 
-		                taskFiles.add(taskFile);
-		            } catch (IOException e) {
-		                logger.error("Failed to save file: " + file.getOriginalFilename(), e);
-		            }
-		        }
-		        savedtask.getFiles().addAll(taskFiles);
-		        fileUploadRepository.saveAll(taskFiles);
-		    }
-		  
+					taskFiles.add(taskFile);
+				} catch (IOException e) {
+					logger.error("Failed to save file: " + file.getOriginalFilename(), e);
+				}
+			}
+			savedtask.getFiles().addAll(taskFiles);
+			fileUploadRepository.saveAll(taskFiles);
+		}
+
 		Set<TmsAssignedUsers> addedByToAssignedUsers = task.getAssignedto();
-		// assignid=null, userid=28, completed=false
 		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
 				.collect(Collectors.toList());
 
 		List<GetUsersDTO> user = taskRepo.getTaskAssinedTmsUsersAndCreatedBy(task.getAddedby(), usersids);
-		try {
-			tmsEmailService.TaskAssigningEmailForTMS(task, user,true);
+		try {	
+		   Long adminId = 	projectRepository.getAdminId(task.getTaskid());
+				EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "TASK_CREATE");
+				if( dto != null) {
+				System.err.println("is enable  " + dto.getIsEnabled());
+				if (Boolean.TRUE.equals(dto.getIsEnabled())) {
+					String subject = dto.getSubject();
+					List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
+							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+
+					List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
+							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+					tmsEmailService.TaskAssigningEmailForTMS(task, user, true,subject,ccList,bccList);
+				 }	
+				}
 		} catch (UnsupportedEncodingException | MessagingException e) {
 			e.printStackTrace();
 		}
 		return task;
 	}
-	
-	
+
 	@Override
 	public boolean updateTmsTask(UpdateTask updateTask) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTask-tms");
@@ -487,7 +489,7 @@ public class TaskServiceImpl implements TaskService {
 		task.setAssignedto(asigned);
 
 		if (task != null) {
-		//	task.setStatus(updateTask.getStatus());
+			// task.setStatus(updateTask.getStatus());
 			ticketTracker.setStatus(updateTask.getStatus());
 			ticketTracker.setComments(updateTask.getComments());
 			ticketTracker.setUpdatedby(updateTask.getUpdatedby());
@@ -495,7 +497,20 @@ public class TaskServiceImpl implements TaskService {
 			task.setTrack(listTicketTracker);
 			taskRepo.save(task);
 			try {
-				tmsEmailService.sendTmsCommentEmail(updateTask,true);
+				
+				Long adminId = 	projectRepository.getAdminId(task.getTaskid());
+				EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "TASK_COMMENT");
+				if(dto != null) {
+				if (Boolean.TRUE.equals(dto.getIsEnabled())) {
+					String subject = dto.getSubject();
+					List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
+							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+
+					List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
+							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+					tmsEmailService.sendTmsCommentEmail(updateTask, true,subject,ccList,bccList);
+				}
+			}
 			} catch (MessagingException | UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
@@ -504,13 +519,12 @@ public class TaskServiceImpl implements TaskService {
 		}
 		return false;
 	}
-	
-	
+
 	@Override
-	public TmsTask Tmsupdate(TmsTask task , List<MultipartFile> files) {
+	public TmsTask Tmsupdate(TmsTask task, List<MultipartFile> files) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: Tmsupdate-tms");
 		TmsTask update = taskRepo.findById(task.getTaskid()).get();
-		
+
 		update.setTargetDate(task.getTargetDate());
 		update.setStartDate(task.getStartDate());
 		update.setTaskname(task.getTaskname());
@@ -521,88 +535,93 @@ public class TaskServiceImpl implements TaskService {
 		update.setStatus(task.getStatus());
 		update.setDuration(task.getDuration());
 
-		
-		   //Path path = Paths.get(UPLOAD_DIR + getOriginalFilename);
+		// Path path = Paths.get(UPLOAD_DIR + getOriginalFilename);
 		if (files != null && !files.isEmpty()) {
-		    List<TmsFileUpload> uploadedFiles = files.stream().filter(file -> file != null && !file.isEmpty()).map(file -> {
-		        String ext = Optional.ofNullable(file.getOriginalFilename())
-		                             .filter(f -> f.contains("."))
-		                             .map(f -> f.substring(f.lastIndexOf(".")))
-		                             .orElse("");
-		        String baseName = file.getOriginalFilename().replace(ext, "");
-		        String fileName = baseName + "-" + update.getTicketid() + ext;
-		        String fullPath = UPLOAD_DIR + fileName;
+			List<TmsFileUpload> uploadedFiles = files.stream().filter(file -> file != null && !file.isEmpty())
+					.map(file -> {
+						String ext = Optional.ofNullable(file.getOriginalFilename()).filter(f -> f.contains("."))
+								.map(f -> f.substring(f.lastIndexOf("."))).orElse("");
+						String baseName = file.getOriginalFilename().replace(ext, "");
+						String fileName = baseName + "-" + update.getTicketid() + ext;
+						String fullPath = UPLOAD_DIR + fileName;
 
-		        try {
-		            Files.write(Paths.get(fullPath), file.getBytes());
-		        } catch (IOException e) {
-		            throw new RuntimeException("Failed to save file: " + fileName, e);
-		        }
+						try {
+							Files.write(Paths.get(fullPath), file.getBytes());
+						} catch (IOException e) {
+							throw new RuntimeException("Failed to save file: " + fileName, e);
+						}
 
+						TmsFileUpload existing = fileUploadRepository.findByFileNameAndTask(fileName, task);
+						if (existing != null) {
 
-	            TmsFileUpload existing = fileUploadRepository
-	                .findByFileNameAndTask(fileName, task);
-	            if (existing != null) {
-	                
-	                existing.setFileType(file.getContentType());
-	                existing.setFilePath(fullPath);
-	                return existing;
-	            } else {
-	                
-	                TmsFileUpload f = new TmsFileUpload();
-	                f.setFileName(fileName);
-	                f.setFilePath(fullPath);
-	                f.setFileType(file.getContentType());
-	                f.setTask(task);
-	                return f;
-	            }
-		    }).collect(Collectors.toList());
+							existing.setFileType(file.getContentType());
+							existing.setFilePath(fullPath);
+							return existing;
+						} else {
 
-		    update.getFiles().addAll(uploadedFiles);
+							TmsFileUpload f = new TmsFileUpload();
+							f.setFileName(fileName);
+							f.setFilePath(fullPath);
+							f.setFileType(file.getContentType());
+							f.setTask(task);
+							return f;
+						}
+					}).collect(Collectors.toList());
+
+			update.getFiles().addAll(uploadedFiles);
 		}
-		
+
 		Set<TmsAssignedUsers> addedByToAssignedUsers = task.getAssignedto();
 		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
 				.collect(Collectors.toList());
-		
-		
+
 		List<GetUsersDTO> user = taskRepo.getTaskAssinedTmsUsersAndCreatedBy(task.getAddedby(), usersids);
 		try {
-			tmsEmailService.TaskAssigningEmailForTMS(update,user,false);
+			Long adminId = 	projectRepository.getAdminId(task.getTaskid());
+				EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "TASK_UPDATE");
+				if(dto !=null) {
+				if (Boolean.TRUE.equals(dto.getIsEnabled())) {
+					String subject = dto.getSubject();
+					List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
+							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+
+					List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
+							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+					tmsEmailService.TaskAssigningEmailForTMS(update, user, false,subject,ccList,bccList);
+				}		
+			}
 		} catch (UnsupportedEncodingException | MessagingException e) {
 			e.printStackTrace();
 		}
 		return taskRepo.save(update);
 	}
 
-	
 	@Override
 	public List<GetUsersDTO> getProjectByTmsUsers(String projectID) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: ticketTracker-tms");
 		return taskRepo.getProjectByTmsUsers(projectID);
 	}
-	
 
 	@Override
 	public TmsTask findByTmstaskId(Long taskid) {
-		
-			logger.info("!!! inside class: TaskServiceImpl , !! method: findByTmstaskId-tms");
-			TmsTask task = taskRepo.findById(taskid).get();
-			for (TmsAssignedUsers aUser : task.getAssignedto()) {
-				GetUsersDTO user = taskRepo.gettmsUser(aUser.getTmsUserId());
-				aUser.setFullname(user.getFullname());
+
+		logger.info("!!! inside class: TaskServiceImpl , !! method: findByTmstaskId-tms");
+		TmsTask task = taskRepo.findById(taskid).get();
+		for (TmsAssignedUsers aUser : task.getAssignedto()) {
+			GetUsersDTO user = taskRepo.gettmsUser(aUser.getTmsUserId());
+			aUser.setFullname(user.getFullname());
+		}
+
+		if (task.getFiles() != null) {
+			for (TmsFileUpload file : task.getFiles()) {
+				file.getFileName(); // trigger loading
+				file.getFilePath();
+				file.getFileType();
 			}
-			
-			if (task.getFiles() != null) {
-		        for (TmsFileUpload file : task.getFiles()) {
-		            file.getFileName(); // trigger loading
-		            file.getFilePath();
-		            file.getFileType();
-		        }
-			}
-			return task;
+		}
+		return task;
 	}
-	
+
 	@Override
 	public TaskResponse findTmsTaskByProjectid(RequestDTO requestresponsedto) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: findTmsTaskByProjectid-tms");
@@ -634,11 +653,10 @@ public class TaskServiceImpl implements TaskService {
 		Sort sort = Sort.by(sortDirection, sortfield);
 		Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
 
-		
 		if (keyword.equalsIgnoreCase("empty")) {
 			logger.info("!!! inside class: TaskServiceImpl , !! method: findTaskByProjectid -- tms with empty ");
-			Page<TaskTrackerDTO> res = taskRepo.findTaskByTmsProjectid(projectid,pageable);
-			
+			Page<TaskTrackerDTO> res = taskRepo.findTaskByTmsProjectid(projectid, pageable);
+
 			List<TasksResponseDTO> tasksList = new ArrayList<>();
 
 			for (TaskTrackerDTO order : res) {
@@ -649,24 +667,23 @@ public class TaskServiceImpl implements TaskService {
 				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
 						.collect(Collectors.toList());
 				result.setAssignUsers(filteredAssignUsers);
-				
-				  List<TmsFileUpload> fileEntities = fileUploadRepository.getTaskFiles(order.getTaskid());
-				  // Implement this
-				    List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
-				        FileUploadDto dto = new FileUploadDto();
-				        dto.setId(file.getId());
-				        dto.setFileName(file.getFileName());
-				        dto.setFilePath(file.getFilePath());
-				        dto.setFileType(file.getFileType());
-				        return dto;
-				    }).collect(Collectors.toList());
-				    result.setFiles(fileDtos);
+
+				List<TmsFileUpload> fileEntities = fileUploadRepository.getTaskFiles(order.getTaskid());
+				// Implement this
+				List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
+					FileUploadDto dto = new FileUploadDto();
+					dto.setId(file.getId());
+					dto.setFileName(file.getFileName());
+					dto.setFilePath(file.getFilePath());
+					dto.setFileType(file.getFileType());
+					return dto;
+				}).collect(Collectors.toList());
+				result.setFiles(fileDtos);
 
 				tasksList.add(result);
 
-				
 			}
-			  Page<TasksResponseDTO> tasksPage = new PageImpl<>(tasksList, pageable, res.getTotalElements());
+			Page<TasksResponseDTO> tasksPage = new PageImpl<>(tasksList, pageable, res.getTotalElements());
 			Long pid = taskRepo.findPid(projectid);
 			TaskResponse taskResp = new TaskResponse();
 			taskResp.setTasks(tasksPage);
@@ -675,7 +692,7 @@ public class TaskServiceImpl implements TaskService {
 			return taskResp;
 		} else {
 			logger.info("!!! inside class: TaskServiceImpl , !! method: findTaskByProjectIdWithSearching , Filter-tms");
-			Page<TaskTrackerDTO> res = taskRepo.findTaskByTmsProjectIdWithSearching(projectid, keyword,pageable);
+			Page<TaskTrackerDTO> res = taskRepo.findTaskByTmsProjectIdWithSearching(projectid, keyword, pageable);
 			List<TasksResponseDTO> tasksList = new ArrayList<>();
 			for (TaskTrackerDTO order : res) {
 				TasksResponseDTO result = new TasksResponseDTO(order);
@@ -683,24 +700,24 @@ public class TaskServiceImpl implements TaskService {
 				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
 						.collect(Collectors.toList());
 				result.setAssignUsers(filteredAssignUsers);
-				
-				  List<TmsFileUpload> fileEntities = fileUploadRepository.getTaskFiles(order.getTaskid()); // Implement this
-				    List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
-				        FileUploadDto dto = new FileUploadDto();
-				        dto.setId(file.getId());
-				        dto.setFileName(file.getFileName());
-				        dto.setFilePath(file.getFilePath());
-				        dto.setFileType(file.getFileType());
-				        return dto;
-				    }).collect(Collectors.toList());
-				    
-				    result.setFiles(fileDtos);
 
-				   
+				List<TmsFileUpload> fileEntities = fileUploadRepository.getTaskFiles(order.getTaskid()); // Implement
+																											// this
+				List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
+					FileUploadDto dto = new FileUploadDto();
+					dto.setId(file.getId());
+					dto.setFileName(file.getFileName());
+					dto.setFilePath(file.getFilePath());
+					dto.setFileType(file.getFileType());
+					return dto;
+				}).collect(Collectors.toList());
+
+				result.setFiles(fileDtos);
+
 				tasksList.add(result);
-				
+
 			}
-			 Page<TasksResponseDTO> tasksPage = new PageImpl<>(tasksList, pageable, res.getTotalElements()); 
+			Page<TasksResponseDTO> tasksPage = new PageImpl<>(tasksList, pageable, res.getTotalElements());
 
 			Long pid = taskRepo.findPid(projectid);
 			TaskResponse taskResp = new TaskResponse();
@@ -737,16 +754,13 @@ public class TaskServiceImpl implements TaskService {
 		}
 		Sort sort = Sort.by(sortDirection, sortfield);
 		Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
-		
-		
+
 		if (keyword.equalsIgnoreCase("empty")) {
 			return taskRepo.getTmsTaskByProjectid(pageable, projectid, status);
 		} else {
 			return taskRepo.getTmsTaskByProjectIdWithsearching(pageable, projectid, status, keyword);
-		}	
-}
-
-	
+		}
+	}
 
 	@Override
 	public void deleteTmsTask(Long id) {
@@ -754,7 +768,7 @@ public class TaskServiceImpl implements TaskService {
 		taskRepo.deleteById(id);
 
 	}
-	
+
 	@Override
 	public void deleteTmsTaskFileIpload(Long id) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: deleteTmsTask-tms");
@@ -764,69 +778,66 @@ public class TaskServiceImpl implements TaskService {
 
 	@Override
 	public List<TasksResponseDTO> ticketTmsTracker(Long taskid) {
-		
-			logger.info("!!! inside class: TaskServiceImpl , !! method: ticketTmsTracker-tms");
-			List<TaskTrackerDTO> tracker = taskRepo.ticketTracker(taskid);
-			List<TasksResponseDTO> tasksList = new ArrayList<>();
 
-			for (TaskTrackerDTO taskTrackerDTO : tracker) {
-				TasksResponseDTO track = new TasksResponseDTO(taskTrackerDTO);
-				GetUsersDTO user = taskRepo.gettmsUser(taskTrackerDTO.getUpdatedby());
-				if (taskTrackerDTO.getUpdatedby() != null) {
-					track.setFullname(user.getFullname());
-					//track.setPseudoname(user.getPseudoname());
-				}
-				tasksList.add(track);
+		logger.info("!!! inside class: TaskServiceImpl , !! method: ticketTmsTracker-tms");
+		List<TaskTrackerDTO> tracker = taskRepo.ticketTracker(taskid);
+		List<TasksResponseDTO> tasksList = new ArrayList<>();
+
+		for (TaskTrackerDTO taskTrackerDTO : tracker) {
+			TasksResponseDTO track = new TasksResponseDTO(taskTrackerDTO);
+			GetUsersDTO user = taskRepo.gettmsUser(taskTrackerDTO.getUpdatedby());
+			if (taskTrackerDTO.getUpdatedby() != null) {
+				track.setFullname(user.getFullname());
+				// track.setPseudoname(user.getPseudoname());
 			}
-			return tasksList;
+			tasksList.add(track);
 		}
+		return tasksList;
+	}
 
 	@Override
 	public List<TaskAssignDTO> taskTmsAssignInfo(Long taskid) {
-			logger.info("!!! inside class: TaskServiceImpl , !! method: taskTmsAssignInfo-tms");
-			return taskRepo.taskTmsAssignInfo(taskid);
-		}
+		logger.info("!!! inside class: TaskServiceImpl , !! method: taskTmsAssignInfo-tms");
+		return taskRepo.taskTmsAssignInfo(taskid);
+	}
 
 	@Override
 	public List<TmsTask> getAllTmsTasks() {
-			logger.info("!!! inside class: TaskServiceImpl , !! method: getAllTmsTasks-tms");
-			return taskRepo.findAll(Sort.by("taskid").descending());
-		}
+		logger.info("!!! inside class: TaskServiceImpl , !! method: getAllTmsTasks-tms");
+		return taskRepo.findAll(Sort.by("taskid").descending());
+	}
 
-	
-	
 	@Override
-	public Map<String, Long> getTaskCountByStatus(Long pid,Long userid) {
+	public Map<String, Long> getTaskCountByStatus(Long pid, Long userid) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: getAllTasksCount");
 		List<Object[]> result;
 		String UserRole = taskRepo.getUserRole(userid);
-		
-		if("SUPER_ADMIN".equalsIgnoreCase(UserRole)) {
-		  if(pid != null) {
-			result = taskRepo.countTasksByStatusAndPid(pid);
-		}else {
-	     result = taskRepo.countTasksByStatus();
-		  }
-		
-		}else  {
-			
-			if(pid != null) {
-				result = taskRepo.getTaskCountByUserAndPid(pid,userid);
-			}else {
-				result = taskRepo.countTasksByStatusAndUser(userid);
-			   }
-		}
-	    Map<String, Long> statusCount = new HashMap<>();
 
-	    for (Object[] row : result) {
-	        String status = (String) row[0];
-	        Long count = ((Number) row[1]).longValue();
-	        statusCount.put(status, count);
-	    }
-	    return statusCount;
+		if ("SUPER_ADMIN".equalsIgnoreCase(UserRole)) {
+			if (pid != null) {
+				result = taskRepo.countTasksByStatusAndPid(pid);
+			} else {
+				result = taskRepo.countTasksByStatus();
+			}
+
+		} else {
+
+			if (pid != null) {
+				result = taskRepo.getTaskCountByUserAndPid(pid, userid);
+			} else {
+				result = taskRepo.countTasksByStatusAndUser(userid);
+			}
+		}
+		Map<String, Long> statusCount = new HashMap<>();
+
+		for (Object[] row : result) {
+			String status = (String) row[0];
+			Long count = ((Number) row[1]).longValue();
+			statusCount.put(status, count);
+		}
+		return statusCount;
 	}
-   
-	
+
 	@Override
 	public boolean updateTmsTaskStatus(Long taskid, String status, Long updatedby) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: updateTaskStatus");
@@ -837,7 +848,20 @@ public class TaskServiceImpl implements TaskService {
 		try {
 			taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);
 			TmsTask taskInfo = taskRepo.findById(taskid).get();
-			tmsEmailService.sendStatusUpdateEmail(taskInfo);
+			
+			Long adminId =	projectRepository.getAdminId(taskid);
+			EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "TASK_STATUS");
+			if(dto != null) {
+			if (Boolean.TRUE.equals(dto.getIsEnabled())) {
+				String subject = dto.getSubject();
+				List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
+						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+
+				List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
+						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+				tmsEmailService.sendStatusUpdateEmail(taskInfo,subject,ccList,bccList);
+			}
+		}
 
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -846,5 +870,5 @@ public class TaskServiceImpl implements TaskService {
 		return true;
 
 	}
-	
+
 }
