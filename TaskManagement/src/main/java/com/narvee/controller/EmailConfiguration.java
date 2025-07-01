@@ -26,55 +26,49 @@ import com.narvee.service.service.EmailConfigurationService;
 public class EmailConfiguration {
 
 	private static final Logger logger = LoggerFactory.getLogger(EmailConfiguration.class);
-	
+
 	@Autowired
 	private EmailConfigurationService configurationService;
-	
-	
-     
+
 	@PostMapping("/saveEmailNotifications")
 	public ResponseEntity<RestAPIResponse> saveEmailConfiguration(
-	        @RequestBody List<TmsEmailConfigurationDto> configurationDto) {
+			@RequestBody List<TmsEmailConfigurationDto> configurationDto) {
 
-	    logger.info("!!! inside class: EmailConfiguration , !! method: saveEmailConfiguration");
+		logger.info("!!! inside class: EmailConfiguration , !! method: saveEmailConfiguration");
 
-	    Map<String, Object> resultMap = configurationService.saveEmailConfiguration(configurationDto);
+		Map<String, Object> resultMap = configurationService.saveEmailConfiguration(configurationDto);
 
-	    List<TmsEmailConfiguration> saved = (List<TmsEmailConfiguration>) resultMap.get("saved");
-	    List<String> duplicates = (List<String>) resultMap.get("duplicates");
-	    if (saved.isEmpty()) {
-	        return new ResponseEntity<>(  new RestAPIResponse("failed", "No configurations saved. All entries may already exist.", resultMap), HttpStatus.BAD_REQUEST);
-	    }
-	    String message = "Email configuration saved successfully.";
-	    if (!duplicates.isEmpty()) {
-	        message += " Skipped duplicates: " + String.join("; ", duplicates);
-	    }
-	    return new ResponseEntity<>(  new RestAPIResponse("success", message, resultMap), HttpStatus.CREATED );
+		List<TmsEmailConfiguration> saved = (List<TmsEmailConfiguration>) resultMap.get("saved");
+		List<String> duplicates = (List<String>) resultMap.get("duplicates");
+		if (saved.isEmpty()) {
+			return new ResponseEntity<>(
+					new RestAPIResponse("failed", "No configurations saved. All entries may already exist.", resultMap),
+					HttpStatus.OK);
+		}
+		String message = "Email configuration saved successfully.";
+		if (!duplicates.isEmpty()) {
+			message += " Skipped duplicates: " + String.join("; ", duplicates);
+		}
+		return new ResponseEntity<>(new RestAPIResponse("success", message, resultMap), HttpStatus.CREATED);
 	}
 
 	@PutMapping("/updateEmailNotification")
-	public ResponseEntity<RestAPIResponse> updateEmailNotification( @RequestBody TmsEmailConfigurationDto dto) {
-	   logger.info("!!! inside class: EmailConfiguration , !! method: updateEmailNotification");
-	    TmsEmailConfiguration updated = configurationService.updateEmailConfiguration(dto);
-	    return new ResponseEntity<>(
-	        new RestAPIResponse("success", "Email notification configuration updated.", updated),
-	        HttpStatus.OK
-	    );
+	public ResponseEntity<RestAPIResponse> updateEmailNotification(@RequestBody TmsEmailConfigurationDto dto) {
+		logger.info("!!! inside class: EmailConfiguration , !! method: updateEmailNotification");
+		TmsEmailConfiguration updated = configurationService.updateEmailConfiguration(dto);
+		return new ResponseEntity<>(
+				new RestAPIResponse("success", "Email notification configuration updated.", updated), HttpStatus.OK);
 	}
 
-	
 	@GetMapping("/getAllEmailNotifications/{adminId}")
 	public ResponseEntity<RestAPIResponse> getAllEmailNotifications(@PathVariable Long adminId) {
-	    logger.info("!!! inside class: EmailConfiguration , !! method: getAllEmailNotifications");
+		logger.info("!!! inside class: EmailConfiguration , !! method: getAllEmailNotifications");
 
-	    List<TmsEmailConfiguration> configList = configurationService.getEmailConfiguration(adminId);
+		List<TmsEmailConfiguration> configList = configurationService.getEmailConfiguration(adminId);
 
-	    return new ResponseEntity<>(
-	        new RestAPIResponse("success", "All email configurations fetched successfully.", configList),
-	        HttpStatus.OK
-	    );
+		return new ResponseEntity<>(
+				new RestAPIResponse("success", "All email configurations fetched successfully.", configList),
+				HttpStatus.OK);
 	}
 
-	
-	
 }

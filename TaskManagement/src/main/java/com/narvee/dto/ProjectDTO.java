@@ -13,7 +13,9 @@ public interface ProjectDTO {
 	public String getProjectdescription();
 
 	public String getAddedby();
-
+	
+	public String getAddedByName();
+	
 	public String getStatus();
 
 	public String getUpdatedby();

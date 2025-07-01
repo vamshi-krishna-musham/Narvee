@@ -331,7 +331,8 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	public int updateTmsTaskStatus(@Param("taskid") Long taskid, @Param("status") String status,
 			@Param("updatedby") Long updatedby, LocalDateTime updateddate);
 	
-	
-	@Query(value = "     select taskname from tms_task where taskid  =  :TaskId",nativeQuery = true)
+	@Query(value = "  select taskname from tms_task where taskid  =  :TaskId",nativeQuery = true)
 	public String getTaskName(Long TaskId);
+	
+	
 }
