@@ -64,6 +64,33 @@ public class TmsDashboardController {
 				HttpStatus.OK); 
 	 }
 	
+	@GetMapping("/getPriorityCountByAdminId/{adminId}")
+	 public ResponseEntity<RestAPIResponse> getPriorityCountByPid( @PathVariable Long adminId){
+		logger.info("!!! inside class: TmsDashboardController , !! method: getPriorityCountByPid");
+		dashboardService.getPriorityCountByAdminId(adminId);
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", " All tms Priority count By project Id fetched  successfully", dashboardService.getTaskCountByAdminId(adminId)),       
+				HttpStatus.OK); 
+	 }
+	
+	@GetMapping("/getPriorityCountByPidAndUserId/{pid}/{userId}")
+	 public ResponseEntity<RestAPIResponse> getPriorityCountByPidAndUserId( @PathVariable Long pid,@PathVariable Long userId){
+		logger.info("!!! inside class: TmsDashboardController , !! method: getPriorityCountByPidAndUserId");
+		dashboardService.getPriorityCountByProjectIdAndUserId(pid,userId);
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", " All tms Priority count By project Id AND User Id  fetched  successfully", dashboardService.getTaskCountByProjectIdAndUserId(pid,userId)),       
+				HttpStatus.OK); 
+	 }
+	
+	@GetMapping("/getPriorityCountByPidAndUserIdAndTime/{pid}/{userId}/{time}")
+	 public ResponseEntity<RestAPIResponse> getPriorityCountByPidAndUserIdAndTime( @PathVariable Long pid,@PathVariable Long userId,@PathVariable String time){
+		logger.info("!!! inside class: TmsDashboardController , !! method: getPriorityCountByPidAndUserIdAndTime");
+		dashboardService.getPriorityCountByProjectIdAndUserIdAndTime(pid,userId,time);
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", " All tms Priority count By project Id AND User Id  and Time fetched  successfully", dashboardService.getTaskCountByProjectIdAndUserIdAndTime(pid,userId,time)),       
+				HttpStatus.OK); 
+	 }
+	
 	@GetMapping("/getTaskCountByMonth/{status}")
 	 public ResponseEntity<RestAPIResponse> getTaskStatusCountByMonth( @PathVariable String status){
 		logger.info("!!! inside class: TmsDashboardController , !! method: getTaskStatusCountByMonth"); 

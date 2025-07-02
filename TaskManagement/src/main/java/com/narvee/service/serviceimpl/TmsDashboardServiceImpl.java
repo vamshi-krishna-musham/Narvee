@@ -64,6 +64,39 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	    	  logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getTaskCountByProjectIdAndUserId");
 		  return dashboardRepository.getTaskCountByPidAndUserIdAndTime(pid, userId,IntervelTime);
 	     }
+	
+	@Override
+	public List<TmsTaskCountData> getPriorityCountByAdminId(Long adminId) {
+		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getPriorityCountByAdminId");
+	  String userRole = 	dashboardRepository.roleName(adminId);
+		if(userRole .equalsIgnoreCase("Admin")) {
+		return	dashboardRepository.getPriorityByAdminId(adminId);
+		}else 
+		return  dashboardRepository.getPriorityByUserId(adminId);
+	}
+
+	
+	@Override
+	public List<TmsTaskCountData> getPriorityCountByProjectIdAndUserId(Long pid, Long userId) {
+		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getPriorityCountByProjectIdAndUserId");
+		  String userRole = 	dashboardRepository.roleName(userId);
+		  if(userRole .equalsIgnoreCase("Admin")) {
+		  return dashboardRepository.getPriorityByAdminIdAndPid(userId, pid);
+	     } else 
+		 return dashboardRepository.getPriorityByUserIdAndpid(userId, pid);
+	  }
+	
+	@Override
+	public List<TmsTaskCountData> getPriorityCountByProjectIdAndUserIdAndTime(Long pid, Long userId,String IntervelTime) {
+		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getPriorityCountByProjectIdAndUserIdAndTime");
+		 String userRole = 	dashboardRepository.roleName(userId);
+		  if(userRole .equalsIgnoreCase("Admin")) {
+			  logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getPriorityCountByProjectIdAndAdminId");
+		  return dashboardRepository.getPriorityByAdminIdAndPidAndTime(userId,pid,IntervelTime);
+	      }else
+	    	  logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getPriorityCountByProjectIdAndUserId");
+		  return dashboardRepository.getPriorityByuserIdAndPidAndTime(userId, pid,IntervelTime);
+	     }
 
 	@Override
 	public List<TmsTaskCountData> getTaskStatusCountByMonth(String status) {
