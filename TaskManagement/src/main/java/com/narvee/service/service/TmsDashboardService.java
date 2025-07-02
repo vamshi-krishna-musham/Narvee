@@ -12,6 +12,11 @@ public interface TmsDashboardService {
 	public List<TmsTaskCountData> getTaskCountByProjectIdAndUserId(Long pid , Long userId);	
 	public List<TmsTaskCountData> getTaskCountByProjectIdAndUserIdAndTime(Long pid, Long userId,String IntervelTime);
 	
+	public List<TmsTaskCountData> getPriorityCountByAdminId(Long pid);
+	public List<TmsTaskCountData> getPriorityCountByProjectIdAndUserId(Long pid , Long userId);	
+	public List<TmsTaskCountData> getPriorityCountByProjectIdAndUserIdAndTime(Long pid, Long userId,String IntervelTime);
+	
+	
 	public List<TmsTaskCountData> getUserTracker(Long adminId,Long projectId,String timeIntervel);
 	
 	public List<TmsTaskCountData> getTaskStatusCountByMonth(String status);

@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.narvee.commons.RestAPIResponse;
@@ -38,29 +39,56 @@ public class TmsDashboardController {
 	 }
 	
 	@GetMapping("/getTaskCountByAdminId/{adminId}")
-	 public ResponseEntity<RestAPIResponse> getTaskCountByPid( @PathVariable Long adminId){
-		logger.info("!!! inside class: TmsDashboardController , !! method: getTaskCountByPid");
-		dashboardService.getTaskCountByAdminId(adminId);
+	 public ResponseEntity<RestAPIResponse> getTaskCountByAdminId( @PathVariable Long adminId){
+		logger.info("!!! inside class: TmsDashboardController , !! method: getTaskCountByAdminId");	
 		return new ResponseEntity<RestAPIResponse>(
-				new RestAPIResponse("success", " All tms Task count By project Id fetched  successfully", dashboardService.getTaskCountByAdminId(adminId)),       
+				new RestAPIResponse("success", " All TMS status count by admin id  fetched  successfully",
+						dashboardService.getTaskCountByAdminId(adminId)),       
 				HttpStatus.OK); 
 	 }
 	
 	@GetMapping("/getTaskCountByPidAndUserId/{pid}/{userId}")
 	 public ResponseEntity<RestAPIResponse> getTaskCountByPidAndUserId( @PathVariable Long pid,@PathVariable Long userId){
 		logger.info("!!! inside class: TmsDashboardController , !! method: getTaskCountByPidAndUserId");
-		dashboardService.getTaskCountByProjectIdAndUserId(pid,userId);
 		return new ResponseEntity<RestAPIResponse>(
-				new RestAPIResponse("success", " All tms Task count By project Id AND User Id  fetched  successfully", dashboardService.getTaskCountByProjectIdAndUserId(pid,userId)),       
+				new RestAPIResponse("success", " All tms Status count By project id AND admin id  User Id  fetched  successfully",
+						dashboardService.getTaskCountByProjectIdAndUserId(pid,userId)),       
 				HttpStatus.OK); 
 	 }
 	
-	@GetMapping("/getTaskCountByPidAndUserIdAndTime/{pid}/{userId}/{time}")
-	 public ResponseEntity<RestAPIResponse> getTaskCountByPidAndUserIdAndTime( @PathVariable Long pid,@PathVariable Long userId,@PathVariable String time){
-		logger.info("!!! inside class: TmsDashboardController , !! method: getTaskCountByPidAndUserIdAndTime");
-		dashboardService.getTaskCountByProjectIdAndUserIdAndTime(pid,userId,time);
+	@GetMapping("/getTaskCountByPidAndUserIdAndTime")
+	 public ResponseEntity<RestAPIResponse> getTaskCountByPidAndUserIdAndTime( @RequestParam(required = false) Long pid,@RequestParam Long userId,@RequestParam String time){
+		logger.info("!!! inside class: TmsDashboardController , !! method: getTaskCountByPidAndUserIdAndTime");	
 		return new ResponseEntity<RestAPIResponse>(
-				new RestAPIResponse("success", " All tms Task count By project Id AND User Id  and Time fetched  successfully", dashboardService.getTaskCountByProjectIdAndUserIdAndTime(pid,userId,time)),       
+				new RestAPIResponse("success", " All tms Status count By project Id AND User Id  and Time fetched  successfully",
+						dashboardService.getTaskCountByProjectIdAndUserIdAndTime(pid,userId,time)),       
+				HttpStatus.OK); 
+	 }
+	
+	@GetMapping("/getPriorityCountByAdminId/{adminId}")
+	 public ResponseEntity<RestAPIResponse> getPriorityCountByAdminId( @PathVariable Long adminId){
+		logger.info("!!! inside class: TmsDashboardController , !! method: getPriorityCountByAdminId");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", " All tms Priority count By Admin Id fetched  successfully",
+						dashboardService.getPriorityCountByAdminId(adminId)),       
+				HttpStatus.OK); 
+	 }
+	
+	@GetMapping("/getPriorityCountByPidAndUserId/{pid}/{userId}")
+	 public ResponseEntity<RestAPIResponse> getPriorityCountByPidAndUserId( @PathVariable Long pid,@PathVariable Long userId){
+		logger.info("!!! inside class: TmsDashboardController , !! method: getPriorityCountByPidAndUserId");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", " All tms Priority count By project Id AND User Id  fetched  successfully",
+						dashboardService.getPriorityCountByProjectIdAndUserId(pid,userId)),       
+				HttpStatus.OK); 
+	 }
+	
+	@GetMapping("/getPriorityCountByPidAndUserIdAndTime")
+	 public ResponseEntity<RestAPIResponse> getPriorityCountByPidAndUserIdAndTime( @RequestParam(required = false) Long pid,@RequestParam Long userId,@RequestParam String time){
+		logger.info("!!! inside class: TmsDashboardController , !! method: getPriorityCountByPidAndUserIdAndTime");
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", " All tms Priority count By project Id AND User Id  and Time fetched  successfully",
+						dashboardService.getPriorityCountByProjectIdAndUserIdAndTime(pid,userId,time)),       
 				HttpStatus.OK); 
 	 }
 	
