@@ -4,6 +4,7 @@ public interface TmsTaskCountData {
 
 	public String getType();
 	public String getStatus();
+	public String getPriority();
 	public Long getCount();
 	public String getMonth();
 	public Long getClosedTaskCount();
