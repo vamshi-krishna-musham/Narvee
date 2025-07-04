@@ -1,6 +1,7 @@
 package com.narvee.service.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.narvee.dto.CompletedStatusCountResponse;
 import com.narvee.dto.DashBoardRequestDto;
@@ -25,4 +26,6 @@ public interface TmsDashboardService {
 	public List<ProjectDropDownDTO> projectDropDownWithOutAdmin(Long userId);
 	
 	 public List<CompletedStatusCountResponse> getCompleteStatusCount(DashBoardRequestDto request);
+	 
+	 public List<Map<String, String>>  getDropDownForDailyCount(String intervel);
 }

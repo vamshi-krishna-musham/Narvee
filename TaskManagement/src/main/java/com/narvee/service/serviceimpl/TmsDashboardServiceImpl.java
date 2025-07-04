@@ -1,6 +1,13 @@
 package com.narvee.service.serviceimpl;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -189,7 +196,100 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	    return result;
 	}
 
+	@Override
+    public List<Map<String, String>> getDropDownForDailyCount(String type) {
+        switch (type.toLowerCase()) {
+            case "daily":
+                return getDailyIntervals();
+            case "weekly":
+                return getTwoMonthBlockIntervals();
+            case "monthly":
+                return getMonthlyIntervals();
+            default:
+                throw new IllegalArgumentException("Invalid type: " + type);
+        }
+    }
 
+    private List<Map<String, String>> getDailyIntervals () {
+		List<Map<String, String>> weekLabels = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+        YearMonth currentMonth = YearMonth.of(today.getYear(), today.getMonth());
+
+        LocalDate start = currentMonth.atDay(1);
+        while (start.getDayOfWeek() != DayOfWeek.SUNDAY) {
+            start = start.minusDays(1);
+        }
+        LocalDate end = currentMonth.atEndOfMonth();
+        while (end.getDayOfWeek() != DayOfWeek.SATURDAY) {
+            end = end.plusDays(1);
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        LocalDate weekStart = start;
+        while (!weekStart.isAfter(end)) {
+            LocalDate weekEnd = weekStart.plusDays(6);
+
+            String label = weekStart.format(formatter) + " to " + weekEnd.format(formatter);
+
+            Map<String, String> weekMap = new HashMap<>();
+            weekMap.put("label", label); 
+            weekLabels.add(weekMap);
+
+            weekStart = weekStart.plusWeeks(1);
+        }
+
+        return weekLabels;
+    }
+
+    private List<Map<String, String>> getTwoMonthBlockIntervals() {
+        List<Map<String, String>> blockList = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+
+        // Start from first Sunday before Jan 1st of current year
+        LocalDate startDate = LocalDate.of(today.getYear(), 1, 1);
+        while (startDate.getDayOfWeek() != DayOfWeek.SUNDAY) {
+            startDate = startDate.minusDays(1);
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+        while (startDate.getYear() <= today.getYear()) {
+            // End date is 8 weeks (2 months approx) later - adjust to Saturday
+            LocalDate endDate = startDate.plusWeeks(8).minusDays(1);
+            while (endDate.getDayOfWeek() != DayOfWeek.SATURDAY) {
+                endDate = endDate.plusDays(1);
+            }
+
+            String label = startDate.format(formatter) + " to " + endDate.format(formatter);
+            Map<String, String> blockMap = new HashMap<>();
+            blockMap.put("label", label);
+            blockList.add(blockMap);
+
+            startDate = endDate.plusDays(1); // Next block starts
+        }
+
+        return blockList;
+    }
+
+    private List<Map<String, String>> getMonthlyIntervals() {
+            List<Map<String, String>> yearBlockList = new ArrayList<>();
+            LocalDate today = LocalDate.now();
+            int currentYear = today.getYear();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+            for (int year = currentYear - 2; year <= currentYear + 2; year++) {
+                LocalDate yearStart = LocalDate.of(year, 1, 1);
+                LocalDate yearEnd = LocalDate.of(year, 12, 31);
+
+                String label = yearStart.format(formatter) + " to " + yearEnd.format(formatter);
+                Map<String, String> yearMap = new HashMap<>();
+                yearMap.put("label", label);
+                yearBlockList.add(yearMap);
+            }
+
+            return yearBlockList;
+        }
 	
 }
 

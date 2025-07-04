@@ -1,8 +1,7 @@
 package com.narvee.controller;
 
 import java.util.List;
-
-
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,15 +120,20 @@ public class TmsDashboardController {
 		
 	}
 	
-	
-	
 	@PostMapping("/get-completed-count")
-	 public ResponseEntity<RestAPIResponse> getTaskStatusCountByMonth( @RequestBody DashBoardRequestDto dashBoardRequestDto){
-		logger.info("!!! inside class: TmsDashboardController , !! method: getCompletedStatusCount"); 
-		
+	 public ResponseEntity<RestAPIResponse> getCompletedTaskStatusCount( @RequestBody DashBoardRequestDto dashBoardRequestDto){
+		logger.info("!!! inside class: TmsDashboardController , !! method: getCompletedTaskStatusCount"); 	
 		return new ResponseEntity<RestAPIResponse>(
-				new RestAPIResponse("success", " All tms Task count By Month fetched  successfully",dashboardService.getCompleteStatusCount(dashBoardRequestDto)),       
+				new RestAPIResponse("success", " All tms getCompletedTaskStatusCount  fetched  successfully",dashboardService.getCompleteStatusCount(dashBoardRequestDto)),       
 				HttpStatus.OK); 
 	 }
 	
+	@GetMapping("/daily-dropDown/{intervel}")
+    public ResponseEntity<RestAPIResponse> getDailyDropDown(@PathVariable String intervel) {
+		logger.info("!!! inside class: TmsDashboardController , !! method: getDailyDropDown"); 
+        List<Map<String, String>> daily = dashboardService.getDropDownForDailyCount(intervel);
+        return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", " Daily DropDown  fetched  successfully",daily),       
+				HttpStatus.OK); 
+    }
 }
