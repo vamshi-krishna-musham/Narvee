@@ -311,6 +311,11 @@ public class SubTaskServiceImpl implements SubTaskService {
 		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
 				.collect(Collectors.toList());
 		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(subtask.getAddedby(), usersids);
+		
+		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
+		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
+		subtask.setLastStatusUpdateddate(indiaDateTime);
+		
 		TmsSubTask subtasks = subtaskrepository.save(subtask);
  
 		  if (files != null && !files.isEmpty()) {

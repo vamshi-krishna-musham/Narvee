@@ -2,7 +2,7 @@ package com.narvee.controller;
 
 import java.util.List;
 
-import javax.ws.rs.Path;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,12 +11,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.narvee.commons.RestAPIResponse;
-
+import com.narvee.dto.DashBoardRequestDto;
 import com.narvee.service.service.TmsDashboardService;
 
 @RestController
@@ -101,8 +102,8 @@ public class TmsDashboardController {
 				HttpStatus.OK); 
 	 }
 	
-	@GetMapping("/getUserTrackerByAdmin/{adminId}/{projectId}/{timeIntervel}")
-	 public ResponseEntity<RestAPIResponse> getUserTrackerByAdmin( @PathVariable Long  adminId ,@PathVariable  Long projectId, @PathVariable String timeIntervel ){
+	@GetMapping("/getUserTrackerByAdmin")
+	 public ResponseEntity<RestAPIResponse> getUserTrackerByAdmin( @RequestParam Long  adminId ,@RequestParam  Long projectId, @RequestParam String timeIntervel ){
 		logger.info("!!! inside class: TmsDashboardController , !! method: getUserTrackerByAdmin"); 
 	//	List<TmsTaskCountData>   data =	  dashboardService.getUserTracker(adminId,projectId,timeIntervel);
 		return new ResponseEntity<RestAPIResponse>(
@@ -118,4 +119,16 @@ public class TmsDashboardController {
 			 dashboardService.projectDropDownWithOutAdmin(userId)), HttpStatus.OK);
 		
 	}
+	
+	
+	
+	@GetMapping("/get-completed-count")
+	 public ResponseEntity<RestAPIResponse> getTaskStatusCountByMonth( @RequestBody DashBoardRequestDto dashBoardRequestDto){
+		logger.info("!!! inside class: TmsDashboardController , !! method: getCompletedStatusCount"); 
+		
+		return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", " All tms Task count By Month fetched  successfully",dashboardService.getCompleteStatusCount(dashBoardRequestDto)),       
+				HttpStatus.OK); 
+	 }
+	
 }

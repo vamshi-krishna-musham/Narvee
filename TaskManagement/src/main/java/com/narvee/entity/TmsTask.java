@@ -1,6 +1,7 @@
 package com.narvee.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -96,5 +97,7 @@ public class TmsTask extends AuditModel {
 	@JsonManagedReference(value = "task-file")
 	    private List<TmsFileUpload> files = new ArrayList<>();
 	
+	
+	private LocalDateTime lastStatusUpdateddate;
 
 }

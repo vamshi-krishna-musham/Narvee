@@ -47,6 +47,7 @@ import com.narvee.entity.TmsFileUpload;
 import com.narvee.entity.TmsTask;
 import com.narvee.entity.TmsTicketTracker;
 import com.narvee.repository.ProjectRepository;
+import com.narvee.repository.StatusTrackerRepo;
 import com.narvee.repository.TaskRepository;
 import com.narvee.repository.fileUploadRepository;
 import com.narvee.service.service.TaskService;
@@ -73,6 +74,8 @@ public class TaskServiceImpl implements TaskService {
 
 	@Autowired
 	private fileUploadRepository fileUploadRepository;
+	
+
 
 	@Override
 	public TmsTask createTask(TmsTask task, String token) {
@@ -256,7 +259,7 @@ public class TaskServiceImpl implements TaskService {
 			taskRepo.updateTaskStatus(taskid, status, updatedby, indiaDateTime);
 			TmsTask taskInfo = taskRepo.findById(taskid).get();
 			emailService.sendStatusUpdateEmail(taskInfo);
-
+            
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
@@ -405,6 +408,9 @@ public class TaskServiceImpl implements TaskService {
 //		assignedUsers.add(asg);
 //		List<AssignedUsers> addedByToAssignedUsers = task.getAssignedto();
 //		addedByToAssignedUsers.addAll(assignedUsers);
+		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
+		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
+		task.setLastStatusUpdateddate(indiaDateTime);
 		TmsTask savedtask = taskRepo.save(task);
 
 		if (files != null && !files.isEmpty()) {
@@ -844,11 +850,10 @@ public class TaskServiceImpl implements TaskService {
 
 		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
 		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
-
 		try {
-			taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);
+			taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);	
 			TmsTask taskInfo = taskRepo.findById(taskid).get();
-			
+	
 			Long adminId =	projectRepository.getAdminId(taskid);
 			EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "TASK_STATUS");
 			if(dto != null) {
