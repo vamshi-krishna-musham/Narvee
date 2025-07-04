@@ -503,7 +503,6 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	@Query(value = "select tms.first_name ,"
 			+ "tms.position AS position ,"
 			+ " COUNT(tt.taskid) AS total_assigned_tasks, "
-			+ " \r\n"
 			+ "    COUNT(CASE WHEN tt.status = 'In Progress' THEN 1 END) AS inprogress_count, "
 			+ "    COUNT(CASE WHEN tt.status = 'Open' THEN 1 END) AS open_count, "
 			+ "    COUNT(CASE WHEN tt.status = 'On Hold' THEN 1 END) AS OnHold_count  ,   "
@@ -513,7 +512,7 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 			+ "     COUNT(CASE WHEN tt.status = 'Closed' THEN 1 END) AS Closed_count , "
 			+ "     COUNT(CASE WHEN tt.status = 'Overdue' THEN 1 END) AS Overdue_count "
 			+ "from tms_task  tt join  tms_task_users tu on tt.taskid  = tu.taskid join  tms_assigned_users ttu  on tu.assignedto = ttu.assignid join tms_users  tms on tms.user_id = ttu.tms_user_id "
-			+ "where  (tms.added_by = :adminId or tms .user_id =:adminId)    GROUP BY  "
+			+ "where  (tms.added_by = :adminId or tms.user_id =:adminId)    GROUP BY  "
 			+ "    tms.first_name,tms.position",nativeQuery = true )
 	public List<TmsTaskCountData> getUserTrackerByAdmin(Long adminId );
 	
@@ -1049,4 +1048,441 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 			+ "			   END;",nativeQuery = true)
 	public  List<TmsTaskCountData>   getPriorityByuserIdAndPidAndTime(Long userId,Long pid, String intervel);
 	
-}
+	
+	@Query(value = 
+	        "WITH date_range AS ( " +
+	        "    SELECT DATE_ADD(:fromDate, INTERVAL seq DAY) AS completed_date " +
+	        "    FROM ( " +
+	        "        SELECT 0 AS seq UNION ALL " +
+	        "        SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL " +
+	        "        SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 " +
+	        "    ) AS days " +
+	        "), " +
+	        "statuses AS ( " +
+	        "    SELECT 'closed' AS status " +
+	        "), " +
+	        "task_counts AS ( " +
+	        "    SELECT DATE(t.last_status_updateddate) AS completed_date, COUNT(*) AS count " +
+	        "    FROM tms_task t " +
+	        "    JOIN tms_project p ON t.pid = p.pid " +
+	        "    WHERE t.status = 'closed' " +
+	        "      AND DATE(t.last_status_updateddate) BETWEEN :fromDate AND :toDate " +
+	        "      AND (p.admin_id = :adminId) AND (:pid IS NULL OR p.pid = :pid)" +
+	        "    GROUP BY DATE(t.last_status_updateddate) " +
+	        "), " +
+	        "sub_task_counts AS ( " +
+	        "    SELECT DATE(ts.last_status_updateddate) AS completed_date, COUNT(*) AS count " +
+	        "    FROM tms_sub_task ts " +
+	        "    JOIN tms_task t ON ts.taskid = t.taskid " +
+	        "    JOIN tms_project p ON t.pid = p.pid " +
+	        "    WHERE ts.status = 'closed' " +
+	        "      AND DATE(ts.last_status_updateddate) BETWEEN :fromDate AND :toDate " +
+	        "      AND (p.admin_id = :adminId) AND (:pid IS NULL OR p.pid = :pid)" +
+	        "    GROUP BY DATE(ts.last_status_updateddate) " +
+	        "), " +
+	        "combined_counts AS ( " +
+	        "    SELECT dr.completed_date, 'Task' AS type, s.status, COALESCE(tc.count, 0) AS count " +
+	        "    FROM date_range dr " +
+	        "    CROSS JOIN statuses s " +
+	        "    LEFT JOIN task_counts tc ON dr.completed_date = tc.completed_date " +
+	        "    UNION ALL " +
+	        "    SELECT dr.completed_date, 'Sub Task' AS type, s.status, COALESCE(stc.count, 0) AS count " +
+	        "    FROM date_range dr " +
+	        "    CROSS JOIN statuses s " +
+	        "    LEFT JOIN sub_task_counts stc ON dr.completed_date = stc.completed_date " +
+	        "), " +
+	        "total_counts AS ( " +
+	        "    SELECT completed_date, 'Total' AS type, 'closed' AS status, SUM(count) AS count " +
+	        "    FROM combined_counts " +
+	        "    GROUP BY completed_date " +
+	        ") " +
+	        "SELECT * FROM combined_counts " +
+	        "UNION ALL " +
+	        "SELECT * FROM total_counts " +
+	        "ORDER BY completed_date, FIELD(type, 'Task', 'Sub Task', 'Total')",
+	        nativeQuery = true)
+	    List<Object[]> getDailyTaskStatsAdmin(
+	        @Param("fromDate") String fromDate,
+	        @Param("toDate") String toDate,
+	        @Param("adminId") Long adminId,@Param("pid") Long pid
+	    );
+	    
+	    @Query(value = 
+	            "WITH date_range AS ( " +
+	            "    SELECT DATE_ADD(:fromDate, INTERVAL seq DAY) AS completed_date " +
+	            "    FROM ( " +
+	            "        SELECT 0 AS seq UNION ALL " +
+	            "        SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL " +
+	            "        SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 " +
+	            "    ) AS days " +
+	            "), " +
+	            "statuses AS ( " +
+	            "    SELECT 'closed' AS status " +
+	            "), " +
+	            "task_counts AS ( " +
+	            "    SELECT DATE(t.last_status_updateddate) AS completed_date, COUNT(*) AS count " +
+	            "    FROM tms_task t " +
+	            "    JOIN tms_project p ON t.pid = p.pid " +
+	            "    LEFT JOIN tms_task_users ttu ON t.taskid = ttu.taskid " +
+	            "    LEFT JOIN tms_assigned_users tau ON tau.assignid = ttu.assignedto " +
+	            "    WHERE t.status = 'closed' " +
+	            "      AND DATE(t.last_status_updateddate) BETWEEN :fromDate AND :toDate " +
+	            "      AND ( " +
+	            "           (p.addedby = :userId AND (p.addedby = :userId OR tau.tms_user_id = :userId)) " +
+	            "        OR (p.addedby <> :userId AND tau.tms_user_id = :userId) " +
+	            "      )  AND (:pid IS NULL OR p.pid = :pid) " +
+	            "    GROUP BY DATE(t.last_status_updateddate) " +
+	            "), " +
+	            "sub_task_counts AS ( " +
+	            "    SELECT DATE(ts.last_status_updateddate) AS completed_date, COUNT(*) AS count " +
+	            "    FROM tms_sub_task ts " +
+	            "    JOIN tms_task t ON ts.taskid = t.taskid " +
+	            "    JOIN tms_project p ON t.pid = p.pid " +
+	            "    LEFT JOIN tms_assigned_users tau ON tau.subtaskid = ts.subtaskid " +
+	            "    WHERE ts.status = 'closed' " +
+	            "      AND DATE(ts.last_status_updateddate) BETWEEN :fromDate AND :toDate " +
+	            "      AND ( " +
+	            "           (p.addedby = :userId AND (p.addedby = :userId OR tau.tms_user_id = :userId)) " +
+	            "        OR (p.addedby <> :userId AND tau.tms_user_id = :userId) " +
+	            "      )  AND (:pid IS NULL OR p.pid = :pid) " +
+	            "    GROUP BY DATE(ts.last_status_updateddate) " +
+	            "), " +
+	            "combined_counts AS ( " +
+	            "    SELECT dr.completed_date, 'Task' AS type, s.status, COALESCE(tc.count, 0) AS count " +
+	            "    FROM date_range dr " +
+	            "    CROSS JOIN statuses s " +
+	            "    LEFT JOIN task_counts tc ON dr.completed_date = tc.completed_date " +
+	            "    UNION ALL " +
+	            "    SELECT dr.completed_date, 'Sub Task' AS type, s.status, COALESCE(stc.count, 0) AS count " +
+	            "    FROM date_range dr " +
+	            "    CROSS JOIN statuses s " +
+	            "    LEFT JOIN sub_task_counts stc ON dr.completed_date = stc.completed_date " +
+	            "), " +
+	            "total_counts AS ( " +
+	            "    SELECT completed_date, 'Total' AS type, 'closed' AS status, SUM(count) AS count " +
+	            "    FROM combined_counts " +
+	            "    GROUP BY completed_date " +
+	            ") " +
+	            "SELECT * FROM combined_counts " +
+	            "UNION ALL " +
+	            "SELECT * FROM total_counts " +
+	            "ORDER BY completed_date, FIELD(type, 'Task', 'Sub Task', 'Total')",
+	            nativeQuery = true)
+	        List<Object[]> getDailyTaskStatsUserId(@Param("fromDate") String fromDate,@Param("toDate") String toDate,@Param("userId") Long userId,@Param("pid") Long pid);
+	        
+	        
+	        @Query(value = 
+	        	    " WITH month_range AS ( " +
+	        	    "     SELECT DATE_FORMAT(DATE_ADD(CONCAT(:year, '-01-01'), INTERVAL seq MONTH), '%Y-%m') AS month " +
+	        	    "     FROM ( " +
+	        	    "         SELECT 0 AS seq UNION ALL " +
+	        	    "         SELECT 1 UNION ALL " +
+	        	    "         SELECT 2 UNION ALL " +
+	        	    "         SELECT 3 UNION ALL " +
+	        	    "         SELECT 4 UNION ALL " +
+	        	    "         SELECT 5 UNION ALL " +
+	        	    "         SELECT 6 UNION ALL " +
+	        	    "         SELECT 7 UNION ALL " +
+	        	    "         SELECT 8 UNION ALL " +
+	        	    "         SELECT 9 UNION ALL " +
+	        	    "         SELECT 10 UNION ALL " +
+	        	    "         SELECT 11 " +
+	        	    "     ) AS months " +
+	        	    " ), " +
+	        	    " statuses AS ( " +
+	        	    "     SELECT 'closed' AS status " +
+	        	    " ), " +
+	        	    " task_counts AS ( " +
+	        	    "     SELECT DATE_FORMAT(t.last_status_updateddate, '%Y-%m') AS month, COUNT(*) AS count " +
+	        	    "     FROM tms_task t " +
+	        	    "     JOIN tms_project p ON t.pid = p.pid " +
+	        	    "     WHERE t.status = 'closed' " +
+	        	    "       AND DATE_FORMAT(t.last_status_updateddate, '%Y-%m') BETWEEN CONCAT(:year, '-01') AND CONCAT(:year, '-12') " +
+	        	    "       AND (p.admin_id = :adminId) AND (:pid IS NULL OR p.pid = :pid) " +
+	        	    "     GROUP BY DATE_FORMAT(t.last_status_updateddate, '%Y-%m') " +
+	        	    " ), " +
+	        	    " sub_task_counts AS ( " +
+	        	    "     SELECT DATE_FORMAT(ts.last_status_updateddate, '%Y-%m') AS month, COUNT(*) AS count " +
+	        	    "     FROM tms_sub_task ts " +
+	        	    "     JOIN tms_task t ON ts.taskid = t.taskid " +
+	        	    "     JOIN tms_project p ON t.pid = p.pid " +
+	        	    "     WHERE ts.status = 'closed' " +
+	        	    "       AND DATE_FORMAT(ts.last_status_updateddate, '%Y-%m') BETWEEN CONCAT(:year, '-01') AND CONCAT(:year, '-12') " +
+	        	    "       AND (p.admin_id = :adminId) AND (:pid IS NULL OR p.pid = :pid) " +
+	        	    "     GROUP BY DATE_FORMAT(ts.last_status_updateddate, '%Y-%m') " +
+	        	    " ), " +
+	        	    " combined_counts AS ( " +
+	        	    "     SELECT mr.month, 'Task' AS type, s.status, COALESCE(tc.count, 0) AS count " +
+	        	    "     FROM month_range mr " +
+	        	    "     CROSS JOIN statuses s " +
+	        	    "     LEFT JOIN task_counts tc ON mr.month = tc.month " +
+	        	    "     UNION ALL " +
+	        	    "     SELECT mr.month, 'Sub Task' AS type, s.status, COALESCE(stc.count, 0) AS count " +
+	        	    "     FROM month_range mr " +
+	        	    "     CROSS JOIN statuses s " +
+	        	    "     LEFT JOIN sub_task_counts stc ON mr.month = stc.month " +
+	        	    " ), " +
+	        	    " total_counts AS ( " +
+	        	    "     SELECT month, 'Total' AS type, 'closed' AS status, SUM(count) AS count " +
+	        	    "     FROM combined_counts " +
+	        	    "     GROUP BY month " +
+	        	    " ) " +
+	        	    " SELECT * FROM combined_counts " +
+	        	    " UNION ALL " +
+	        	    " SELECT * FROM total_counts " +
+	        	    " ORDER BY month, FIELD(type, 'Task', 'Sub Task', 'Total') ",
+	        	    nativeQuery = true)
+	        	List<Object[]> getMonthlyTaskStatsAdmin(@Param("year") int year, @Param("adminId") Long adminId,@Param("pid") Long pid);
+	        	
+	        	@Query(value =
+	        		    "WITH month_range AS ( " +
+	        		    "    SELECT DATE_FORMAT(DATE_ADD(CONCAT(:year, '-01-01'), INTERVAL seq MONTH), '%Y-%m') AS month " +
+	        		    "    FROM ( " +
+	        		    "        SELECT 0 AS seq UNION ALL " +
+	        		    "        SELECT 1 UNION ALL " +
+	        		    "        SELECT 2 UNION ALL " +
+	        		    "        SELECT 3 UNION ALL " +
+	        		    "        SELECT 4 UNION ALL " +
+	        		    "        SELECT 5 UNION ALL " +
+	        		    "        SELECT 6 UNION ALL " +
+	        		    "        SELECT 7 UNION ALL " +
+	        		    "        SELECT 8 UNION ALL " +
+	        		    "        SELECT 9 UNION ALL " +
+	        		    "        SELECT 10 UNION ALL " +
+	        		    "        SELECT 11 " +
+	        		    "    ) AS months " +
+	        		    "), " +
+	        		    "statuses AS ( " +
+	        		    "    SELECT 'closed' AS status " +
+	        		    "), " +
+	        		    "task_counts AS ( " +
+	        		    "    SELECT DATE_FORMAT(t.last_status_updateddate, '%Y-%m') AS month, COUNT(*) AS count " +
+	        		    "    FROM tms_task t " +
+	        		    "    JOIN tms_project p ON t.pid = p.pid " +
+	        		    "    LEFT JOIN tms_task_users ttu ON t.taskid = ttu.taskid " +
+	        		    "    LEFT JOIN tms_assigned_users tau ON tau.assignid = ttu.assignedto " +
+	        		    "    WHERE t.status = 'closed' " +
+	        		    "      AND DATE_FORMAT(t.last_status_updateddate, '%Y-%m') BETWEEN CONCAT(:year, '-01') AND CONCAT(:year, '-12') " +
+	        		    "      AND ( " +
+	        		    "          (p.addedby = :userId AND (p.addedby = :userId OR tau.tms_user_id = :userId)) " +
+	        		    "          OR (p.addedby <> :userId AND (tau.tms_user_id = :userId OR tau.tms_user_id IS NULL)) " +
+	        		 
+	        		    "      )  AND (:pid IS NULL OR p.pid = :pid) " +
+	        		    "    GROUP BY DATE_FORMAT(t.last_status_updateddate, '%Y-%m') " +
+	        		    "), " +
+	        		    "sub_task_counts AS ( " +
+	        		    "    SELECT DATE_FORMAT(ts.last_status_updateddate, '%Y-%m') AS month, COUNT(*) AS count " +
+	        		    "    FROM tms_sub_task ts " +
+	        		    "    JOIN tms_task t ON ts.taskid = t.taskid " +
+	        		    "    JOIN tms_project p ON t.pid = p.pid " +
+	        		    "    LEFT JOIN tms_assigned_users tau ON tau.subtaskid = ts.subtaskid " +
+	        		    "    WHERE ts.status = 'closed' " +
+	        		    "      AND DATE_FORMAT(ts.last_status_updateddate, '%Y-%m') BETWEEN CONCAT(:year, '-01') AND CONCAT(:year, '-12') " +
+	        		    "      AND ( " +
+	        		    "          (p.addedby = :userId AND (p.addedby = :userId OR tau.tms_user_id = :userId)) " +
+	        		    "          OR (p.addedby <> :userId AND (tau.tms_user_id = :userId OR tau.tms_user_id IS NULL)) " +
+	        		   
+	        		    "      )  AND (:pid IS NULL OR p.pid = :pid) " +
+	        		    "    GROUP BY DATE_FORMAT(ts.last_status_updateddate, '%Y-%m') " +
+	        		    "), " +
+	        		    "combined_counts AS ( " +
+	        		    "    SELECT mr.month, 'Task' AS type, s.status, COALESCE(tc.count, 0) AS count " +
+	        		    "    FROM month_range mr " +
+	        		    "    CROSS JOIN statuses s " +
+	        		    "    LEFT JOIN task_counts tc ON mr.month = tc.month " +
+	        		    "    UNION ALL " +
+	        		    "    SELECT mr.month, 'Sub Task' AS type, s.status, COALESCE(stc.count, 0) AS count " +
+	        		    "    FROM month_range mr " +
+	        		    "    CROSS JOIN statuses s " +
+	        		    "    LEFT JOIN sub_task_counts stc ON mr.month = stc.month " +
+	        		    "), " +
+	        		    "total_counts AS ( " +
+	        		    "    SELECT month, 'Total' AS type, 'closed' AS status, SUM(count) AS count " +
+	        		    "    FROM combined_counts " +
+	        		    "    GROUP BY month " +
+	        		    ") " +
+	        		    "SELECT * FROM combined_counts " +
+	        		    "UNION ALL " +
+	        		    "SELECT * FROM total_counts " +
+	        		    "ORDER BY " +
+	        		    "  month, " +
+	        		    "  FIELD(type, 'Task', 'Sub Task', 'Total') ",
+	        		    nativeQuery = true)
+	        		List<Object[]> getMonthlyTaskStats(@Param("year") int year, @Param("userId") Long userId,@Param("pid") Long pid);
+
+	        		@Query(value =
+	        			    "WITH year_range AS ( " +
+	        			    "    SELECT CONCAT((YEAR(CURDATE()) - 2 + seq), '') AS year " +
+	        			    "    FROM ( " +
+	        			    "        SELECT 0 AS seq UNION ALL " +
+	        			    "        SELECT 1 UNION ALL " +
+	        			    "        SELECT 2 UNION ALL " +
+	        			    "        SELECT 3 UNION ALL " +
+	        			    "        SELECT 4 " +
+	        			    "    ) AS years " +
+	        			    "), " +
+	        			    "statuses AS ( " +
+	        			    "    SELECT 'closed' AS status " +
+	        			    "), " +
+	        			    "task_counts AS ( " +
+	        			    "    SELECT y.year, COUNT(*) AS count " +
+	        			    "    FROM ( " +
+	        			    "        SELECT DISTINCT YEAR(t.last_status_updateddate) AS year " +
+	        			    "        FROM tms_task t " +
+	        			    "        JOIN tms_project p ON t.pid = p.pid " +
+	        			    "        WHERE t.status = 'closed' " +
+	        			    "          AND YEAR(t.last_status_updateddate) BETWEEN (YEAR(CURDATE()) - 2) AND (YEAR(CURDATE()) + 2) " +
+	        			    "          AND p.admin_id = :adminId " +
+	        			    "          AND (:pid IS NULL OR p.pid = :pid) " +
+	        			    "    ) AS y " +
+	        			    "    JOIN tms_task t ON YEAR(t.last_status_updateddate) = y.year " +
+	        			    "    JOIN tms_project p ON t.pid = p.pid " +
+	        			    "    WHERE t.status = 'closed' " +
+	        			    "      AND p.admin_id = :adminId " +
+	        			    "      AND (:pid IS NULL OR p.pid = :pid) " +
+	        			    "    GROUP BY y.year " +
+	        			    "), " +
+	        			    "sub_task_counts AS ( " +
+	        			    "    SELECT y.year, COUNT(*) AS count " +
+	        			    "    FROM ( " +
+	        			    "        SELECT DISTINCT YEAR(ts.last_status_updateddate) AS year " +
+	        			    "        FROM tms_sub_task ts " +
+	        			    "        JOIN tms_task t ON ts.taskid = t.taskid " +
+	        			    "        JOIN tms_project p ON t.pid = p.pid " +
+	        			    "        WHERE ts.status = 'closed' " +
+	        			    "          AND YEAR(ts.last_status_updateddate) BETWEEN (YEAR(CURDATE()) - 2) AND (YEAR(CURDATE()) + 2) " +
+	        			    "          AND p.admin_id = :adminId " +
+	        			    "          AND (:pid IS NULL OR p.pid = :pid) " +
+	        			    "    ) AS y " +
+	        			    "    JOIN tms_sub_task ts ON YEAR(ts.last_status_updateddate) = y.year " +
+	        			    "    JOIN tms_task t ON ts.taskid = t.taskid " +
+	        			    "    JOIN tms_project p ON t.pid = p.pid " +
+	        			    "    WHERE ts.status = 'closed' " +
+	        			    "      AND p.admin_id = :adminId " +
+	        			    "      AND (:pid IS NULL OR p.pid = :pid) " +
+	        			    "    GROUP BY y.year " +
+	        			    "), " +
+	        			    "combined_counts AS ( " +
+	        			    "    SELECT yr.year, 'Task' AS type, s.status, COALESCE(tc.count, 0) AS count " +
+	        			    "    FROM year_range yr " +
+	        			    "    CROSS JOIN statuses s " +
+	        			    "    LEFT JOIN task_counts tc ON yr.year = tc.year " +
+	        			    "    UNION ALL " +
+	        			    "    SELECT yr.year, 'Sub Task' AS type, s.status, COALESCE(stc.count, 0) AS count " +
+	        			    "    FROM year_range yr " +
+	        			    "    CROSS JOIN statuses s " +
+	        			    "    LEFT JOIN sub_task_counts stc ON yr.year = stc.year " +
+	        			    "), " +
+	        			    "total_counts AS ( " +
+	        			    "    SELECT year, 'Total' AS type, 'closed' AS status, SUM(count) AS count " +
+	        			    "    FROM combined_counts " +
+	        			    "    GROUP BY year " +
+	        			    ") " +
+	        			    "SELECT * FROM combined_counts " +
+	        			    "UNION ALL " +
+	        			    "SELECT * FROM total_counts " +
+	        			    "ORDER BY year, FIELD(type, 'Task', 'Sub Task', 'Total')",
+	        			    nativeQuery = true)
+	        			List<Object[]> getYearlyTaskStatsAdmin(@Param("adminId") Long adminId,
+	        			                                       @Param("pid") Long pid);
+
+
+
+	        			@Query(value =
+	        				    "WITH year_range AS ( " +
+	        				    "    SELECT CONCAT((YEAR(CURDATE()) - 2 + seq), '') AS year " +
+	        				    "    FROM ( " +
+	        				    "        SELECT 0 AS seq UNION ALL " +
+	        				    "        SELECT 1 UNION ALL " +
+	        				    "        SELECT 2 UNION ALL " +
+	        				    "        SELECT 3 UNION ALL " +
+	        				    "        SELECT 4 " +
+	        				    "    ) AS years " +
+	        				    "), " +
+	        				    "statuses AS ( " +
+	        				    "    SELECT 'closed' AS status " +
+	        				    "), " +
+	        				    "task_counts AS ( " +
+	        				    "    SELECT CONCAT(y.year, '') AS year, COUNT(*) AS count " +
+	        				    "    FROM ( " +
+	        				    "        SELECT DISTINCT YEAR(t.last_status_updateddate) AS year " +
+	        				    "        FROM tms_task t " +
+	        				    "        JOIN tms_project p ON t.pid = p.pid " +
+	        				    "        LEFT JOIN tms_task_users ttu ON t.taskid = ttu.taskid " +
+	        				    "        LEFT JOIN tms_assigned_users tau ON tau.assignid = ttu.assignedto " +
+	        				    "        WHERE t.status = 'closed' " +
+	        				    "          AND YEAR(t.last_status_updateddate) BETWEEN (YEAR(CURDATE()) - 2) AND (YEAR(CURDATE()) + 2) " +
+	        				    "          AND ( " +
+	        				    "              (p.addedby = :userId AND (p.addedby = :userId OR tau.tms_user_id = :userId)) " +
+	        				    "              OR (p.addedby <> :userId AND (tau.tms_user_id = :userId OR tau.tms_user_id IS NULL)) " +
+	        				    "              OR (:pid IS NULL OR p.pid = :pid) " +
+	        				    "          ) " +
+	        				    "    ) AS y " +
+	        				    "    JOIN tms_task t ON YEAR(t.last_status_updateddate) = y.year " +
+	        				    "    JOIN tms_project p ON t.pid = p.pid " +
+	        				    "    WHERE t.status = 'closed' " +
+	        				    "      AND ( " +
+	        				    "          (p.addedby = :userId AND (p.addedby = :userId OR tau.tms_user_id = :userId)) " +
+	        				    "          OR (p.addedby <> :userId AND (tau.tms_user_id = :userId OR tau.tms_user_id IS NULL)) " +
+	        				    "          OR (:pid IS NULL OR p.pid = :pid) " +
+	        				    "      ) " +
+	        				    "    GROUP BY y.year " +
+	        				    "), " +
+	        				    "sub_task_counts AS ( " +
+	        				    "    SELECT CONCAT(y.year, '') AS year, COUNT(*) AS count " +
+	        				    "    FROM ( " +
+	        				    "        SELECT DISTINCT YEAR(ts.last_status_updateddate) AS year " +
+	        				    "        FROM tms_sub_task ts " +
+	        				    "        JOIN tms_task t ON ts.taskid = t.taskid " +
+	        				    "        JOIN tms_project p ON t.pid = p.pid " +
+	        				    "        LEFT JOIN tms_assigned_users tau ON tau.subtaskid = ts.subtaskid " +
+	        				    "        WHERE ts.status = 'closed' " +
+	        				    "          AND YEAR(ts.last_status_updateddate) BETWEEN (YEAR(CURDATE()) - 2) AND (YEAR(CURDATE()) + 2) " +
+	        				    "          AND ( " +
+	        				    "              (p.addedby = :userId AND (p.addedby = :userId OR tau.tms_user_id = :userId)) " +
+	        				    "              OR (p.addedby <> :userId AND (tau.tms_user_id = :userId OR tau.tms_user_id IS NULL)) " +
+	        				    "              OR (:pid IS NULL OR p.pid = :pid) " +
+	        				    "          ) " +
+	        				    "    ) AS y " +
+	        				    "    JOIN tms_sub_task ts ON YEAR(ts.last_status_updateddate) = y.year " +
+	        				    "    JOIN tms_task t ON ts.taskid = t.taskid " +
+	        				    "    JOIN tms_project p ON t.pid = p.pid " +
+	        				    "    WHERE ts.status = 'closed' " +
+	        				    "      AND ( " +
+	        				    "          (p.addedby = :userId AND (p.addedby = :userId OR tau.tms_user_id = :userId)) " +
+	        				    "          OR (p.addedby <> :userId AND (tau.tms_user_id = :userId OR tau.tms_user_id IS NULL)) " +
+	        				    "          OR (:pid IS NULL OR p.pid = :pid) " +
+	        				    "      ) " +
+	        				    "    GROUP BY y.year " +
+	        				    "), " +
+	        				    "combined_counts AS ( " +
+	        				    "    SELECT yr.year, 'Task' AS type, s.status, COALESCE(tc.count, 0) AS count " +
+	        				    "    FROM year_range yr " +
+	        				    "    CROSS JOIN statuses s " +
+	        				    "    LEFT JOIN task_counts tc ON yr.year = tc.year " +
+	        				    "    UNION ALL " +
+	        				    "    SELECT yr.year, 'Sub Task' AS type, s.status, COALESCE(stc.count, 0) AS count " +
+	        				    "    FROM year_range yr " +
+	        				    "    CROSS JOIN statuses s " +
+	        				    "    LEFT JOIN sub_task_counts stc ON yr.year = stc.year " +
+	        				    "), " +
+	        				    "total_counts AS ( " +
+	        				    "    SELECT year, 'Total' AS type, 'closed' AS status, SUM(count) AS count " +
+	        				    "    FROM combined_counts " +
+	        				    "    GROUP BY year " +
+	        				    ") " +
+	        				    "SELECT * FROM combined_counts " +
+	        				    "UNION ALL " +
+	        				    "SELECT * FROM total_counts " +
+	        				    "ORDER BY year, FIELD(type, 'Task', 'Sub Task', 'Total')",
+	        				    nativeQuery = true)
+	        				List<Object[]> getYearlyTaskStatsUser(@Param("userId") Long userId,
+	        				                                      @Param("pid") Long pid);
+
+
+
+
+} 
+
+	
+

@@ -327,7 +327,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	
 	@Modifying
 	@Transactional
-	@Query(value = "UPDATE tms_task SET status=:status, updatedby=:updatedby , updateddate = :updateddate WHERE taskid =:taskid ", nativeQuery = true)
+	@Query(value = "UPDATE tms_task SET status=:status, updatedby=:updatedby , last_status_updateddate = :updateddate WHERE taskid =:taskid ", nativeQuery = true)
 	public int updateTmsTaskStatus(@Param("taskid") Long taskid, @Param("status") String status,
 			@Param("updatedby") Long updatedby, LocalDateTime updateddate);
 	

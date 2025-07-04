@@ -40,7 +40,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 
 	@Modifying
 	@Transactional
-	@Query(value = "UPDATE tms_sub_task SET status=:status , updatedby=:updatedby, updateddate = :updateddate WHERE subtaskid =:subTaskId ", nativeQuery = true)
+	@Query(value = "UPDATE tms_sub_task SET status=:status , updatedby=:updatedby, last_status_updateddate = :updateddate WHERE subtaskid =:subTaskId ", nativeQuery = true)
 	public int updateTaskStatus(@Param("subTaskId") Long subTaskId, @Param("status") String status,
 			@Param("updatedby") Long updatedby, LocalDateTime updateddate);
 

@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.narvee.controller.ProjectController;
+import com.narvee.dto.CompletedStatusCountResponse;
+import com.narvee.dto.DashBoardRequestDto;
 import com.narvee.dto.ProjectDropDownDTO;
 import com.narvee.dto.TmsTaskCountData;
 
@@ -136,7 +138,60 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	    }
 		return null;
 	}
-	
-	
 
+	@Override
+	 public List<CompletedStatusCountResponse> getCompleteStatusCount(DashBoardRequestDto request ) {
+	        List<Object[]> results = null;
+         
+	        String userRole = dashboardRepository.roleName(request.getUserId());
+	        boolean isAdmin = "Admin".equalsIgnoreCase(userRole);
+	        
+	        switch (request.getTimeIntervel().toLowerCase()) {
+	            case "daily":
+	                results = isAdmin
+	                        ? dashboardRepository.getDailyTaskStatsAdmin(request.getFromDate(), request.getToDate(),request.getUserId(),request.getPid())
+	                        : dashboardRepository.getDailyTaskStatsUserId(request.getFromDate(), request.getToDate(), request.getUserId(),request.getPid());
+	                break;
+
+	            case "weekly":
+	              //  results = isAdmin
+	                     //   ? dashboardRepository.getWeeklyTaskStatsAdmin(request.getFromDate(), request.getToDate())
+	                     //   : dashboardRepository.getWeeklyTaskStatsUser(request.getFromDate(), request.getToDate(), request.getUserId());
+	                break;
+
+	            case "monthly":
+	            	 if (request.getYear() == null) {
+	                     throw new IllegalArgumentException("Year is required for monthly interval");
+	                 }
+                    results = isAdmin
+                    
+	                        ? dashboardRepository.getMonthlyTaskStatsAdmin(request.getYear(),request.getUserId(),request.getPid())
+	                        : dashboardRepository.getMonthlyTaskStats(request.getYear(), request.getUserId(),request.getPid());
+	                break;
+
+	            case "yearly":
+	              
+//	                results = isAdmin
+//	                        ? dashboardRepository.getYearlyTaskStatsAdmin(request.getUserId(),request.getPid())
+//	                        : dashboardRepository.getYearlyTaskStatsUser(request.getUserId(),request.getPid());
+//	                break;
+
+	            default:
+	                throw new IllegalArgumentException("Invalid interval: " + request.getTimeIntervel());
+	        }
+
+	        return results.stream()
+	            .map(row -> new CompletedStatusCountResponse(
+	                (String) row[0],
+	                (String) row[1],
+	                (String) row[2],
+	                ((Number) row[3]).longValue()
+	            ))
+	            .toList();
+	    }
+
+	
 }
+
+
+

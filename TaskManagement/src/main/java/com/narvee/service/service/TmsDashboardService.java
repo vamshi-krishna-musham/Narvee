@@ -2,6 +2,8 @@ package com.narvee.service.service;
 
 import java.util.List;
 
+import com.narvee.dto.CompletedStatusCountResponse;
+import com.narvee.dto.DashBoardRequestDto;
 import com.narvee.dto.ProjectDropDownDTO;
 import com.narvee.dto.TmsTaskCountData;
 
@@ -21,4 +23,6 @@ public interface TmsDashboardService {
 	
 	public List<TmsTaskCountData> getTaskStatusCountByMonth(String status);
 	public List<ProjectDropDownDTO> projectDropDownWithOutAdmin(Long userId);
+	
+	 public List<CompletedStatusCountResponse> getCompleteStatusCount(DashBoardRequestDto request);
 }
