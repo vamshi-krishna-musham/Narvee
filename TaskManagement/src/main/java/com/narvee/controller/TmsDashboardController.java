@@ -123,7 +123,7 @@ public class TmsDashboardController {
 	
 	
 	
-	@GetMapping("/get-completed-count")
+	@PostMapping("/get-completed-count")
 	 public ResponseEntity<RestAPIResponse> getTaskStatusCountByMonth( @RequestBody DashBoardRequestDto dashBoardRequestDto){
 		logger.info("!!! inside class: TmsDashboardController , !! method: getCompletedStatusCount"); 
 		

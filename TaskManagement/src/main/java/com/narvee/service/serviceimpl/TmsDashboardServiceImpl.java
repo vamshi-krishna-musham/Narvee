@@ -140,55 +140,55 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	}
 
 	@Override
-	 public List<CompletedStatusCountResponse> getCompleteStatusCount(DashBoardRequestDto request ) {
-	        List<Object[]> results = null;
-         
-	        String userRole = dashboardRepository.roleName(request.getUserId());
-	        boolean isAdmin = "Admin".equalsIgnoreCase(userRole);
-	        
-	        switch (request.getTimeIntervel().toLowerCase()) {
-	            case "daily":
-	                results = isAdmin
-	                        ? dashboardRepository.getDailyTaskStatsAdmin(request.getFromDate(), request.getToDate(),request.getUserId(),request.getPid())
-	                        : dashboardRepository.getDailyTaskStatsUserId(request.getFromDate(), request.getToDate(), request.getUserId(),request.getPid());
-	                break;
+	public List<CompletedStatusCountResponse> getCompleteStatusCount(DashBoardRequestDto request) {	
+		logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount");
+	    String role     = dashboardRepository.roleName(request.getUserId());
+	    boolean isAdmin = "Admin".equalsIgnoreCase(role);
 
-	            case "weekly":
-	              //  results = isAdmin
-	                     //   ? dashboardRepository.getWeeklyTaskStatsAdmin(request.getFromDate(), request.getToDate())
-	                     //   : dashboardRepository.getWeeklyTaskStatsUser(request.getFromDate(), request.getToDate(), request.getUserId());
-	                break;
+	    List<CompletedStatusCountResponse> result;
 
-	            case "monthly":
-	            	 if (request.getYear() == null) {
-	                     throw new IllegalArgumentException("Year is required for monthly interval");
-	                 }
-                    results = isAdmin
-                    
-	                        ? dashboardRepository.getMonthlyTaskStatsAdmin(request.getYear(),request.getUserId(),request.getPid())
-	                        : dashboardRepository.getMonthlyTaskStats(request.getYear(), request.getUserId(),request.getPid());
-	                break;
+	    String interval = request.getTimeIntervel().toLowerCase();
+	    switch (interval) {
+	        case "daily":
+	            if (isAdmin) {
+	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : Daily ,, !! condition : For Admin");
+	                result = dashboardRepository.getDailyTaskStatsAdmin( request.getFromDate(), request.getToDate(), request.getUserId(), request.getPid() );
+	            } else {
+	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : Daily ,, !! condition : For User");
+	                result = dashboardRepository.getDailyTaskStatussUserId(request.getFromDate(), request.getToDate(), request.getUserId(), request.getPid());
+	            }
+	            break;
 
-	            case "yearly":
-	              
-//	                results = isAdmin
-//	                        ? dashboardRepository.getYearlyTaskStatsAdmin(request.getUserId(),request.getPid())
-//	                        : dashboardRepository.getYearlyTaskStatsUser(request.getUserId(),request.getPid());
-//	                break;
+	        case "monthly":
+	            if (request.getYear() == null) {
+	                throw new IllegalArgumentException("Year is required for monthly interval");
+	            }
+	            if (isAdmin) {
+	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : Monthly ,, !! condition : For Admin");
+	                result = dashboardRepository.getMonthlyTaskStatsAdmin(request.getYear(), request.getUserId(), request.getPid());
+	            } else {
+	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : Monthly ,, !! condition : For User");
+	                result = dashboardRepository.getMonthlyTaskStatusUserId(request.getYear(), request.getUserId(), request.getPid());
+	            }
+	            break;
 
-	            default:
-	                throw new IllegalArgumentException("Invalid interval: " + request.getTimeIntervel());
-	        }
+	        case "yearly":
+	            if (isAdmin) {
+	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : Yearly ,, !! condition : For Admin");
+	            	result = dashboardRepository.getYearlyTaskStatusAdmin(request.getUserId(), request.getPid());
+	            } else {
+	              	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : Yearly ,, !! condition : For User");
+	                result = dashboardRepository.getYearlyTaskStatusByUser(request.getUserId(), request.getPid());
+	            }
+	            break;
 
-	        return results.stream()
-	            .map(row -> new CompletedStatusCountResponse(
-	                (String) row[0],
-	                (String) row[1],
-	                (String) row[2],
-	                ((Number) row[3]).longValue()
-	            ))
-	            .toList();
+	        default:
+	            throw new IllegalArgumentException("Invalid interval: " + request.getTimeIntervel());
 	    }
+
+	    return result;
+	}
+
 
 	
 }
