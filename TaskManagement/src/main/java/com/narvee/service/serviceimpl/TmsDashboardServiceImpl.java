@@ -169,10 +169,10 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	         
 	        case "weekly":
 	            if (isAdmin) {
-	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : Daily ,, !! condition : For Admin");
+	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : weekly ,, !! condition : For Admin");
 	                result = dashboardRepository.getWeeklyTaskStatsAdmin( request.getFromDate(), request.getToDate(), request.getUserId(), request.getPid() );
 	            } else {
-	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : Daily ,, !! condition : For User");
+	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : weekly ,, !! condition : For User");
 	                result = dashboardRepository.getWeeklyTaskStatsUser(request.getFromDate(), request.getToDate(), request.getUserId(), request.getPid());
 	            }
 	            break;
@@ -255,35 +255,35 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
         List<Map<String, String>> blocks = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-        // Start from first Monday before or on Jan 1st
-        LocalDate startDate = LocalDate.of(2025, 1, 1)
-                .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        // Get current year dynamically
+        int currentYear = LocalDate.now().getYear();
 
-        // Stop at last Sunday of December
-        LocalDate yearEnd = LocalDate.of(2025, 12, 31)
-                .with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        // Start from the first Sunday on or before Jan 1st of current year
+        LocalDate startDate = LocalDate.of(currentYear, 1, 1)
+                .with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+
+        // End at the last Saturday of current year
+        LocalDate yearEnd = LocalDate.of(currentYear, 12, 31)
+                .with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
 
         while (!startDate.isAfter(yearEnd)) {
-            // Tentative 2-month end date
-            LocalDate tentativeEnd = startDate.plusMonths(2).minusDays(1);
+            // Each block covers 8 weeks (Sunday to Saturday)
+            LocalDate endDate = startDate.plusWeeks(8).minusDays(1);
 
-            // Adjust to last Sunday in the 2-month period
-            LocalDate endDate = tentativeEnd.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
-
-            // Clamp to year end
+            // Clamp the end date to yearEnd if it overshoots
             if (endDate.isAfter(yearEnd)) {
                 endDate = yearEnd;
             }
 
-            // Build block label
+            // Build the block label
             String label = startDate.format(formatter) + " to " + endDate.format(formatter);
             Map<String, String> blockMap = new HashMap<>();
             blockMap.put("label", label);
             blocks.add(blockMap);
 
-            // Next block starts on Monday after endDate
+            // Move startDate to next block (next Sunday)
             startDate = endDate.plusDays(1)
-                    .with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
+                    .with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
         }
 
         return blocks;
