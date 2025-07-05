@@ -1441,7 +1441,7 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	            @Param("projectId") Long projectId);
 	        	    
 	        	        
-	        	        @Query(value = 
+	        	        @Query(value =
 	        	        	    "WITH RECURSIVE seq AS ( " +
 	        	        	    "    SELECT 0 AS n " +
 	        	        	    "    UNION ALL " +
@@ -1450,31 +1450,32 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	        	    "), " +
 	        	        	    "week_range AS ( " +
 	        	        	    "    SELECT " +
-	        	        	    "        DATE_ADD(:fromDate, INTERVAL (n * 7) DAY) AS week_start, " +
-	        	        	    "        DATE_ADD(:fromDate, INTERVAL (n * 7 + 6) DAY) AS week_end, " +
-	        	        	    "        WEEK(DATE_ADD(:fromDate, INTERVAL (n * 7) DAY), 1) AS week_num, " +
+	        	        	    "        DATE_ADD(:fromDate, INTERVAL (n * 7) DAY) AS week_start, " + // Sunday
+	        	        	    "        DATE_ADD(:fromDate, INTERVAL (n * 7 + 6) DAY) AS week_end, " + // Saturday
+	        	        	    "        WEEK(DATE_ADD(:fromDate, INTERVAL (n * 7) DAY), 0) AS week_num, " + // Sunday start
 	        	        	    "        YEAR(DATE_ADD(:fromDate, INTERVAL (n * 7) DAY)) AS year_num " +
 	        	        	    "    FROM seq " +
+	        	        	    "    WHERE DATE_ADD(:fromDate, INTERVAL (n * 7 + 6) DAY) <= :toDate " +
 	        	        	    "), " +
 	        	        	    "statuses AS ( " +
 	        	        	    "    SELECT 'closed' AS status " +
 	        	        	    "), " +
 	        	        	    "task_counts AS ( " +
 	        	        	    "    SELECT " +
-	        	        	    "        WEEK(DATE(t.last_status_updateddate), 1) AS week_num, " +
+	        	        	    "        WEEK(DATE(t.last_status_updateddate), 0) AS week_num, " + // Sunday start
 	        	        	    "        YEAR(DATE(t.last_status_updateddate)) AS year_num, " +
 	        	        	    "        COUNT(*) AS count " +
 	        	        	    "    FROM tms_task t " +
 	        	        	    "    JOIN tms_project p ON t.pid = p.pid " +
 	        	        	    "    WHERE t.status = 'closed' " +
 	        	        	    "      AND DATE(t.last_status_updateddate) BETWEEN :fromDate AND :toDate " +
-	        	        	    "      AND p.admin_id = :adminId " +
+	        	        	    "      AND p.admin_id = :adminId " + // 🔥 Replaced user filter
 	        	        	    "      AND (:pid IS NULL OR p.pid = :pid) " +
 	        	        	    "    GROUP BY year_num, week_num " +
 	        	        	    "), " +
 	        	        	    "sub_task_counts AS ( " +
 	        	        	    "    SELECT " +
-	        	        	    "        WEEK(DATE(ts.last_status_updateddate), 1) AS week_num, " +
+	        	        	    "        WEEK(DATE(ts.last_status_updateddate), 0) AS week_num, " +  
 	        	        	    "        YEAR(DATE(ts.last_status_updateddate)) AS year_num, " +
 	        	        	    "        COUNT(*) AS count " +
 	        	        	    "    FROM tms_sub_task ts " +
@@ -1482,7 +1483,7 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	        	    "    JOIN tms_project p ON t.pid = p.pid " +
 	        	        	    "    WHERE ts.status = 'closed' " +
 	        	        	    "      AND DATE(ts.last_status_updateddate) BETWEEN :fromDate AND :toDate " +
-	        	        	    "      AND p.admin_id = :adminId " +
+	        	        	    "      AND p.admin_id = :adminId " + 
 	        	        	    "      AND (:pid IS NULL OR p.pid = :pid) " +
 	        	        	    "    GROUP BY year_num, week_num " +
 	        	        	    "), " +
@@ -1522,13 +1523,14 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	        	    "ORDER BY STR_TO_DATE(SUBSTRING_INDEX(period, ' ', 1), '%d-%m-%Y'), " +
 	        	        	    "         FIELD(type, 'Task', 'Sub Task', 'Total')",
 	        	        	    nativeQuery = true)
-	        	     	List<CompletedStatusCountResponse> getWeeklyTaskStatsAdmin( @Param("fromDate") String fromDate, @Param("toDate") String toDate, @Param("adminId") Long adminId, @Param("pid") Long pid);
+	        	        	List<CompletedStatusCountResponse> getWeeklyTaskStatsAdmin(
+	        	        	    @Param("fromDate") String fromDate,
+	        	        	    @Param("toDate") String toDate,
+	        	        	    @Param("adminId") Long adminId,
+	        	        	    @Param("pid") Long pid);
 
 
-
-
-	        	        
-	        	        @Query(value = 
+	        	        @Query(value =
 	        	        	    "WITH RECURSIVE seq AS ( " +
 	        	        	    "    SELECT 0 AS n " +
 	        	        	    "    UNION ALL " +
@@ -1537,18 +1539,19 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	        	    "), " +
 	        	        	    "week_range AS ( " +
 	        	        	    "    SELECT " +
-	        	        	    "        DATE_ADD(:fromDate, INTERVAL (n * 7) DAY) AS week_start, " +
-	        	        	    "        DATE_ADD(:fromDate, INTERVAL (n * 7 + 6) DAY) AS week_end, " +
-	        	        	    "        WEEK(DATE_ADD(:fromDate, INTERVAL (n * 7) DAY), 1) AS week_num, " +
+	        	        	    "        DATE_ADD(:fromDate, INTERVAL (n * 7) DAY) AS week_start, " + // Sunday
+	        	        	    "        DATE_ADD(:fromDate, INTERVAL (n * 7 + 6) DAY) AS week_end, " + // Saturday
+	        	        	    "        WEEK(DATE_ADD(:fromDate, INTERVAL (n * 7) DAY), 0) AS week_num, " + // WEEK(..., 0) = Sunday start
 	        	        	    "        YEAR(DATE_ADD(:fromDate, INTERVAL (n * 7) DAY)) AS year_num " +
 	        	        	    "    FROM seq " +
+	        	        	    "    WHERE DATE_ADD(:fromDate, INTERVAL (n * 7 + 6) DAY) <= :toDate " + // Ensure week_end does not overflow
 	        	        	    "), " +
 	        	        	    "statuses AS ( " +
 	        	        	    "    SELECT 'closed' AS status " +
 	        	        	    "), " +
 	        	        	    "task_counts AS ( " +
 	        	        	    "    SELECT " +
-	        	        	    "        WEEK(DATE(t.last_status_updateddate), 1) AS week_num, " +
+	        	        	    "        WEEK(DATE(t.last_status_updateddate), 0) AS week_num, " + // Sunday start
 	        	        	    "        YEAR(DATE(t.last_status_updateddate)) AS year_num, " +
 	        	        	    "        COUNT(*) AS count " +
 	        	        	    "    FROM tms_task t " +
@@ -1566,7 +1569,7 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	        	    "), " +
 	        	        	    "sub_task_counts AS ( " +
 	        	        	    "    SELECT " +
-	        	        	    "        WEEK(DATE(ts.last_status_updateddate), 1) AS week_num, " +
+	        	        	    "        WEEK(DATE(ts.last_status_updateddate), 0) AS week_num, " + // Sunday start
 	        	        	    "        YEAR(DATE(ts.last_status_updateddate)) AS year_num, " +
 	        	        	    "        COUNT(*) AS count " +
 	        	        	    "    FROM tms_sub_task ts " +
@@ -1618,7 +1621,11 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	        	    "ORDER BY STR_TO_DATE(SUBSTRING_INDEX(period, ' ', 1), '%d-%m-%Y'), " +
 	        	        	    "         FIELD(type, 'Task', 'Sub Task', 'Total')",
 	        	        	    nativeQuery = true)
-	        	    List<CompletedStatusCountResponse> getWeeklyTaskStatsUser(@Param("fromDate") String fromDate, @Param("toDate") String toDate, @Param("userId") Long userId, @Param("pid") Long pid);
+	        	        	List<CompletedStatusCountResponse> getWeeklyTaskStatsUser(
+	        	        	    @Param("fromDate") String fromDate,
+	        	        	    @Param("toDate") String toDate,
+	        	        	    @Param("userId") Long userId,
+	        	        	    @Param("pid") Long pid);
 
 
 
