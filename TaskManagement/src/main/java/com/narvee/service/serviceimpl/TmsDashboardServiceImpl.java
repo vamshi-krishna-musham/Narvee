@@ -4,6 +4,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -165,6 +166,16 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	                result = dashboardRepository.getDailyTaskStatussUserId(request.getFromDate(), request.getToDate(), request.getUserId(), request.getPid());
 	            }
 	            break;
+	         
+	        case "weekly":
+	            if (isAdmin) {
+	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : Daily ,, !! condition : For Admin");
+	                result = dashboardRepository.getWeeklyTaskStatsAdmin( request.getFromDate(), request.getToDate(), request.getUserId(), request.getPid() );
+	            } else {
+	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : Daily ,, !! condition : For User");
+	                result = dashboardRepository.getWeeklyTaskStatsUser(request.getFromDate(), request.getToDate(), request.getUserId(), request.getPid());
+	            }
+	            break;
 
 	        case "monthly":
 	            if (request.getYear() == null) {
@@ -240,36 +251,45 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 
         return weekLabels;
     }
-
     private List<Map<String, String>> getTwoMonthBlockIntervals() {
-        List<Map<String, String>> blockList = new ArrayList<>();
-        LocalDate today = LocalDate.now();
-
-        // Start from first Sunday before Jan 1st of current year
-        LocalDate startDate = LocalDate.of(today.getYear(), 1, 1);
-        while (startDate.getDayOfWeek() != DayOfWeek.SUNDAY) {
-            startDate = startDate.minusDays(1);
-        }
-
+        List<Map<String, String>> blocks = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-        while (startDate.getYear() <= today.getYear()) {
-            // End date is 8 weeks (2 months approx) later - adjust to Saturday
-            LocalDate endDate = startDate.plusWeeks(8).minusDays(1);
-            while (endDate.getDayOfWeek() != DayOfWeek.SATURDAY) {
-                endDate = endDate.plusDays(1);
+        // Start from first Monday before or on Jan 1st
+        LocalDate startDate = LocalDate.of(2025, 1, 1)
+                .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+
+        // Stop at last Sunday of December
+        LocalDate yearEnd = LocalDate.of(2025, 12, 31)
+                .with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
+        while (!startDate.isAfter(yearEnd)) {
+            // Tentative 2-month end date
+            LocalDate tentativeEnd = startDate.plusMonths(2).minusDays(1);
+
+            // Adjust to last Sunday in the 2-month period
+            LocalDate endDate = tentativeEnd.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
+            // Clamp to year end
+            if (endDate.isAfter(yearEnd)) {
+                endDate = yearEnd;
             }
 
+            // Build block label
             String label = startDate.format(formatter) + " to " + endDate.format(formatter);
             Map<String, String> blockMap = new HashMap<>();
             blockMap.put("label", label);
-            blockList.add(blockMap);
+            blocks.add(blockMap);
 
-            startDate = endDate.plusDays(1); // Next block starts
+            // Next block starts on Monday after endDate
+            startDate = endDate.plusDays(1)
+                    .with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
         }
 
-        return blockList;
+        return blocks;
     }
+
+
 
     private List<Map<String, String>> getMonthlyIntervals() {
             List<Map<String, String>> yearBlockList = new ArrayList<>();

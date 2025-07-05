@@ -1440,6 +1440,185 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	            @Param("userId") Long userId,
 	        	            @Param("projectId") Long projectId);
 	        	    
+	        	        
+	        	        @Query(value = 
+	        	        	    "WITH RECURSIVE seq AS ( " +
+	        	        	    "    SELECT 0 AS n " +
+	        	        	    "    UNION ALL " +
+	        	        	    "    SELECT n + 1 FROM seq " +
+	        	        	    "    WHERE DATE_ADD(:fromDate, INTERVAL (n * 7) DAY) <= :toDate " +
+	        	        	    "), " +
+	        	        	    "week_range AS ( " +
+	        	        	    "    SELECT " +
+	        	        	    "        DATE_ADD(:fromDate, INTERVAL (n * 7) DAY) AS week_start, " +
+	        	        	    "        DATE_ADD(:fromDate, INTERVAL (n * 7 + 6) DAY) AS week_end, " +
+	        	        	    "        WEEK(DATE_ADD(:fromDate, INTERVAL (n * 7) DAY), 1) AS week_num, " +
+	        	        	    "        YEAR(DATE_ADD(:fromDate, INTERVAL (n * 7) DAY)) AS year_num " +
+	        	        	    "    FROM seq " +
+	        	        	    "), " +
+	        	        	    "statuses AS ( " +
+	        	        	    "    SELECT 'closed' AS status " +
+	        	        	    "), " +
+	        	        	    "task_counts AS ( " +
+	        	        	    "    SELECT " +
+	        	        	    "        WEEK(DATE(t.last_status_updateddate), 1) AS week_num, " +
+	        	        	    "        YEAR(DATE(t.last_status_updateddate)) AS year_num, " +
+	        	        	    "        COUNT(*) AS count " +
+	        	        	    "    FROM tms_task t " +
+	        	        	    "    JOIN tms_project p ON t.pid = p.pid " +
+	        	        	    "    WHERE t.status = 'closed' " +
+	        	        	    "      AND DATE(t.last_status_updateddate) BETWEEN :fromDate AND :toDate " +
+	        	        	    "      AND p.admin_id = :adminId " +
+	        	        	    "      AND (:pid IS NULL OR p.pid = :pid) " +
+	        	        	    "    GROUP BY year_num, week_num " +
+	        	        	    "), " +
+	        	        	    "sub_task_counts AS ( " +
+	        	        	    "    SELECT " +
+	        	        	    "        WEEK(DATE(ts.last_status_updateddate), 1) AS week_num, " +
+	        	        	    "        YEAR(DATE(ts.last_status_updateddate)) AS year_num, " +
+	        	        	    "        COUNT(*) AS count " +
+	        	        	    "    FROM tms_sub_task ts " +
+	        	        	    "    JOIN tms_task t ON ts.taskid = t.taskid " +
+	        	        	    "    JOIN tms_project p ON t.pid = p.pid " +
+	        	        	    "    WHERE ts.status = 'closed' " +
+	        	        	    "      AND DATE(ts.last_status_updateddate) BETWEEN :fromDate AND :toDate " +
+	        	        	    "      AND p.admin_id = :adminId " +
+	        	        	    "      AND (:pid IS NULL OR p.pid = :pid) " +
+	        	        	    "    GROUP BY year_num, week_num " +
+	        	        	    "), " +
+	        	        	    "combined_counts AS ( " +
+	        	        	    "    SELECT " +
+	        	        	    "        CONCAT(DATE_FORMAT(wr.week_start, '%d-%m-%Y'), ' to ', DATE_FORMAT(wr.week_end, '%d-%m-%Y')) AS period, " +
+	        	        	    "        'Task' AS type, " +
+	        	        	    "        s.status, " +
+	        	        	    "        COALESCE(tc.count, 0) AS count " +
+	        	        	    "    FROM week_range wr " +
+	        	        	    "    CROSS JOIN statuses s " +
+	        	        	    "    LEFT JOIN task_counts tc " +
+	        	        	    "      ON wr.week_num = tc.week_num AND wr.year_num = tc.year_num " +
+	        	        	    "    UNION ALL " +
+	        	        	    "    SELECT " +
+	        	        	    "        CONCAT(DATE_FORMAT(wr.week_start, '%d-%m-%Y'), ' to ', DATE_FORMAT(wr.week_end, '%d-%m-%Y')) AS period, " +
+	        	        	    "        'Sub Task' AS type, " +
+	        	        	    "        s.status, " +
+	        	        	    "        COALESCE(stc.count, 0) AS count " +
+	        	        	    "    FROM week_range wr " +
+	        	        	    "    CROSS JOIN statuses s " +
+	        	        	    "    LEFT JOIN sub_task_counts stc " +
+	        	        	    "      ON wr.week_num = stc.week_num AND wr.year_num = stc.year_num " +
+	        	        	    "), " +
+	        	        	    "total_counts AS ( " +
+	        	        	    "    SELECT " +
+	        	        	    "        period, " +
+	        	        	    "        'Total' AS type, " +
+	        	        	    "        'closed' AS status, " +
+	        	        	    "        SUM(count) AS count " +
+	        	        	    "    FROM combined_counts " +
+	        	        	    "    GROUP BY period " +
+	        	        	    ") " +
+	        	        	    "SELECT * FROM combined_counts " +
+	        	        	    "UNION ALL " +
+	        	        	    "SELECT * FROM total_counts " +
+	        	        	    "ORDER BY STR_TO_DATE(SUBSTRING_INDEX(period, ' ', 1), '%d-%m-%Y'), " +
+	        	        	    "         FIELD(type, 'Task', 'Sub Task', 'Total')",
+	        	        	    nativeQuery = true)
+	        	     	List<CompletedStatusCountResponse> getWeeklyTaskStatsAdmin( @Param("fromDate") String fromDate, @Param("toDate") String toDate, @Param("adminId") Long adminId, @Param("pid") Long pid);
+
+
+
+
+	        	        
+	        	        @Query(value = 
+	        	        	    "WITH RECURSIVE seq AS ( " +
+	        	        	    "    SELECT 0 AS n " +
+	        	        	    "    UNION ALL " +
+	        	        	    "    SELECT n + 1 FROM seq " +
+	        	        	    "    WHERE DATE_ADD(:fromDate, INTERVAL (n * 7) DAY) <= :toDate " +
+	        	        	    "), " +
+	        	        	    "week_range AS ( " +
+	        	        	    "    SELECT " +
+	        	        	    "        DATE_ADD(:fromDate, INTERVAL (n * 7) DAY) AS week_start, " +
+	        	        	    "        DATE_ADD(:fromDate, INTERVAL (n * 7 + 6) DAY) AS week_end, " +
+	        	        	    "        WEEK(DATE_ADD(:fromDate, INTERVAL (n * 7) DAY), 1) AS week_num, " +
+	        	        	    "        YEAR(DATE_ADD(:fromDate, INTERVAL (n * 7) DAY)) AS year_num " +
+	        	        	    "    FROM seq " +
+	        	        	    "), " +
+	        	        	    "statuses AS ( " +
+	        	        	    "    SELECT 'closed' AS status " +
+	        	        	    "), " +
+	        	        	    "task_counts AS ( " +
+	        	        	    "    SELECT " +
+	        	        	    "        WEEK(DATE(t.last_status_updateddate), 1) AS week_num, " +
+	        	        	    "        YEAR(DATE(t.last_status_updateddate)) AS year_num, " +
+	        	        	    "        COUNT(*) AS count " +
+	        	        	    "    FROM tms_task t " +
+	        	        	    "    JOIN tms_project p ON t.pid = p.pid " +
+	        	        	    "    LEFT JOIN tms_task_users ttu ON t.taskid = ttu.taskid " +
+	        	        	    "    LEFT JOIN tms_assigned_users tau ON tau.assignid = ttu.assignedto " +
+	        	        	    "    WHERE t.status = 'closed' " +
+	        	        	    "      AND DATE(t.last_status_updateddate) BETWEEN :fromDate AND :toDate " +
+	        	        	    "      AND ( " +
+	        	        	    "          (p.addedby = :userId AND (p.addedby = :userId OR COALESCE(ttu.assignedto, 0) = :userId)) " +
+	        	        	    "          OR (p.addedby <> :userId AND (COALESCE(tau.tms_user_id, 0) = :userId OR tau.tms_user_id IS NULL)) " +
+	        	        	    "      ) " +
+	        	        	    "      AND (:pid IS NULL OR p.pid = :pid) " +
+	        	        	    "    GROUP BY year_num, week_num " +
+	        	        	    "), " +
+	        	        	    "sub_task_counts AS ( " +
+	        	        	    "    SELECT " +
+	        	        	    "        WEEK(DATE(ts.last_status_updateddate), 1) AS week_num, " +
+	        	        	    "        YEAR(DATE(ts.last_status_updateddate)) AS year_num, " +
+	        	        	    "        COUNT(*) AS count " +
+	        	        	    "    FROM tms_sub_task ts " +
+	        	        	    "    JOIN tms_task t ON ts.taskid = t.taskid " +
+	        	        	    "    JOIN tms_project p ON t.pid = p.pid " +
+	        	        	    "    LEFT JOIN tms_assigned_users tau ON ts.subtaskid = tau.subtaskid " +
+	        	        	    "    WHERE ts.status = 'closed' " +
+	        	        	    "      AND DATE(ts.last_status_updateddate) BETWEEN :fromDate AND :toDate " +
+	        	        	    "      AND ( " +
+	        	        	    "          (p.addedby = :userId AND (p.addedby = :userId OR COALESCE(tau.tms_user_id, 0) = :userId)) " +
+	        	        	    "          OR (p.addedby <> :userId AND (COALESCE(tau.tms_user_id, 0) = :userId OR tau.tms_user_id IS NULL)) " +
+	        	        	    "      ) " +
+	        	        	    "      AND (:pid IS NULL OR p.pid = :pid) " +
+	        	        	    "    GROUP BY year_num, week_num " +
+	        	        	    "), " +
+	        	        	    "combined_counts AS ( " +
+	        	        	    "    SELECT " +
+	        	        	    "        CONCAT(DATE_FORMAT(wr.week_start, '%d-%m-%Y'), ' to ', DATE_FORMAT(wr.week_end, '%d-%m-%Y')) AS period, " +
+	        	        	    "        'Task' AS type, " +
+	        	        	    "        s.status, " +
+	        	        	    "        COALESCE(tc.count, 0) AS count " +
+	        	        	    "    FROM week_range wr " +
+	        	        	    "    CROSS JOIN statuses s " +
+	        	        	    "    LEFT JOIN task_counts tc " +
+	        	        	    "      ON wr.week_num = tc.week_num AND wr.year_num = tc.year_num " +
+	        	        	    "    UNION ALL " +
+	        	        	    "    SELECT " +
+	        	        	    "        CONCAT(DATE_FORMAT(wr.week_start, '%d-%m-%Y'), ' to ', DATE_FORMAT(wr.week_end, '%d-%m-%Y')) AS period, " +
+	        	        	    "        'Sub Task' AS type, " +
+	        	        	    "        s.status, " +
+	        	        	    "        COALESCE(stc.count, 0) AS count " +
+	        	        	    "    FROM week_range wr " +
+	        	        	    "    CROSS JOIN statuses s " +
+	        	        	    "    LEFT JOIN sub_task_counts stc " +
+	        	        	    "      ON wr.week_num = stc.week_num AND wr.year_num = stc.year_num " +
+	        	        	    "), " +
+	        	        	    "total_counts AS ( " +
+	        	        	    "    SELECT " +
+	        	        	    "        period, " +
+	        	        	    "        'Total' AS type, " +
+	        	        	    "        'closed' AS status, " +
+	        	        	    "        SUM(count) AS count " +
+	        	        	    "    FROM combined_counts " +
+	        	        	    "    GROUP BY period " +
+	        	        	    ") " +
+	        	        	    "SELECT * FROM combined_counts " +
+	        	        	    "UNION ALL " +
+	        	        	    "SELECT * FROM total_counts " +
+	        	        	    "ORDER BY STR_TO_DATE(SUBSTRING_INDEX(period, ' ', 1), '%d-%m-%Y'), " +
+	        	        	    "         FIELD(type, 'Task', 'Sub Task', 'Total')",
+	        	        	    nativeQuery = true)
+	        	    List<CompletedStatusCountResponse> getWeeklyTaskStatsUser(@Param("fromDate") String fromDate, @Param("toDate") String toDate, @Param("userId") Long userId, @Param("pid") Long pid);
 
 
 
