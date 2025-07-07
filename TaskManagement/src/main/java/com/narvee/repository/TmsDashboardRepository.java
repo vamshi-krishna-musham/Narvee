@@ -501,41 +501,41 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 			+ "ORDER BY month ",nativeQuery = true)
 	public List<TmsTaskCountData> getTaskCountByMonth(String Status);
 	
-	@Query(value = "select tms.first_name ,"
+	@Query(value = "select concat(tms.first_name,' ', COALESCE(tms.middle_name, ''),' ' ,tms.last_name) AS firstName ,"
 			+ "tms.position AS position ,"
-			+ " COUNT(tt.taskid) AS total_assigned_tasks, "
-			+ "    COUNT(CASE WHEN tt.status = 'In Progress' THEN 1 END) AS inprogress_count, "
-			+ "    COUNT(CASE WHEN tt.status = 'Open' THEN 1 END) AS open_count, "
-			+ "    COUNT(CASE WHEN tt.status = 'On Hold' THEN 1 END) AS OnHold_count  ,   "
-			+ "    COUNT(CASE WHEN tt.status = 'Blocked' THEN 1 END) AS Blocked_count  ,  "
-			+ "    COUNT(CASE WHEN tt.status = 'To be Tested' THEN 1 END) AS ToBeTested_count ,   "
-			+ "    COUNT(CASE WHEN tt.status = 'In Review' THEN 1 END) AS InReview_count , "
-			+ "     COUNT(CASE WHEN tt.status = 'Closed' THEN 1 END) AS Closed_count , "
-			+ "     COUNT(CASE WHEN tt.status = 'Overdue' THEN 1 END) AS Overdue_count "
+			+ " COUNT(tt.taskid) AS totalAssignedTasks, "
+			+ "    COUNT(CASE WHEN tt.status = 'In Progress' THEN 1 END) AS inProgressTaskCount, "
+			+ "    COUNT(CASE WHEN tt.status = 'Open' THEN 1 END) AS openTaskCount, "
+			+ "    COUNT(CASE WHEN tt.status = 'On Hold' THEN 1 END) AS onHoldTaskCount  ,   "
+			+ "    COUNT(CASE WHEN tt.status = 'Blocked' THEN 1 END) AS blockedTaskCount  ,  "
+			+ "    COUNT(CASE WHEN tt.status = 'To be Tested' THEN 1 END) AS toBeTestedTaskCount ,   "
+			+ "    COUNT(CASE WHEN tt.status = 'In Review' THEN 1 END) AS inReviewCount , "
+			+ "     COUNT(CASE WHEN tt.status = 'Closed' THEN 1 END) AS closedTaskCount , "
+			+ "     COUNT(CASE WHEN tt.status = 'Overdue' THEN 1 END) AS overDueTaskCount "
 			+ "from tms_task  tt join  tms_task_users tu on tt.taskid  = tu.taskid join  tms_assigned_users ttu  on tu.assignedto = ttu.assignid join tms_users  tms on tms.user_id = ttu.tms_user_id "
 			+ "where  (tms.added_by = :adminId or tms.user_id =:adminId)    GROUP BY  "
-			+ "    tms.first_name,tms.position",nativeQuery = true )
+			+ "    firstName,tms.position",nativeQuery = true )
 	public List<TmsTaskCountData> getUserTrackerByAdmin(Long adminId );
 	
-	@Query(value = "select tms.first_name ,"
+	@Query(value = "select concat(tms.first_name,' ', COALESCE(tms.middle_name, ''),' ' ,tms.last_name)  AS firstName ,"
 			+ "tms.position AS position ,"
-			+ " COUNT(tt.taskid) AS total_assigned_tasks, "
+			+ " COUNT(tt.taskid) AS totalAssignedTasks, "
 			+ " \r\n"
-			+ "    COUNT(CASE WHEN tt.status = 'In Progress' THEN 1 END) AS inprogress_count, "
-			+ "    COUNT(CASE WHEN tt.status = 'Open' THEN 1 END) AS open_count, "
-			+ "    COUNT(CASE WHEN tt.status = 'On Hold' THEN 1 END) AS OnHold_count  ,   "
-			+ "    COUNT(CASE WHEN tt.status = 'Blocked' THEN 1 END) AS Blocked_count  ,  "
-			+ "    COUNT(CASE WHEN tt.status = 'To be Tested' THEN 1 END) AS ToBeTested_count ,   "
-			+ "    COUNT(CASE WHEN tt.status = 'In Review' THEN 1 END) AS InReview_count , "
-			+ "     COUNT(CASE WHEN tt.status = 'Closed' THEN 1 END) AS Closed_count , "
-			+ "     COUNT(CASE WHEN tt.status = 'Overdue' THEN 1 END) AS Overdue_count "
+			+ "    COUNT(CASE WHEN tt.status = 'In Progress' THEN 1 END) AS inProgressTaskCount, "
+			+ "    COUNT(CASE WHEN tt.status = 'Open' THEN 1 END) AS openTaskCount, "
+			+ "    COUNT(CASE WHEN tt.status = 'On Hold' THEN 1 END) AS onHoldTaskCount  ,   "
+			+ "    COUNT(CASE WHEN tt.status = 'Blocked' THEN 1 END) AS blockedTaskCount  ,  "
+			+ "    COUNT(CASE WHEN tt.status = 'To be Tested' THEN 1 END) AS toBeTestedTaskCount ,   "
+			+ "    COUNT(CASE WHEN tt.status = 'In Review' THEN 1 END) AS inReviewCount , "
+			+ "     COUNT(CASE WHEN tt.status = 'Closed' THEN 1 END) AS closedTaskCount , "
+			+ "     COUNT(CASE WHEN tt.status = 'Overdue' THEN 1 END) AS overDueTaskCount "
 			+ "from tms_task  tt join  tms_task_users tu on tt.taskid  = tu.taskid join  tms_assigned_users ttu  on tu.assignedto = ttu.assignid join tms_users  tms on tms.user_id = ttu.tms_user_id "
 			+ "where  (tms.added_by = :adminId or tms .user_id =:adminId)   and tt.pid = :pid GROUP BY  "
-			+ "    tms.first_name,tms.position ",nativeQuery = true )
+			+ "    firstName,tms.position ",nativeQuery = true )
 	public List<TmsTaskCountData> getUserTrackerByAdminAndPid(Long adminId,Long pid );
 	
 	@Query(value = "SELECT  "
-			+ "    tms.first_name AS firstName , "
+			+ "   concat(tms.first_name,' ', COALESCE(tms.middle_name, ''),' ' ,tms.last_name) AS firstName , "
 			+ " tms.position AS position ,"
 			
 			+ "    COUNT(tt.taskid) AS totalAssignedTasks, "
@@ -601,7 +601,7 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 			+ "JOIN tms_assigned_users ttu ON tu.assignedto = ttu.assignid "
 			+ "JOIN tms_users tms ON tms.user_id = ttu.tms_user_id "
 			+ "WHERE (tms.added_by = :adminId OR tms.user_id = :adminId)  AND (:pid IS NULL OR tt.pid = :pid)  "
-			+ "GROUP BY tms.first_name,tms.position",nativeQuery = true)
+			+ "GROUP BY firstName,tms.position",nativeQuery = true)
 	public  List<TmsTaskCountData> getUserTrackerByAdminAndPidAndTimeInterval(Long adminId, Long pid, String interval );
 	
 	@Query(value="select distinct p.pid, p.projectid ,p.projectname from tms_project p join tms_assigned_users au ON au.pid=p.pid where admin_id = :addedBy",nativeQuery =true)

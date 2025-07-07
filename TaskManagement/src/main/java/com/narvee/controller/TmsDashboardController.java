@@ -21,7 +21,7 @@ import com.narvee.dto.DashBoardRequestDto;
 import com.narvee.service.service.TmsDashboardService;
 
 @RestController
-@RequestMapping("/Dashboard")
+@RequestMapping("/dashboard")
 public class TmsDashboardController {
     
 	
