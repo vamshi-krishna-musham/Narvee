@@ -600,7 +600,7 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 			+ "JOIN tms_task_users tu ON tt.taskid = tu.taskid "
 			+ "JOIN tms_assigned_users ttu ON tu.assignedto = ttu.assignid "
 			+ "JOIN tms_users tms ON tms.user_id = ttu.tms_user_id "
-			+ "WHERE (tms.added_by = :adminId OR tms.user_id = :adminId)  AND tt.pid = :pid "
+			+ "WHERE (tms.added_by = :adminId OR tms.user_id = :adminId)  AND (:pid IS NULL OR tt.pid = :pid)  "
 			+ "GROUP BY tms.first_name,tms.position",nativeQuery = true)
 	public  List<TmsTaskCountData> getUserTrackerByAdminAndPidAndTimeInterval(Long adminId, Long pid, String interval );
 	
