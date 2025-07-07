@@ -103,7 +103,7 @@ public class TmsDashboardController {
 	 }
 	
 	@GetMapping("/getUserTrackerByAdmin")
-	 public ResponseEntity<RestAPIResponse> getUserTrackerByAdmin( @RequestParam Long  adminId ,@RequestParam  Long projectId, @RequestParam String timeIntervel ){
+	 public ResponseEntity<RestAPIResponse> getUserTrackerByAdmin( @RequestParam Long  adminId ,@RequestParam(required = false)  Long projectId, @RequestParam(required = false) String timeIntervel ){
 		logger.info("!!! inside class: TmsDashboardController , !! method: getUserTrackerByAdmin"); 
 	//	List<TmsTaskCountData>   data =	  dashboardService.getUserTracker(adminId,projectId,timeIntervel);
 		return new ResponseEntity<RestAPIResponse>(
