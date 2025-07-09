@@ -531,6 +531,12 @@ public class TaskServiceImpl implements TaskService {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: Tmsupdate-tms");
 		TmsTask update = taskRepo.findById(task.getTaskid()).get();
 
+		if ("closed".equalsIgnoreCase(task.getStatus())) {
+		    long incompleteTasks = taskRepo.countByProjectIdAndStatusNot(task.getTaskid(), "closed");
+		    if (incompleteTasks > 0 ) {
+		        throw new RuntimeException("Cannot mark Task as Closed. Some subtasks are still not closed.");
+		    }
+		}			
 		update.setTargetDate(task.getTargetDate());
 		update.setStartDate(task.getStartDate());
 		update.setTaskname(task.getTaskname());
@@ -850,8 +856,17 @@ public class TaskServiceImpl implements TaskService {
 
 		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
 		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
+	
 		try {
-			taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);	
+			if ("closed".equalsIgnoreCase(status)) {
+			    long incompleteTasks = taskRepo.countByProjectIdAndStatusNot(taskid, "closed");
+			    if (incompleteTasks > 0 ) {
+			        throw new RuntimeException("Cannot mark Task as Closed. Some subtasks are still not closed.");
+			    }
+			  //  taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);	
+			}	
+			 taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);	
+			//taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);	
 			TmsTask taskInfo = taskRepo.findById(taskid).get();
 	
 			Long adminId =	projectRepository.getAdminId(taskid);
@@ -867,12 +882,18 @@ public class TaskServiceImpl implements TaskService {
 				tmsEmailService.sendStatusUpdateEmail(taskInfo,subject,ccList,bccList);
 			}
 		}
+			return true;
 
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
+		} catch (RuntimeException e) {
+	        logger.error("Validation error while updating task status: {}", e.getMessage());
+	        throw e; 
 
-		return true;
+	    } catch (Exception e) {
+	        logger.error("Unexpected error while updating task status", e);
+	        throw new RuntimeException("Failed to update task status due to an unexpected error.");
+	    }
+
+		
 
 	}
 

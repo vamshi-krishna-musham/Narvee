@@ -229,8 +229,13 @@ public class TaskController {
 	public ResponseEntity<?> updateTmsTask(@RequestPart("task") String tmsTask, @RequestPart(value = "files",required = false) List<MultipartFile> taskFile) throws IOException {
 		logger.info("!!! inside class: TaskController , !! method: updateTmsTask");
 		TmsTask task = mapper.readValue(tmsTask, TmsTask.class);
+		try {
 		return new ResponseEntity<RestAPIResponse>(
 				new RestAPIResponse("success", " Task Updated successfully", service.Tmsupdate(task,taskFile)), HttpStatus.CREATED);
+	}catch (RuntimeException e) {
+		  return ResponseEntity.status(HttpStatus.OK)
+	                .body(new RestAPIResponse("fail", e.getMessage(), null));
+	    }	
 	}
 	
 	@RequestMapping(value = "/tasksByProjectId-tms", method = RequestMethod.POST, produces = "application/json")
@@ -339,7 +344,12 @@ public class TaskController {
 	@RequestMapping(value = "/updateTmsTaskStatus/{taskid}/{status}/{updatedby}", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<RestAPIResponse> updateTmsTaskStatus(@PathVariable Long taskid, @PathVariable String status,@PathVariable Long updatedby) {
 		logger.info("!!! inside class: TaskController , !! method: updateTmsTaskStatus--tms");
+		try {
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Status updated  successfully",
 				service.updateTmsTaskStatus(taskid, status,updatedby)), HttpStatus.OK);
+	}catch (RuntimeException e) {
+		  return ResponseEntity.status(HttpStatus.OK)
+	                .body(new RestAPIResponse("fail", e.getMessage(), null));
+	    }	
 	}
 }

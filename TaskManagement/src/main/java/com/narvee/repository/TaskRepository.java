@@ -335,4 +335,12 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	public String getTaskName(Long TaskId);
 	
 	
+	@Query(value = "SELECT COUNT(*) FROM tms_task t WHERE t.pid = :projectId AND t.status <> :status",nativeQuery = true)
+	long countByProjectIdAndStatusNotTask(@Param("projectId") Long projectId, @Param("status") String status);
+	
+	@Query(value = "SELECT COUNT(*) FROM tms_sub_task st WHERE st.taskid = :taskid AND st.status <> :status",nativeQuery = true)
+	long countByProjectIdAndStatusNot(@Param("taskid") Long taskid, @Param("status") String status);
+
+
+	
 }

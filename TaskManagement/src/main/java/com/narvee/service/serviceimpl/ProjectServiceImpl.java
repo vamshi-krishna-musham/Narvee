@@ -328,6 +328,15 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 
 		TmsProject project = optionalProject.get();
+		
+		if ("completed".equalsIgnoreCase(updateproject.getStatus())) {
+		    long incompleteTasks = repository.countByProjectIdAndStatusNotTask(updateproject.getPId(), "closed");
+		  //  long incompleteSubTasks = repository.countByProjectIdAndStatusNot(updateproject.getPId(), "closed");
+
+		    if (incompleteTasks > 0 ) {
+		        throw new RuntimeException("Cannot mark project as completed. Some tasks are still not closed.");
+		    }
+		}	
 		project.setProjectName(updateproject.getProjectName());
 		project.setAddedBy(updateproject.getAddedBy());
 		project.setAdminId(updateproject.getAdminId());

@@ -1627,6 +1627,44 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	        	    @Param("userId") Long userId,
 	        	        	    @Param("pid") Long pid);
 
+//	        	        @Query(value = "SELECT " +
+//	        	        	    "CONCAT(tms.first_name, ' ', COALESCE(tms.middle_name, ''), ' ', tms.last_name) AS firstName, " +
+//	        	        	    "tms.position AS position, " +
+//	        	        	    "(COUNT(DISTINCT tt.taskid) + COUNT(DISTINCT tst.subtaskid)) AS totalAssignedTasks, " +
+//	        	        	    "COUNT(CASE WHEN tt.status = 'In Progress' THEN 1 END + CASE WHEN tst.status = 'In Progress' THEN 1 END ) AS inProgressTaskCount, " +
+//	        	        	    "COUNT(CASE WHEN tt.status = 'Open' THEN 1 END +CASE WHEN tst.status = 'Open' THEN 1 END ) AS openTaskCount, " +
+//	        	        	    "COUNT(CASE WHEN tt.status = 'On Hold' THEN 1 END + CASE WHEN tst.status = 'On Hold' THEN 1 END ) AS onHoldTaskCount, " +
+//	        	        	    "COUNT(CASE WHEN tt.status = 'Blocked' THEN 1 END + CASE WHEN tst.status = 'Blocked' THEN 1 END ) AS blockedTaskCount, " +
+//	        	        	    "COUNT(CASE WHEN tt.status = 'To be Tested' THEN 1 END + CASE WHEN tst.status = 'To be Tested' THEN 1 END ) AS toBeTestedTaskCount, " +
+//	        	        	    "COUNT(CASE WHEN tt.status = 'In Review' THEN 1 END + CASE WHEN tst.status = 'In Review' THEN 1 END ) AS inReviewCount, " +
+//	        	        	    "COUNT(CASE WHEN tt.status = 'Closed' THEN 1 END + CASE WHEN tst.status = 'Closed' THEN 1 END ) AS closedTaskCount, " +
+//	        	        	    "COUNT(CASE WHEN tt.status = 'Overdue' THEN 1 END + CASE WHEN tst.status = 'Overdue' THEN 1 END ) AS overDueTaskCount " +
+//	        	        	"FROM " +
+//	        	        	    "tms_users tms " +
+//	        	        	"LEFT JOIN tms_assigned_users ttu ON tms.user_id = ttu.tms_user_id " +
+//	        	        	"LEFT JOIN tms_task_users tu ON ttu.assignid = tu.assignedto " +
+//	        	        	"LEFT JOIN tms_task tt ON tu.taskid = tt.taskid "
+//	        	        	+ " LEFT JOIN tms_sub_task tst  "
+//	        	        	+ "    ON tst.taskid = tt.taskid   " +
+//	        	        	"WHERE " +
+//	        	        	    "tms.admin_id = :adminId " +
+//	        	        	    "AND (:pid IS NULL OR tt.pid = :pid) " +
+//	        	        	    "AND (" +
+//	        	        	    "   :interval IS NULL " +
+//	        	        	    "   OR (" +
+//	        	        	    "       (:interval = 'daily' AND DATE(tt.last_status_updateddate) = CURRENT_DATE) " +
+//	        	        	    "       OR (:interval = 'weekly' AND YEARWEEK(tt.last_status_updateddate, 1) = YEARWEEK(CURRENT_DATE, 1)) " +
+//	        	        	    "       OR (:interval = 'monthly' AND YEAR(tt.last_status_updateddate) = YEAR(CURRENT_DATE) AND MONTH(tt.last_status_updateddate) = MONTH(CURRENT_DATE)) " +
+//	        	        	    "       OR (:interval = 'yearly' AND YEAR(tt.last_status_updateddate) = YEAR(CURRENT_DATE))" +
+//	        	        	    "   )" +
+//	        	        	") " +
+//	        	        	"GROUP BY CONCAT(tms.first_name, ' ', COALESCE(tms.middle_name, ''), ' ', tms.last_name), tms.position",
+//	        	        	nativeQuery = true)
+//	        	        	List<TmsTaskCountData> getUserTrackerByAdmin(
+//	        	        	    @Param("adminId") Long adminId,
+//	        	        	    @Param("pid") Long pid,
+//	        	        	    @Param("interval") String interval
+//	        	        	);
 
 
 } 

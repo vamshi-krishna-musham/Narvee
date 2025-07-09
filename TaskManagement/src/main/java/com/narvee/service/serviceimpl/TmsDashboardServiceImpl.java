@@ -133,6 +133,28 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 		}
 		
 	}
+	
+	
+//	@Override
+//	public List<TmsTaskCountData> getUserTracker(Long adminId, Long projectId, String timeIntervel) {
+//		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getUserTracker");	
+//		  String role     = dashboardRepository.roleName(adminId);
+//		    boolean isAdmin = "Admin".equalsIgnoreCase(role);
+//		    boolean isAddedby = "Project Manager".equalsIgnoreCase(role);
+//		    
+//		if(isAdmin) {
+//			return	dashboardRepository.getUserTrackerByAdmin(adminId,projectId,timeIntervel)	;
+//		}else if (isAddedby) {
+//			return null;
+//			//return dashboardRepository.getUserTrackerByAdminAndPid(adminId, projectId);
+//		}else {
+//			return null;
+//		//	return dashboardRepository.getUserTrackerByAdminAndPidAndTimeInterval(adminId, projectId, timeIntervel);
+//		}
+//		
+//	}
+	
+	
 	@Override
 	public List<ProjectDropDownDTO> projectDropDownWithOutAdmin(Long userId) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: projectDropDownWithOutAdmin");
