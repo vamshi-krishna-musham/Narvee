@@ -19,6 +19,7 @@ import lombok.Data;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public class AuditModel implements Serializable {
+	private static final long serialVersionUID = 1L;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
 	@Column(name = "createddate", nullable = false, updatable = false)
@@ -30,7 +31,7 @@ public class AuditModel implements Serializable {
 
 	@PrePersist
 	public void setCreateddate() {
-		ZoneId newYork = ZoneId.of("America/Chicago");
+		ZoneId newYork = ZoneId.of("Asia/Kolkata");
 		LocalDateTime now = LocalDateTime.now(newYork);
 		this.createddate = now;
 		this.updateddate = now;
@@ -38,7 +39,7 @@ public class AuditModel implements Serializable {
 
 	@PreUpdate
 	public void setUpdateddate() {
-		ZoneId newYork = ZoneId.of("America/Chicago");
+		ZoneId newYork = ZoneId.of("Asia/Kolkata");
 		LocalDateTime now = LocalDateTime.now(newYork);
 		this.updateddate = now;
 	}
