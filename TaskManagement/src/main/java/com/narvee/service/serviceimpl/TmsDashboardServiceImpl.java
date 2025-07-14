@@ -42,15 +42,19 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	}
 
 	@Override
-	public List<TmsTaskCountData> getTaskCountByAdminId(Long adminId) {
+	public List<TmsTaskCountData> getTaskCountByAdminId(Long userid) {
 		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getTaskCountByAdminId");
-	  String userRole = 	dashboardRepository.roleName(adminId);
-		if(userRole .equalsIgnoreCase("Admin")) {
+	  String userRole = 	dashboardRepository.roleName(userid);
+	  
+	  if ( "Admin".equalsIgnoreCase(userRole) ||"Project Manager".equalsIgnoreCase(userRole) || "Super Admin".equalsIgnoreCase(userRole)) {
+			 Long adminid = ("Super Admin".equalsIgnoreCase(userRole))
+		                ? userid
+		                : dashboardRepository.AdminId(userid);		 
 			logger.info("!!! inside class: TmsDashboardServiceImpl , !! Condition: getTaskCountByAdminId");
-		return	dashboardRepository.getTaskCountByadminId(adminId);
+		return	dashboardRepository.getTaskCountByadminId(adminid);
 		}else 
 			logger.info("!!! inside class: TmsDashboardServiceImpl , !! Condition: getTaskCountByUserId");
-		return  dashboardRepository.getTaskCountByUserId(adminId);
+		return  dashboardRepository.getTaskCountByUserId(userid);
 	}
 
 	
@@ -58,9 +62,12 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	public List<TmsTaskCountData> getTaskCountByProjectIdAndUserId(Long pid, Long userId) {
 		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getTaskCountByProjectIdAndUserId");
 		  String userRole = 	dashboardRepository.roleName(userId);
-		  if(userRole .equalsIgnoreCase("Admin")) {
+		  if ( "Admin".equalsIgnoreCase(userRole) ||"Project Manager".equalsIgnoreCase(userRole) || "Super Admin".equalsIgnoreCase(userRole)) {
+				 Long adminid = ("Super Admin".equalsIgnoreCase(userRole))
+			                ? userId
+			                : dashboardRepository.AdminId(userId);		
 			  logger.info("!!! inside class: TmsDashboardServiceImpl , !! Condition: getTaskCountByProjectIdAndAdminId");
-		  return dashboardRepository.getTaskCountByPidAndAdminId(pid, userId);		  
+		  return dashboardRepository.getTaskCountByPidAndAdminId(pid, adminid);		  
 	     } else 
 	    	 logger.info("!!! inside class: TmsDashboardServiceImpl , !! Condition: getTaskCountByProjectIdAndUserId");
 		 return dashboardRepository.getTaskCountByPidAndUserId(pid, userId);
@@ -70,24 +77,30 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	public List<TmsTaskCountData> getTaskCountByProjectIdAndUserIdAndTime(Long pid, Long userId,String IntervelTime) {
 		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getTaskCountByProjectIdAndUserIdAndTime");
 		 String userRole = 	dashboardRepository.roleName(userId);
-		  if(userRole .equalsIgnoreCase("Admin")) {  
+		  if ( "Admin".equalsIgnoreCase(userRole) ||"Project Manager".equalsIgnoreCase(userRole) || "Super Admin".equalsIgnoreCase(userRole)) {
+				 Long adminid = ("Super Admin".equalsIgnoreCase(userRole))
+			                ? userId
+			                : dashboardRepository.AdminId(userId);	 
 			  logger.info("!!! inside class: TmsDashboardServiceImpl , !! Condition: getTaskCountByProjectIdAndAdminIdAndTime");
-		  return dashboardRepository.getTaskCountByPidAndAdminIdAndTime(pid, userId,IntervelTime);
+		  return dashboardRepository.getTaskCountByPidAndAdminIdAndTime(pid, adminid,IntervelTime);
 	      }else
 	    	  logger.info("!!! inside class: TmsDashboardServiceImpl , !! Condition: getTaskCountByProjectIdAndUserIdAndTime");
 		  return dashboardRepository.getTaskCountByPidAndUserIdAndTime(pid, userId,IntervelTime);
 	     }
 	
 	@Override
-	public List<TmsTaskCountData> getPriorityCountByAdminId(Long adminId) {
+	public List<TmsTaskCountData> getPriorityCountByAdminId(Long userId) {
 		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getPriorityCountByAdminId");
-	  String userRole = 	dashboardRepository.roleName(adminId);
-		if(userRole .equalsIgnoreCase("Admin")) {
+	  String userRole = 	dashboardRepository.roleName(userId);
+	  if ( "Admin".equalsIgnoreCase(userRole) ||"Project Manager".equalsIgnoreCase(userRole) || "Super Admin".equalsIgnoreCase(userRole)) {
+			 Long adminid = ("Super Admin".equalsIgnoreCase(userRole))
+		                ? userId
+		                : dashboardRepository.AdminId(userId);	 
 		logger.info("!!! inside class: TmsDashboardServiceImpl , !! Condition: getPriorityCountByAdminId");
-		return	dashboardRepository.getPriorityByAdminId(adminId);
+		return	dashboardRepository.getPriorityByAdminId(adminid);
 		}else 
 			logger.info("!!! inside class: TmsDashboardServiceImpl , !! Condition: getPriorityCountByUserId");
-		return  dashboardRepository.getPriorityByUserId(adminId);
+		return  dashboardRepository.getPriorityByUserId(userId);
 	}
 
 	
@@ -95,9 +108,12 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	public List<TmsTaskCountData> getPriorityCountByProjectIdAndUserId(Long pid, Long userId) {
 		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getPriorityCountByProjectIdAndUserId");
 		  String userRole = 	dashboardRepository.roleName(userId);
-		  if(userRole .equalsIgnoreCase("Admin")) {
+		  if ( "Admin".equalsIgnoreCase(userRole) ||"Project Manager".equalsIgnoreCase(userRole) || "Super Admin".equalsIgnoreCase(userRole)) {
+				 Long adminid = ("Super Admin".equalsIgnoreCase(userRole))
+			                ? userId
+			                : dashboardRepository.AdminId(userId);	
 			  logger.info("!!! inside class: TmsDashboardServiceImpl , !! Condition: getPriorityCountByProjectIdAndAdminId");
-		  return dashboardRepository.getPriorityByAdminIdAndPid(userId, pid);
+		  return dashboardRepository.getPriorityByAdminIdAndPid(adminid, pid);
 	     } else
 	    	 logger.info("!!! inside class: TmsDashboardServiceImpl , !! Condition: getPriorityCountByProjectIdAndUserId");
 		 return dashboardRepository.getPriorityByUserIdAndpid(userId, pid);
@@ -107,9 +123,12 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	public List<TmsTaskCountData> getPriorityCountByProjectIdAndUserIdAndTime(Long pid, Long userId,String IntervelTime) {
 		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getPriorityCountByProjectIdAndUserIdAndTime");
 		 String userRole = 	dashboardRepository.roleName(userId);
-		  if(userRole .equalsIgnoreCase("Admin")) {
+		 if ( "Admin".equalsIgnoreCase(userRole) ||"Project Manager".equalsIgnoreCase(userRole) || "Super Admin".equalsIgnoreCase(userRole)) {
+			 Long adminid = ("Super Admin".equalsIgnoreCase(userRole))
+		                ? userId
+		                : dashboardRepository.AdminId(userId);	
 			  logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getPriorityCountByProjectIdAndAdminIdAndTimeIntervel");
-		  return dashboardRepository.getPriorityByAdminIdAndPidAndTime(userId,pid,IntervelTime);
+		  return dashboardRepository.getPriorityByAdminIdAndPidAndTime(adminid,pid,IntervelTime);
 	      }else
 	    	  logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getPriorityCountByProjectIdAndUserIdAndTimeIntervel");
 		  return dashboardRepository.getPriorityByuserIdAndPidAndTime(userId, pid,IntervelTime);
@@ -120,38 +139,74 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getTaskStatusCountByMonth");	
 		return dashboardRepository.getTaskCountByMonth(status);
 	}
+	
+	
 	@Override
-	public List<TmsTaskCountData> getUserTracker(Long adminId, Long projectId, String timeIntervel) {
+	public List<TmsTaskCountData> getUserTracker(Long userid, Long projectId, String timeIntervel) {
 		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getUserTracker");	
+		 String userRole = 	dashboardRepository.roleName(userid);
+		  if ( "Admin".equalsIgnoreCase(userRole) ||"Project Manager".equalsIgnoreCase(userRole) || "Super Admin".equalsIgnoreCase(userRole)) {
+				 Long adminid = ("Super Admin".equalsIgnoreCase(userRole))
+			                ? userid
+			                : dashboardRepository.AdminId(userid);		
+			return	dashboardRepository.getProjectUsersTaskStats(adminid,projectId,timeIntervel);
+		  }else {
+			return dashboardRepository.getTeamMemberTaskStats(userid,projectId,timeIntervel);
 		
-		if(projectId == null && timeIntervel == null) {
-			return	dashboardRepository.getUserTrackerByAdmin(adminId)	;
-		}else if (timeIntervel == null) {
-			return dashboardRepository.getUserTrackerByAdminAndPid(adminId, projectId);
-		}else {
-			return dashboardRepository.getUserTrackerByAdminAndPidAndTimeInterval(adminId, projectId, timeIntervel);
 		}
 		
 	}
+	
+	
+	
+	
+//	@Override
+//	public List<TmsTaskCountData> getUserTracker(Long adminId, Long projectId, String timeIntervel) {
+//		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getUserTracker");	
+//		  String role     = dashboardRepository.roleName(adminId);
+//		    boolean isAdmin = "Admin".equalsIgnoreCase(role);
+//		    boolean isAddedby = "Project Manager".equalsIgnoreCase(role);
+//		    
+//		if(isAdmin) {
+//			return	dashboardRepository.getUserTrackerByAdmin(adminId,projectId,timeIntervel)	;
+//		}else if (isAddedby) {
+//			return null;
+//			//return dashboardRepository.getUserTrackerByAdminAndPid(adminId, projectId);
+//		}else {
+//			return null;
+//		//	return dashboardRepository.getUserTrackerByAdminAndPidAndTimeInterval(adminId, projectId, timeIntervel);
+//		}
+//		
+//	}
+	
+	
 	@Override
 	public List<ProjectDropDownDTO> projectDropDownWithOutAdmin(Long userId) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: projectDropDownWithOutAdmin");
-		List<Long> addedBtId = dashboardRepository.getAddedBy();
-		for (Long userIds : addedBtId) {
-		 if (userId == userIds) {
-	            return dashboardRepository.projectDropDownWithAdmin(userId);
+		 String role     = dashboardRepository.roleName(userId);	 
+		 if ( "Admin".equalsIgnoreCase(role) ||"Project Manager".equalsIgnoreCase(role) || "Super Admin".equalsIgnoreCase(role)) {
+			 Long adminId = ("Super Admin".equalsIgnoreCase(role))
+		                ? userId
+		                : dashboardRepository.AdminId(userId);
+			 
+	            return dashboardRepository.projectDropDownWithAdmin(adminId);
 	        } else {
-	            return dashboardRepository.projectDropDownWithOutAdmin(userId);
-	        }
-	    }
-		return null;
+           return dashboardRepository.projectDropDownWithOutAdmin(userId);
+	      }
 	}
+	
+	
+
 
 	@Override
 	public List<CompletedStatusCountResponse> getCompleteStatusCount(DashBoardRequestDto request) {	
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount");
 	    String role     = dashboardRepository.roleName(request.getUserId());
-	    boolean isAdmin = "Admin".equalsIgnoreCase(role);
+	    
+	    boolean isAdmin = ( "Admin".equalsIgnoreCase(role) ||"Project Manager".equalsIgnoreCase(role) || "Super Admin".equalsIgnoreCase(role));
+	    Long adminId = ("Super Admin".equalsIgnoreCase(role))
+                ? request.getUserId()
+                : dashboardRepository.AdminId(request.getUserId());
 
 	    List<CompletedStatusCountResponse> result;
 
@@ -160,7 +215,7 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	        case "daily":
 	            if (isAdmin) {
 	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : Daily ,, !! condition : For Admin");
-	                result = dashboardRepository.getDailyTaskStatsAdmin( request.getFromDate(), request.getToDate(), request.getUserId(), request.getPid() );
+	                result = dashboardRepository.getDailyTaskStatsAdmin( request.getFromDate(), request.getToDate(), adminId, request.getPid() );
 	            } else {
 	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : Daily ,, !! condition : For User");
 	                result = dashboardRepository.getDailyTaskStatussUserId(request.getFromDate(), request.getToDate(), request.getUserId(), request.getPid());
@@ -170,7 +225,7 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	        case "weekly":
 	            if (isAdmin) {
 	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : weekly ,, !! condition : For Admin");
-	                result = dashboardRepository.getWeeklyTaskStatsAdmin( request.getFromDate(), request.getToDate(), request.getUserId(), request.getPid() );
+	                result = dashboardRepository.getWeeklyTaskStatsAdmin( request.getFromDate(), request.getToDate(),adminId, request.getPid() );
 	            } else {
 	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : weekly ,, !! condition : For User");
 	                result = dashboardRepository.getWeeklyTaskStatsUser(request.getFromDate(), request.getToDate(), request.getUserId(), request.getPid());
@@ -183,7 +238,7 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	            }
 	            if (isAdmin) {
 	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : Monthly ,, !! condition : For Admin");
-	                result = dashboardRepository.getMonthlyTaskStatsAdmin(request.getYear(), request.getUserId(), request.getPid());
+	                result = dashboardRepository.getMonthlyTaskStatsAdmin(request.getYear(), adminId, request.getPid());
 	            } else {
 	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : Monthly ,, !! condition : For User");
 	                result = dashboardRepository.getMonthlyTaskStatusUserId(request.getYear(), request.getUserId(), request.getPid());
@@ -193,7 +248,7 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	        case "yearly":
 	            if (isAdmin) {
 	            	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : Yearly ,, !! condition : For Admin");
-	            	result = dashboardRepository.getYearlyTaskStatusAdmin(request.getUserId(), request.getPid());
+	            	result = dashboardRepository.getYearlyTaskStatusAdmin(adminId, request.getPid());
 	            } else {
 	              	logger.info("!!! inside class: ProjectServiceImpl , !! method: getCompleteStatusCount , !! Case : Yearly ,, !! condition : For User");
 	                result = dashboardRepository.getYearlyTaskStatusByUser(request.getUserId(), request.getPid());

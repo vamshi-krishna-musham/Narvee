@@ -328,6 +328,15 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 
 		TmsProject project = optionalProject.get();
+		
+		if ("completed".equalsIgnoreCase(updateproject.getStatus())) {
+		    long incompleteTasks = repository.countByProjectIdAndStatusNotTask(updateproject.getPId(), "closed");
+		  //  long incompleteSubTasks = repository.countByProjectIdAndStatusNot(updateproject.getPId(), "closed");
+
+		    if (incompleteTasks > 0 ) {
+		        throw new RuntimeException("Cannot mark project as completed. Some tasks are still not closed.");
+		    }
+		}	
 		project.setProjectName(updateproject.getProjectName());
 		project.setAddedBy(updateproject.getAddedBy());
 		project.setAdminId(updateproject.getAdminId());
@@ -446,11 +455,16 @@ public class ProjectServiceImpl implements ProjectService {
 
 		List<ProjectResponseDto> res = new ArrayList<>();
 
-		if (access.equalsIgnoreCase("ADMIN") || access.equalsIgnoreCase("project manager")) {
+		if (access.equalsIgnoreCase("SUPER ADMIN") || access.equalsIgnoreCase("project manager") ||  access.equalsIgnoreCase("ADMIN") ) {
+			
+			Long adminId = ("Super Admin".equalsIgnoreCase(access))
+	                ? userid
+	                : projectrepository.AdminId(userid);
+			
 			if (keyword.equalsIgnoreCase("empty")) {
 				logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllTmsProjects, Empty");
-
-				page = projectrepository.findAllTmsProjects(pageable, userid);
+				
+				page = projectrepository.findAllTmsProjects(pageable, adminId);
 				res = page.stream().map(projectDTO -> {
 					TmsProject project = projectrepository.findById(projectDTO.getPid()).orElse(null);
 					ProjectResponseDto proj = new ProjectResponseDto();
@@ -476,7 +490,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 			} else {
 				logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllTmsProjectWithFiltering, Filter");
-				page = projectrepository.findAllTmsProjectWithFiltering(pageable, keyword, userid);
+				page = projectrepository.findAllTmsProjectWithFiltering(pageable, keyword, adminId);
 				res = page.stream().map(projectDTO -> {
 					TmsProject project = projectrepository.findById(projectDTO.getPid()).orElse(null);
 					ProjectResponseDto proj = new ProjectResponseDto();

@@ -442,9 +442,10 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 			+ "                         OR (p.addedby <> :userId  AND tau.tms_user_id = :userId)                         "
 			+ "                       ) and (:pid IS NULL OR p.pid = :pid) "
 			+ "			          AND (    "
-			+ "			                ( :interval = 'daily' AND DATE(t.updateddate) = CURDATE()) OR    "
-			+ "			                ( :interval = 'weekly' AND t.updateddate >= CURDATE() - INTERVAL 7 DAY) OR    "
-			+ "			                ( :interval = 'monthly' AND t.updateddate >= CURDATE() - INTERVAL 1 MONTH) OR    "
+			+ "			                ( :interval = 'daily' AND DATE(t.last_status_updateddate) = CURDATE()) OR    "
+			+ "			                ( :interval = 'weekly' AND t.last_status_updateddate >= CURDATE() - INTERVAL 7 DAY) OR    "
+			+ "			                ( :interval = 'monthly' AND t.last_status_updateddate >= CURDATE() - INTERVAL 1 MONTH) OR "
+			+ "                         ( :interval = 'yearly' AND t.last_status_updateddate >= CURDATE() - INTERVAL 1 YEAR ) OR  "
 			+ "			                ( :interval = 'all')    "
 			+ "			              )    "
 			+ "			          GROUP BY t.status    "
@@ -463,9 +464,10 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 			+ "                           OR (p.addedby <> :userId AND tau.tms_user_id = :userId) "
 			+ "                       )   and (:pid IS NULL OR p.pid = :pid) "
 			+ "			          AND (    "
-			+ "			                ( :interval = 'daily' AND DATE(ts.updateddate) = CURDATE()) OR    "
-			+ "			                ( :interval = 'weekly' AND ts.updateddate >= CURDATE() - INTERVAL 7 DAY) OR    "
-			+ "			                ( :interval = 'monthly' AND ts.updateddate >= CURDATE() - INTERVAL 1 MONTH) OR    "
+			+ "			                ( :interval = 'daily' AND DATE(ts.last_status_updateddate) = CURDATE()) OR    "
+			+ "			                ( :interval = 'weekly' AND ts.last_status_updateddate >= CURDATE() - INTERVAL 7 DAY) OR    "
+			+ "			                ( :interval = 'monthly' AND ts.last_status_updateddate >= CURDATE() - INTERVAL 1 MONTH) OR "
+			+ "                         ( :interval = 'yearly' AND ts.last_status_updateddate >= CURDATE() - INTERVAL 1 YEAR ) OR    "
 			+ "			                ( :interval = 'all')    "
 			+ "			              )    "
 			+ "			           GROUP BY ts.status    "
@@ -501,21 +503,24 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 			+ "ORDER BY month ",nativeQuery = true)
 	public List<TmsTaskCountData> getTaskCountByMonth(String Status);
 	
-	@Query(value = "select concat(tms.first_name,' ', COALESCE(tms.middle_name, ''),' ' ,tms.last_name) AS firstName ,"
-			+ "tms.position AS position ,"
-			+ " COUNT(tt.taskid) AS totalAssignedTasks, "
-			+ "    COUNT(CASE WHEN tt.status = 'In Progress' THEN 1 END) AS inProgressTaskCount, "
-			+ "    COUNT(CASE WHEN tt.status = 'Open' THEN 1 END) AS openTaskCount, "
-			+ "    COUNT(CASE WHEN tt.status = 'On Hold' THEN 1 END) AS onHoldTaskCount  ,   "
-			+ "    COUNT(CASE WHEN tt.status = 'Blocked' THEN 1 END) AS blockedTaskCount  ,  "
-			+ "    COUNT(CASE WHEN tt.status = 'To be Tested' THEN 1 END) AS toBeTestedTaskCount ,   "
-			+ "    COUNT(CASE WHEN tt.status = 'In Review' THEN 1 END) AS inReviewCount , "
-			+ "     COUNT(CASE WHEN tt.status = 'Closed' THEN 1 END) AS closedTaskCount , "
-			+ "     COUNT(CASE WHEN tt.status = 'Overdue' THEN 1 END) AS overDueTaskCount "
-			+ "from tms_task  tt join  tms_task_users tu on tt.taskid  = tu.taskid join  tms_assigned_users ttu  on tu.assignedto = ttu.assignid join tms_users  tms on tms.user_id = ttu.tms_user_id "
-			+ "where  (tms.added_by = :adminId or tms.user_id =:adminId)    GROUP BY  "
-			+ "    firstName,tms.position",nativeQuery = true )
-	public List<TmsTaskCountData> getUserTrackerByAdmin(Long adminId );
+	@Query(value = "  select Admin_id  from tms_users where user_id = :userId",nativeQuery = true)
+	 Long  AdminId (@Param("userId") Long userId);
+	
+//	@Query(value = "select concat(tms.first_name,' ', COALESCE(tms.middle_name, ''),' ' ,tms.last_name) AS firstName ,"
+//			+ "tms.position AS position ,"
+//			+ " COUNT(tt.taskid) AS totalAssignedTasks, "
+//			+ "    COUNT(CASE WHEN tt.status = 'In Progress' THEN 1 END) AS inProgressTaskCount, "
+//			+ "    COUNT(CASE WHEN tt.status = 'Open' THEN 1 END) AS openTaskCount, "
+//			+ "    COUNT(CASE WHEN tt.status = 'On Hold' THEN 1 END) AS onHoldTaskCount  ,   "
+//			+ "    COUNT(CASE WHEN tt.status = 'Blocked' THEN 1 END) AS blockedTaskCount  ,  "
+//			+ "    COUNT(CASE WHEN tt.status = 'To be Tested' THEN 1 END) AS toBeTestedTaskCount ,   "
+//			+ "    COUNT(CASE WHEN tt.status = 'In Review' THEN 1 END) AS inReviewCount , "
+//			+ "     COUNT(CASE WHEN tt.status = 'Closed' THEN 1 END) AS closedTaskCount , "
+//			+ "     COUNT(CASE WHEN tt.status = 'Overdue' THEN 1 END) AS overDueTaskCount "
+//			+ "from tms_task  tt join  tms_task_users tu on tt.taskid  = tu.taskid join  tms_assigned_users ttu  on tu.assignedto = ttu.assignid join tms_users  tms on tms.user_id = ttu.tms_user_id "
+//			+ "where  (tms.added_by = :adminId or tms.user_id =:adminId)    GROUP BY  "
+//			+ "    firstName,tms.position",nativeQuery = true )
+//	public List<TmsTaskCountData> getUserTrackerByAdmin(Long adminId );
 	
 	@Query(value = "select concat(tms.first_name,' ', COALESCE(tms.middle_name, ''),' ' ,tms.last_name)  AS firstName ,"
 			+ "tms.position AS position ,"
@@ -611,7 +616,7 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	@Query(value="select distinct p.pid, p.projectid ,p.projectname from tms_project p join tms_assigned_users au ON au.pid=p.pid where au.tms_user_id = :userId or p.addedby =:userId",nativeQuery =true)
 	public List<ProjectDropDownDTO> projectDropDownWithOutAdmin(@Param("userId") Long userId);
 	
-	@Query(value = "select addedby from tms_project ",nativeQuery = true)
+	@Query(value = "select Admin_id from tms_project ",nativeQuery = true)
 	public List<Long> getAddedBy();
 	
 	@Query(value = "select tr.rolename from tms_roles tr  join tms_users tu on tu.role_roleid = tr.roleid  where tu.user_id = :user_id",nativeQuery = true)
@@ -1621,15 +1626,163 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	        	    "ORDER BY STR_TO_DATE(SUBSTRING_INDEX(period, ' ', 1), '%d-%m-%Y'), " +
 	        	        	    "         FIELD(type, 'Task', 'Sub Task', 'Total')",
 	        	        	    nativeQuery = true)
-	        	        	List<CompletedStatusCountResponse> getWeeklyTaskStatsUser(
-	        	        	    @Param("fromDate") String fromDate,
-	        	        	    @Param("toDate") String toDate,
-	        	        	    @Param("userId") Long userId,
-	        	        	    @Param("pid") Long pid);
+	        	        	List<CompletedStatusCountResponse> getWeeklyTaskStatsUser(    @Param("fromDate") String fromDate, @Param("toDate") String toDate, @Param("userId") Long userId, @Param("pid") Long pid);
 
+	        	        @Query(value = "SELECT CONCAT(tms.first_name, ' ', COALESCE(tms.middle_name, ''), ' ', tms.last_name) AS firstName, " +
+	        	                "tms.position AS position, " +
 
+	        	                "COUNT(DISTINCT tt.taskid) + COUNT(DISTINCT tst.subtaskid) AS totalAssignedTasks, " +
 
-} 
+	        	                "SUM(CASE WHEN tt.status = 'In Progress' THEN 1 ELSE 0 END) + " +
+	        	                "SUM(CASE WHEN tst.status = 'In Progress' THEN 1 ELSE 0 END) AS inProgressTaskCount, " +
+
+	        	                "SUM(CASE WHEN tt.status = 'Closed' THEN 1 ELSE 0 END) + " +
+	        	                "SUM(CASE WHEN tst.status = 'Closed' THEN 1 ELSE 0 END) AS closedTaskCount, " +
+
+	        	                "SUM(CASE WHEN tt.status = 'Open' THEN 1 ELSE 0 END) + " +
+	        	                "SUM(CASE WHEN tst.status = 'Open' THEN 1 ELSE 0 END) AS openTaskCount, " +
+
+	        	                "SUM(CASE WHEN tt.status = 'On Hold' THEN 1 ELSE 0 END) + " +
+	        	                "SUM(CASE WHEN tst.status = 'On Hold' THEN 1 ELSE 0 END) AS onHoldTaskCount, " +
+
+	        	                "SUM(CASE WHEN tt.status = 'Blocked' THEN 1 ELSE 0 END) + " +
+	        	                "SUM(CASE WHEN tst.status = 'Blocked' THEN 1 ELSE 0 END) AS blockedTaskCount, " +
+
+	        	                "SUM(CASE WHEN tt.status = 'To be Tested' THEN 1 ELSE 0 END) + " +
+	        	                "SUM(CASE WHEN tst.status = 'To be Tested' THEN 1 ELSE 0 END) AS toBeTestedTaskCount, " +
+
+	        	                "SUM(CASE WHEN tt.status = 'In Review' THEN 1 ELSE 0 END) + " +
+	        	                "SUM(CASE WHEN tst.status = 'In Review' THEN 1 ELSE 0 END) AS inReviewCount, " +
+
+	        	                "SUM(CASE WHEN tt.status = 'Overdue' THEN 1 ELSE 0 END) + " +
+	        	                "SUM(CASE WHEN tst.status = 'Overdue' THEN 1 ELSE 0 END) AS overDueTaskCount " +
+
+	        	                "FROM tms_users tms " +
+
+	        	                "LEFT JOIN tms_assigned_users ttu " +
+	        	                "ON tms.user_id = ttu.tms_user_id " +
+
+	        	                "LEFT JOIN tms_task_users tu " +
+	        	                "ON ttu.assignid = tu.assignedto " +
+
+	        	                "LEFT JOIN tms_task tt " +
+	        	                "ON tu.taskid = tt.taskid " +
+	        	                "AND (:projectId IS NULL OR tt.pid = :projectId) " +
+	        	                "AND ( " +
+	        	                "    :interval IS NULL " +
+	        	                "    OR ( " +
+	        	                "        (:interval = 'daily' AND DATE(tt.last_status_updateddate) = CURRENT_DATE) " +
+	        	                "        OR (:interval = 'weekly' AND YEARWEEK(tt.last_status_updateddate, 1) = YEARWEEK(CURRENT_DATE, 1)) " +
+	        	                "        OR (:interval = 'monthly' AND YEAR(tt.last_status_updateddate) = YEAR(CURRENT_DATE) " +
+	        	                "                                 AND MONTH(tt.last_status_updateddate) = MONTH(CURRENT_DATE)) " +
+	        	                "        OR (:interval = 'yearly' AND YEAR(tt.last_status_updateddate) = YEAR(CURRENT_DATE)) " +
+	        	                "    ) " +
+	        	                ") " +
+
+	        	                "LEFT JOIN tms_sub_task tst " +
+	        	                "ON ttu.subtaskid = tst.subtaskid " +
+	        	                "AND EXISTS ( " +
+	        	                "    SELECT 1 " +
+	        	                "    FROM tms_task t " +
+	        	                "    WHERE t.taskid = tst.taskid " +
+	        	                "      AND (:projectId IS NULL OR t.pid = :projectId) " +
+	        	                ") " +
+	        	                "AND ( " +
+	        	                "    :interval IS NULL " +
+	        	                "    OR ( " +
+	        	                "        (:interval = 'daily' AND DATE(tst.last_status_updateddate) = CURRENT_DATE) " +
+	        	                "        OR (:interval = 'weekly' AND YEARWEEK(tst.last_status_updateddate, 1) = YEARWEEK(CURRENT_DATE, 1)) " +
+	        	                "        OR (:interval = 'monthly' AND YEAR(tst.last_status_updateddate) = YEAR(CURRENT_DATE) " +
+	        	                "                                      AND MONTH(tst.last_status_updateddate) = MONTH(CURRENT_DATE)) " +
+	        	                "        OR (:interval = 'yearly' AND YEAR(tst.last_status_updateddate) = YEAR(CURRENT_DATE)) " +
+	        	                "    ) " +
+	        	                ") " +
+
+	        	                "WHERE tms.admin_id = :adminId " +
+
+	        	                "GROUP BY firstName, tms.position", nativeQuery = true)
+	        	 List<TmsTaskCountData> getProjectUsersTaskStats( @Param("adminId") Long adminId, @Param("projectId") Long projectId,  @Param("interval") String interval);
+
+    
+	        	        @Query(value = 
+	        	        	    "SELECT " +
+	        	        	    "    CONCAT(tms.first_name, ' ', COALESCE(tms.middle_name, ''), ' ', tms.last_name) AS firstName, " +
+	        	        	    "    tms.position AS position, " +
+
+	        	        	    "    COUNT(DISTINCT tt.taskid) + COUNT(DISTINCT tst.subtaskid) AS totalAssignedTasks, " +
+
+	        	        	    "    SUM(CASE WHEN tt.status = 'In Progress' THEN 1 ELSE 0 END) + " +
+	        	        	    "    SUM(CASE WHEN tst.status = 'In Progress' THEN 1 ELSE 0 END) AS inProgressTaskCount, " +
+
+	        	        	    "    SUM(CASE WHEN tt.status = 'Closed' THEN 1 ELSE 0 END) + " +
+	        	        	    "    SUM(CASE WHEN tst.status = 'Closed' THEN 1 ELSE 0 END) AS closedTaskCount, " +
+
+	        	        	    "    SUM(CASE WHEN tt.status = 'Open' THEN 1 ELSE 0 END) + " +
+	        	        	    "    SUM(CASE WHEN tst.status = 'Open' THEN 1 ELSE 0 END) AS openTaskCount, " +
+
+	        	        	    "    SUM(CASE WHEN tt.status = 'On Hold' THEN 1 ELSE 0 END) + " +
+	        	        	    "    SUM(CASE WHEN tst.status = 'On Hold' THEN 1 ELSE 0 END) AS onHoldTaskCount, " +
+
+	        	        	    "    SUM(CASE WHEN tt.status = 'Blocked' THEN 1 ELSE 0 END) + " +
+	        	        	    "    SUM(CASE WHEN tst.status = 'Blocked' THEN 1 ELSE 0 END) AS blockedTaskCount, " +
+
+	        	        	    "    SUM(CASE WHEN tt.status = 'To be Tested' THEN 1 ELSE 0 END) + " +
+	        	        	    "    SUM(CASE WHEN tst.status = 'To be Tested' THEN 1 ELSE 0 END) AS toBeTestedTaskCount, " +
+
+	        	        	    "    SUM(CASE WHEN tt.status = 'In Review' THEN 1 ELSE 0 END) + " +
+	        	        	    "    SUM(CASE WHEN tst.status = 'In Review' THEN 1 ELSE 0 END) AS inReviewCount, " +
+
+	        	        	    "    SUM(CASE WHEN tt.status = 'Overdue' THEN 1 ELSE 0 END) + " +
+	        	        	    "    SUM(CASE WHEN tst.status = 'Overdue' THEN 1 ELSE 0 END) AS overDueTaskCount " +
+
+	        	        	    "FROM tms_users tms " +
+
+	        	        	    "LEFT JOIN tms_assigned_users ttu " +
+	        	        	    "    ON tms.user_id = ttu.tms_user_id " +
+
+	        	        	    "LEFT JOIN tms_task_users tu " +
+	        	        	    "    ON ttu.assignid = tu.assignedto " +
+
+	        	        	    "LEFT JOIN tms_task tt " +
+	        	        	    "    ON tu.taskid = tt.taskid " +
+	        	        	    "    AND (:projectId IS NULL OR tt.pid = :projectId) " +
+	        	        	    "    AND ( " +
+	        	        	    "        :interval IS NULL " +
+	        	        	    "        OR ( " +
+	        	        	    "            (:interval = 'daily' AND DATE(tt.last_status_updateddate) = CURRENT_DATE) " +
+	        	        	    "            OR (:interval = 'weekly' AND YEARWEEK(tt.last_status_updateddate, 1) = YEARWEEK(CURRENT_DATE, 1)) " +
+	        	        	    "            OR (:interval = 'monthly' AND YEAR(tt.last_status_updateddate) = YEAR(CURRENT_DATE) " +
+	        	        	    "                                        AND MONTH(tt.last_status_updateddate) = MONTH(CURRENT_DATE)) " +
+	        	        	    "            OR (:interval = 'yearly' AND YEAR(tt.last_status_updateddate) = YEAR(CURRENT_DATE)) " +
+	        	        	    "        ) " +
+	        	        	    "    ) " +
+
+	        	        	    "LEFT JOIN tms_sub_task tst " +
+	        	        	    "    ON ttu.subtaskid = tst.subtaskid " +
+	        	        	    "    AND EXISTS ( " +
+	        	        	    "        SELECT 1 " +
+	        	        	    "        FROM tms_task t " +
+	        	        	    "        WHERE t.taskid = tst.taskid " +
+	        	        	    "          AND (:projectId IS NULL OR t.pid = :projectId) " +
+	        	        	    "    ) " +
+	        	        	    "    AND ( " +
+	        	        	    "        :interval IS NULL " +
+	        	        	    "        OR ( " +
+	        	        	    "            (:interval = 'daily' AND DATE(tst.last_status_updateddate) = CURRENT_DATE) " +
+	        	        	    "            OR (:interval = 'weekly' AND YEARWEEK(tst.last_status_updateddate, 1) = YEARWEEK(CURRENT_DATE, 1)) " +
+	        	        	    "            OR (:interval = 'monthly' AND YEAR(tst.last_status_updateddate) = YEAR(CURRENT_DATE) " +
+	        	        	    "                                          AND MONTH(tst.last_status_updateddate) = MONTH(CURRENT_DATE)) " +
+	        	        	    "            OR (:interval = 'yearly' AND YEAR(tst.last_status_updateddate) = YEAR(CURRENT_DATE)) " +
+	        	        	    "        ) " +
+	        	        	    "    ) " +
+
+	        	        	    "WHERE tms.user_id = :userId " +
+
+	        	        	    "GROUP BY firstName, tms.position",
+	        	        	    nativeQuery = true)
+	        	        	List<TmsTaskCountData> getTeamMemberTaskStats(@Param("userId") Long userId, @Param("projectId") Long projectId,@Param("interval") String interval);
+
+}   
 
 	
 

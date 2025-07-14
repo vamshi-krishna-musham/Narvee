@@ -141,6 +141,10 @@ public class ProjectController {
 			 try {
 				return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", " Project updated successfully",projectservice.updateprojectTms(project,projectFile)),
 						HttpStatus.OK);
+			 } catch (RuntimeException ex) {
+			        logger.error("Validation error while updating project: {}", ex.getMessage());
+			        return ResponseEntity.status(HttpStatus.OK)
+			                .body(new RestAPIResponse("fail", ex.getMessage(), null));
 			} catch(Exception e) {
 				return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("fail", "Project updation failed  ",e), HttpStatus.OK);
 			}

@@ -14,7 +14,7 @@ public interface ProjectDTO {
 
 	public String getAddedby();
 	
-	public String getAddedByName();
+	public String getaddedByFullname();
 	
 	public String getStatus();
 
