@@ -675,7 +675,7 @@ public class TaskServiceImpl implements TaskService {
 				TasksResponseDTO result = new TasksResponseDTO(order);
 
 				List<GetUsersDTO> assignUsers = taskRepo.getTmsAssignUsers(order.getTaskid());
-
+   
 				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
 						.collect(Collectors.toList());
 				result.setAssignUsers(filteredAssignUsers);

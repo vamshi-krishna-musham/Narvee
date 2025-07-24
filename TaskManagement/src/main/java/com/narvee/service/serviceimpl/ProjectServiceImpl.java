@@ -476,6 +476,8 @@ public class ProjectServiceImpl implements ProjectService {
 									GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
 									if (user != null) {
 										assignUser.setFullname(user.getFullname());
+										assignUser.setEmail(user.getEmail());
+										assignUser.setUserProfile(user.getProfile());
 
 									}
 									return assignUser;
@@ -501,6 +503,8 @@ public class ProjectServiceImpl implements ProjectService {
 									GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
 									if (user != null) {
 										assignUser.setFullname(user.getFullname());
+										assignUser.setEmail(user.getEmail());
+										assignUser.setUserProfile(user.getProfile());
 
 									}
 									return assignUser;
