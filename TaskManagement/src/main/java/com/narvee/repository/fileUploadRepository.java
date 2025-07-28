@@ -21,7 +21,18 @@ public interface fileUploadRepository extends JpaRepository<TmsFileUpload, Long>
 	
 	@Query("SELECT f FROM TmsFileUpload f WHERE f.subtask.subTaskId = :subTaskId")
 	List<TmsFileUpload> getFilesBySubTaskId(@Param("subTaskId") Long subtaskid);
+	
 
+     @Query(value = "select id,sub_task_id,task_id,file_name ,file_type ,file_path ,pid from tms_file_upload where pid = :pid",nativeQuery = true)
+     List<TmsFileUpload> getProjectFiles(Long pid);
+     
+     @Query(value = "select id,sub_task_id,pid,file_name ,file_type ,file_path ,task_id from tms_file_upload where task_id  = :taskId",nativeQuery = true)
+     List<TmsFileUpload> getTaskFile(Long taskId);
+     
+     @Query(value = "select id,sub_task_id,pid,task_id,file_name ,file_type ,file_path ,sub_task_id from tms_file_upload where sub_task_id  = :subTaskId",nativeQuery = true)
+     List<TmsFileUpload> getSubTaskFile(Long subTaskId);
+     
+     
 	public TmsFileUpload findByFileNameAndSubtask(String fileName, TmsSubTask updatesubtask);
 	
 	public TmsFileUpload findByFileNameAndTask(String fileName, TmsTask updatesubtask);
