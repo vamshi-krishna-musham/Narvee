@@ -234,9 +234,11 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			"       SELECT "
 			+ "			  t.taskid,  "
 			+ "			    NULL AS fullname, "
-			+ "			   NULL AS email,\r\n"
+			+ "			    NULL AS email, "
+			+ "             NULL AS profile  ,   "
 			+ "			    concat(creator.first_name,' ',COALESCE(creator.middle_name, ''),' ',creator.last_name)  as cfullname ,"
-			+ "			  creator.email as cemail "
+			+ "			    creator.email as cemail, "
+			+ "             creator.profile_photo as cprofile   "
 			+ "			FROM tms_task t\r\n"
 			+ "			JOIN tms_users creator ON t.addedby = creator.user_id  "
 			+ "			WHERE t.taskid = :taskId "
@@ -247,8 +249,10 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			+ "			    t.taskid,  "
 			+ "		   concat(u.first_name,' ',COALESCE(u.middle_name, ''),' ',u.last_name) AS full_name  , "
 			+ "			    u.email, "
+			+ "             u.profile_photo AS profile ,   "
 			+ "			   NULL AS fullname,  "
-			+ "			  NULL AS email  "
+			+ "			   NULL AS email ,"
+			+ "            NULL AS profile   "
 			+ "			FROM tms_task t  "
 			+ "			JOIN tms_task_users tu ON t.taskid = tu.taskid  "
 			+ "			JOIN tms_assigned_users au ON tu.assignedto = au.assignid  "
@@ -257,7 +261,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	public List<GetUsersDTO> getTmsAssignUsers(Long taskId);
 	
 	
-	@Query(value = " select concat(u.first_name,' ', COALESCE(u.middle_name, ''),' ',u.last_name) AS fullname ,u.email from tms_users u where u.user_id = :userid ", nativeQuery = true)
+	@Query(value = " select concat(u.first_name,' ', COALESCE(u.middle_name, ''),' ',u.last_name) AS fullname ,u.email ,u.profile_photo  AS profile from tms_users u where u.user_id = :userid ", nativeQuery = true)
 	public GetUsersDTO gettmsUser(Long userid);
 	
 	@Query(value = "select ad.full_name as createdby, t.ticketid, u.full_name, t.createddate, t.targetdate,au.userstatus as  status from tms_task t\r\n"
