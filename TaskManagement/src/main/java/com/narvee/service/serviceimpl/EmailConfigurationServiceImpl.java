@@ -71,7 +71,7 @@ public class EmailConfigurationServiceImpl implements EmailConfigurationService{
 	public TmsEmailConfiguration updateEmailConfiguration(TmsEmailConfigurationDto dto) {
 
 	    Optional<TmsEmailConfiguration> optional = emailConfigRepo.findById(dto.getId());
-	    if (optional.isEmpty()) {
+	    if (!optional.isPresent()) {
 	        throw new RuntimeException("Configuration not found for adminId " + dto.getAdminId()
 	            + " and type " + dto.getEmailNotificationType());
 	    }
