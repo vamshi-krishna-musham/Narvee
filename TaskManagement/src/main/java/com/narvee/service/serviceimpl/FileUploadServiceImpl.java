@@ -8,6 +8,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -105,15 +107,30 @@ public class FileUploadServiceImpl implements FileUploadService {
 	                } else {
 	                    referenceId = "general";
 	                }
+//
+//	                String newFileName = nameWithoutExt + "-" + referenceId + ext;
+//	                Path filePath = Paths.get(UPLOAD_DIR, newFileName);
+//	                Files.write(filePath, file.getBytes());
+	                
+	                // Base file name with ID
+	    	        String baseFileName = nameWithoutExt + "-" + referenceId;
+	    	        String newFileName = baseFileName + ext;
+	    	        Path newPath = Paths.get(UPLOAD_DIR, newFileName);
+	    	        int count = 1;
 
-	                String newFileName = nameWithoutExt + "-" + referenceId + ext;
-	                Path filePath = Paths.get(UPLOAD_DIR, newFileName);
-	                Files.write(filePath, file.getBytes());
+	    	        // Check for duplicates and add (1), (2), etc.
+	    	        while (Files.exists(newPath)) {
+	    	            newFileName = baseFileName + " (" + count + ")" + ext;
+	    	            newPath = Paths.get(UPLOAD_DIR, newFileName);
+	    	            count++;
+	    	        }
 
+	    	        
+	    	        Files.write(newPath, file.getBytes());
 	                // Prepare entity
 	                TmsFileUpload entity = new TmsFileUpload();
 	                entity.setFileName(newFileName);
-	                entity.setFilePath(filePath.toAbsolutePath().toString());
+	                entity.setFilePath(newPath.toAbsolutePath().toString());
 	                entity.setFileType(file.getContentType());
 	                entity.setProject(project);
 	                entity.setTask(task);
@@ -177,7 +194,7 @@ public class FileUploadServiceImpl implements FileUploadService {
 	            refId = "project-" + fileRecord.getProject().getProjectid();
 	        }
 
-	        String newFileName = nameWithoutExt + "-" + refId + "-" + System.currentTimeMillis() + ext;
+	        String newFileName = nameWithoutExt + "-" + refId + ext;
 	        Path newPath = Paths.get(UPLOAD_DIR, newFileName);
 
 	        // Save new file
@@ -187,8 +204,11 @@ public class FileUploadServiceImpl implements FileUploadService {
 	        fileRecord.setFileName(newFileName);
 	        fileRecord.setFilePath(newPath.toAbsolutePath().toString());
 	        fileRecord.setFileType(newFile.getContentType());
+	        
+	  
 
 	        fileUploadRepository.save(fileRecord);
+
 
 	        // Build DTO
 	        FileUploadDto dto = new FileUploadDto();
@@ -241,7 +261,27 @@ public class FileUploadServiceImpl implements FileUploadService {
 
 		    return uploads.stream().map(file -> {
 		        FileUploadDto dto = new FileUploadDto();
-		        dto.setFileName(file.getFileName());
+		        
+		        String savedFileName = file.getFileName(); 
+	
+		        String extension = savedFileName.substring(savedFileName.lastIndexOf("."));
+		        Pattern pattern = Pattern.compile("^(.*?)-(task|project|subtask)-[A-Za-z0-9]+(?: \\((\\d+)\\))?\\.[^.]+$");
+		        Matcher matcher = pattern.matcher(savedFileName);
+
+		        String originalName;
+		        if (matcher.find()) {
+		            String baseName = matcher.group(1);              
+		            String copySuffix = matcher.group(3);           
+		            originalName = baseName + (copySuffix != null ? " (" + copySuffix + ")" : "") + extension;
+		        } else {
+		            originalName = savedFileName; // fallback
+		        }
+
+		      
+		        dto.setFileName(originalName);
+
+
+		        //dto.setFileName(file.getFileName());
 		        dto.setId(file.getId());
 		        dto.setFilePath(file.getFilePath());
 		        dto.setFileType(file.getFileType());
