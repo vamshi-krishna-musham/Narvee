@@ -40,7 +40,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 
 	@Modifying
 	@Transactional
-	@Query(value = "UPDATE tms_sub_task SET status=:status , updatedby=:updatedby, updateddate = :updateddate WHERE subtaskid =:subTaskId ", nativeQuery = true)
+	@Query(value = "UPDATE tms_sub_task SET status=:status , updatedby=:updatedby, last_status_updateddate = :updateddate WHERE subtaskid =:subTaskId ", nativeQuery = true)
 	public int updateTaskStatus(@Param("subTaskId") Long subTaskId, @Param("status") String status,
 			@Param("updatedby") Long updatedby, LocalDateTime updateddate);
 
@@ -68,17 +68,39 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	
 	//----------------------------tms   replicated methods --------------sta
 	@Query(value = "select st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.target_date,st.addedby,st.duration,DATE(st.createddate) AS createddate ,st.priority,st.status, "
-			+ " st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname  , st.start_date "
-			+ "        from tms_sub_task  st join tms_task t where st.taskid =t.taskid and t.ticketid = :ticketId Order by t.updateddate DESC ", nativeQuery = true)
+			+ " st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname  , st.start_date,"
+			+ " CONCAT( "
+			+ "        COALESCE(u1.first_name, u2.first_name), ' ', "
+			+ "        COALESCE(u1.middle_name, u2.middle_name, ''), ' ', "
+			+ "        COALESCE(u1.last_name, u2.last_name) "
+			+ "    ) AS fullname "
+			+ "        from tms_sub_task st JOIN tms_task t ON st.taskid = t.taskid "
+			+ "        LEFT JOIN tms_users u1 ON st.updatedby = u1.user_id "
+			+ "        LEFT JOIN tms_users u2 ON st.addedby = u2.user_id "
+			+ "        WHERE t.ticketid = :ticketId  "
+			+ " ", nativeQuery = true)
 	public Page<TaskTrackerDTO> findSubTaskByTicketid(@Param("ticketId") String ticketId,Pageable pageable);
 	
 	
 	
-	@Query(value = "SELECT  st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.targetdate,st.addedby,st.duration,DATE(st.createddate) AS createddate ,"
-			+ "  st.priority,st.status,st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname , t.start_date "
-			+ "FROM  tms_sub_task  st join tms_task t where st.taskid = t.taskid and t.ticketid = :ticketId AND ( st.subtaskid LIKE CONCAT('%',:keyword, '%') OR "
-			+ "  st.subtaskdescription LIKE CONCAT('%',:keyword, '%') OR st.subtaskname LIKE CONCAT('%',:keyword,  '%') OR DATE_FORMAT(t.targetdate, '%Y-%m-%d') LIKE CONCAT('%',:keyword,  '%')  OR DATE_FORMAT(t.start_date, '%Y-%m-%d')_date LIKE CONCAT('%',:keyword,  '%') "
-			+ "OR st.status LIKE CONCAT('%',:keyword, '%') OR st.priority LIKE CONCAT('%',:keyword, '%') OR st.duration LIKE CONCAT('%',:keyword, '%') OR st.taskid LIKE CONCAT('%',:keyword, '%'))", nativeQuery = true)
+	@Query(value = "SELECT  st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.target_date,st.addedby,st.duration,DATE(st.createddate) AS createddate ,"
+			+ "  st.priority,st.status,st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname , st.start_date ,"
+			+ "CONCAT( "
+			+ "			       COALESCE(u1.first_name, u2.first_name), ' ', "
+			+ "			       COALESCE(u1.middle_name, u2.middle_name, ''), ' ', "
+			+ "			       COALESCE(u1.last_name, u2.last_name)  "
+			+ "			       ) AS fullname "
+			+ "         from tms_sub_task st JOIN tms_task t ON st.taskid = t.taskid "
+			+ "         LEFT JOIN tms_users u1 ON st.updatedby = u1.user_id "
+			+ "         LEFT JOIN tms_users u2 ON st.addedby = u2.user_id "
+			+ "          WHERE t.ticketid = :ticketId  AND ( "
+			+ "   st.subtaskname LIKE CONCAT('%',:keyword,  '%') OR DATE_FORMAT(st.target_date, '%Y-%m-%d') LIKE CONCAT('%',:keyword,  '%')  OR DATE_FORMAT(st.start_date, '%Y-%m-%d') LIKE CONCAT('%',:keyword, '%') "
+			+ " OR st.status LIKE CONCAT('%',:keyword, '%') OR st.priority LIKE CONCAT('%',:keyword, '%') OR st.duration LIKE CONCAT('%',:keyword,  '%') "
+			+ " OR    CONCAT( "
+			+ "            COALESCE(u1.first_name, u2.first_name), ' ', "
+			+ "            COALESCE(u1.middle_name, u2.middle_name, ''), ' ', "
+			+ "            COALESCE(u1.last_name, u2.last_name) "
+			+ "        ) LIKE CONCAT('%', :keyword, '%') )", nativeQuery = true)
 	public Page<TaskTrackerDTO> findSubTaskByTicketIdWithSearching(@Param("ticketId") String ticketId,
 			@Param("keyword") String keyword,Pageable pageable);
 	
@@ -86,7 +108,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 			+ "			    st.subtaskid,  \r\n"
 			+ "			    NULL AS fullname,   \r\n"
 			+ "			    NULL AS email,   \r\n"
-			+ "			    creator.full_name as cfullname ,  \r\n"
+			+ "			   concat(creator.first_name,' ',COALESCE(creator.middle_name, ''),' ',creator.last_name)  as cfullname ,  \r\n"
 			+ "			    creator.email as cemail   \r\n"
 			+ "			FROM tms_sub_task st  \r\n"
 			+ "			JOIN tms_users creator ON st.addedby = creator.user_id    \r\n"
@@ -96,7 +118,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 			+ "			  \r\n"
 			+ "			SELECT   \r\n"
 			+ "			    st.subtaskid,   \r\n"
-			+ "			    u.full_name ,   \r\n"
+			+ "			    concat(u.first_name,' ',COALESCE(u.middle_name, ''),' ',u.last_name) AS full_name  ,   \r\n"
 			+ "			    u.email,   \r\n"
 			+ "			    NULL AS fullname,   \r\n"
 			+ "			    NULL AS email  \r\n"
@@ -106,4 +128,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 			+ "			JOIN tms_users u ON au.tms_user_id = u.user_id    \r\n"
 			+ "			WHERE st.subtaskid = :subtaskid ", nativeQuery = true)
 	public List<GetUsersDTO> getSubtaskAssignUsersTms(Long subtaskid);
+	
+	@Query(value = "select subtaskname from tms_sub_task where subtaskid = :subTaskId",nativeQuery = true)
+	public String getSubTaskName(Long subTaskId);
 }

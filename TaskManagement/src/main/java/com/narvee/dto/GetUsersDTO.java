@@ -1,5 +1,6 @@
 package com.narvee.dto;
 
+
 public interface GetUsersDTO {
 	
 	public Long getUserid();
@@ -17,7 +18,4 @@ public interface GetUsersDTO {
 	public String getTarget_date();
 	
 	
-	
-	
-
 }

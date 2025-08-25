@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -28,6 +29,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.narvee.dto.EmailConfigResponseDto;
 import com.narvee.dto.FileUploadDto;
 import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.RequestDTO;
@@ -42,6 +44,7 @@ import com.narvee.entity.TmsAssignedUsers;
 import com.narvee.entity.TmsFileUpload;
 import com.narvee.entity.TmsSubTask;
 import com.narvee.entity.TmsTicketTracker;
+import com.narvee.repository.ProjectRepository;
 import com.narvee.repository.SubTaskRepository;
 import com.narvee.repository.TaskRepository;
 import com.narvee.repository.fileUploadRepository;
@@ -57,9 +60,16 @@ public class SubTaskServiceImpl implements SubTaskService {
 
 	@Autowired
 	private EmailServiceImpl emailService;
+	
+	@Autowired
+	private TmsEmailServiceImpl tmsEmailService;
 
 	@Autowired
 	private TaskRepository repository;
+	
+	@Autowired
+	private ProjectRepository projectRepository;
+
 	
 	@Autowired
     private fileUploadRepository fileUploadRepository;
@@ -208,6 +218,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 			order.setTaskId(order.getTask().getTaskid());
 			for (TmsAssignedUsers assignUsers : order.getAssignedto()) {
 				GetUsersDTO user = repository.gettmsUser(assignUsers.getTmsUserId());
+				
 				assignUsers.setFullname(user.getFullname());
 			//	assignUsers.setPseudoname(user.getPseudoname());
 			}
@@ -300,10 +311,13 @@ public class SubTaskServiceImpl implements SubTaskService {
 		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
 				.collect(Collectors.toList());
 		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(subtask.getAddedby(), usersids);
+		
+		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
+		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
+		subtask.setLastStatusUpdateddate(indiaDateTime);
+		
 		TmsSubTask subtasks = subtaskrepository.save(subtask);
  
-	 
-
 		  if (files != null && !files.isEmpty()) {
 		        List<TmsFileUpload> taskFiles = new ArrayList<>();
 		        
@@ -343,7 +357,20 @@ public class SubTaskServiceImpl implements SubTaskService {
 		        fileUploadRepository.saveAll(taskFiles);
 		    }
 		try {
-			emailService.sendCreateSubTaskEmail(subtasks, user,true);
+			Long adminId =	projectRepository.getAdminId(subtask.getTaskId());
+			EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "SUBTASK_CREATE");
+			if(dto != null) {
+			System.err.println("is enable  " + dto.getIsEnabled());
+			if (Boolean.TRUE.equals(dto.getIsEnabled())) {
+				String subject = dto.getSubject();
+				List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
+						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+
+				List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
+						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+			tmsEmailService.sendCreateSubTaskEmail(subtasks, user,true,subject,ccList,bccList);
+			}
+		}
 		} catch (UnsupportedEncodingException | MessagingException e) {
 			e.printStackTrace();
 		}
@@ -365,7 +392,9 @@ public class SubTaskServiceImpl implements SubTaskService {
 		    subtask.setAddedby(updatesubtask.getAddedby());
 		    subtask.setUpdatedBy(updatesubtask.getUpdatedBy());
 		    subtask.setStatus(updatesubtask.getStatus());
+		    subtask.setPriority(updatesubtask.getPriority());
 		    subtask.setTargetDate(updatesubtask.getTargetDate());
+		    subtask.setStartDate(updatesubtask.getStartDate());
 		    subtask.setAssignedto(updatesubtask.getAssignedto());
 		    subtask.setSubTaskDescription(updatesubtask.getSubTaskDescription());
 		    subtask.setStartDate(updatesubtask.getStartDate());
@@ -417,7 +446,20 @@ public class SubTaskServiceImpl implements SubTaskService {
 			TmsSubTask subtasks = subtaskrepository.save(subtask);
 	 
 			try {
-				emailService.sendCreateSubTaskEmail(subtasks, user,false);
+			Long adminId =	projectRepository.getAdminId(subtask.getTaskId());
+				EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "SUBTASK_UPDATE");
+				if(dto != null) {
+				System.err.println("is enable  " + dto.getIsEnabled());
+				if (Boolean.TRUE.equals(dto.getIsEnabled())) {
+					String subject = dto.getSubject();
+					List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
+							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+
+					List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
+							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+				tmsEmailService.sendCreateSubTaskEmail(subtasks, user,false,subject,ccList,bccList);
+				}
+			}
 			} catch (UnsupportedEncodingException | MessagingException e) {
 				e.printStackTrace();
 			}
@@ -507,7 +549,20 @@ public class SubTaskServiceImpl implements SubTaskService {
 		try {
 			subtaskrepository.updateTaskStatus(subTaskId, staus, updatedby, indiaDateTime);
 			TmsSubTask subtasks = subtaskrepository.findById(subTaskId).get();
-			emailService.sendSubtaskEmailTms(subtasks);
+			
+			Long adminId =	projectRepository.getAdminId(subTaskId);
+			EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "SUBTASK_STATUS");
+			if(dto != null) {
+			if (Boolean.TRUE.equals(dto.getIsEnabled())) {
+				String subject = dto.getSubject();
+				List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
+						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+
+				List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
+						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+			tmsEmailService.sendSubtaskStatusUpdateEmailTms(subtasks,subject,ccList,bccList);
+			}
+		}
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		} catch (MessagingException e) {
@@ -537,10 +592,14 @@ public class SubTaskServiceImpl implements SubTaskService {
 			sortfield = "subTaskDescription";
 		else if (sortfield.equalsIgnoreCase("status"))
 			sortfield = "status";
-		else if (sortfield.equalsIgnoreCase("targetDate"))
-			sortfield = "targetDate";
+		else if (sortfield.equalsIgnoreCase("DueDate"))
+			sortfield = "target_date";
 		else if (sortfield.equalsIgnoreCase("startDate"))
-			sortfield = "startDate";
+			sortfield = "start_date";
+		else if (sortfield.equalsIgnoreCase("priority"))
+			sortfield = "priority";
+		else if (sortfield.equalsIgnoreCase("duration"))
+			sortfield = "duration";
 		else
 			sortfield = "updateddate";
 		
@@ -597,7 +656,9 @@ public class SubTaskServiceImpl implements SubTaskService {
 			for (TaskTrackerDTO order : res) {
 				SubTaskResponseDTO result = new SubTaskResponseDTO(order);
 				List<GetUsersDTO> assignUsers = subtaskrepository.getSubtaskAssignUsersTms(order.getSubtaskid());
-				result.setAssignUsers(assignUsers);
+				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
+						.collect(Collectors.toList());
+				result.setAssignUsers(filteredAssignUsers);
 				
 				  List<TmsFileUpload> fileEntities = fileUploadRepository.getFilesBySubTaskId(order.getSubtaskid()); // Implement this
 				    List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
@@ -640,7 +701,19 @@ logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskTrac
 			
 			
 			try {
-				emailService.sendTmsCommentEmail(updateTask);
+				Long adminId =	projectRepository.getAdminId(updateTask.getTaskid());
+				EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "SUBTASK_COMMENT");
+				if(dto != null) {
+				if (Boolean.TRUE.equals(dto.getIsEnabled())) {
+					String subject = dto.getSubject();
+					List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
+							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+
+					List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
+							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+					tmsEmailService.sendTmsCommentEmail(updateTask,false,subject,ccList,bccList);
+				}
+			}
 			} catch (MessagingException | UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}

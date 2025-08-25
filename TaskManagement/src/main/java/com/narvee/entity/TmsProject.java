@@ -47,6 +47,7 @@ public class TmsProject extends AuditModel {
 	private String projectName;
 	@Column(name ="addedby" )
 	private Long addedBy;
+	private Long adminId;
 	@Column(name ="updatedby")
 	private Long updatedBy;
 	private Long pmaxnum;
@@ -63,8 +64,8 @@ public class TmsProject extends AuditModel {
 
 	private String department;
 	
-	@OneToMany(cascade = CascadeType.ALL)
 	@JsonManagedReference
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)	
 	@JoinColumn(name = "pid")
     private List<TmsTask> tasks = new ArrayList<>();
 	

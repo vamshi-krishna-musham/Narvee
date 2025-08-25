@@ -208,7 +208,7 @@ public class TaskController {
 	public ResponseEntity<RestAPIResponse> getProjectUsers(@PathVariable String projectId) {
 		logger.info("!!! inside class: TaskController , !! method: getProjectUsers");
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success",
-				"fetched by deparatmentWise users successfully", service.getProjectUsers(projectId)),
+				"fetched by Project Wise users successfully", service.getProjectUsers(projectId)),
 				HttpStatus.OK);
 	}
 	
@@ -221,7 +221,7 @@ public class TaskController {
 		    
 		logger.info("!!! inside class: TaskController , !! method: createTmsTask");
 		return new ResponseEntity<RestAPIResponse>(
-				new RestAPIResponse("success", " task created successfully", service.createTmsTask(task, token,taskFile)),
+				new RestAPIResponse("success", " Task added successfully", service.createTmsTask(task, token,taskFile)),
 				HttpStatus.CREATED);
 	}
 	
@@ -229,8 +229,13 @@ public class TaskController {
 	public ResponseEntity<?> updateTmsTask(@RequestPart("task") String tmsTask, @RequestPart(value = "files",required = false) List<MultipartFile> taskFile) throws IOException {
 		logger.info("!!! inside class: TaskController , !! method: updateTmsTask");
 		TmsTask task = mapper.readValue(tmsTask, TmsTask.class);
+		try {
 		return new ResponseEntity<RestAPIResponse>(
-				new RestAPIResponse("success", " task Updated successfully", service.Tmsupdate(task,taskFile)), HttpStatus.CREATED);
+				new RestAPIResponse("success", " Task Updated successfully", service.Tmsupdate(task,taskFile)), HttpStatus.CREATED);
+	}catch (RuntimeException e) {
+		  return ResponseEntity.status(HttpStatus.OK)
+	                .body(new RestAPIResponse("fail", e.getMessage(), null));
+	    }	
 	}
 	
 	@RequestMapping(value = "/tasksByProjectId-tms", method = RequestMethod.POST, produces = "application/json")
@@ -272,7 +277,7 @@ public class TaskController {
 					HttpStatus.OK);
 
 		} catch (Exception e) {
-			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("failed", "Cannot delete this Task because it has associated Sub-Task."),
+			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("failed", "Cannot delete this task because it has associated sub-tasks"),
 					HttpStatus.OK);
 		}
 
@@ -285,11 +290,11 @@ public class TaskController {
 		logger.info("!!! inside class: TaskController , !! method: deletetmsTaskById-tms");
 		try {
 			service.deleteTmsTaskFileIpload(fileId);
-			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "deleted successfully"),
+			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", " File deleted successfully"),
 					HttpStatus.OK);
 
 		} catch (Exception e) {
-			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("failed", "Cannot delete this Task because it has associated Sub-Task."),
+			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("failed", "File Cannot be deleted"),
 					HttpStatus.OK);
 		}
 
@@ -339,7 +344,12 @@ public class TaskController {
 	@RequestMapping(value = "/updateTmsTaskStatus/{taskid}/{status}/{updatedby}", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<RestAPIResponse> updateTmsTaskStatus(@PathVariable Long taskid, @PathVariable String status,@PathVariable Long updatedby) {
 		logger.info("!!! inside class: TaskController , !! method: updateTmsTaskStatus--tms");
-		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Updated status  successfully",
+		try {
+		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Status updated  successfully",
 				service.updateTmsTaskStatus(taskid, status,updatedby)), HttpStatus.OK);
+	}catch (RuntimeException e) {
+		  return ResponseEntity.status(HttpStatus.OK)
+	                .body(new RestAPIResponse("fail", e.getMessage(), null));
+	    }	
 	}
 }
