@@ -16,6 +16,8 @@ public interface GetUsersDTO {
 	public String getCemail();
 	public String getStart_date();
 	public String getTarget_date();
-	
+	public byte[] getProfile();
+	public byte[] getpCprofile();
+ 	
 	
 }
