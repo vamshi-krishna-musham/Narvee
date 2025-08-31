@@ -1,0 +1,313 @@
+<div class="background-container">
+  <mat-card [ngClass]="activeTabIndex === 1 ? 'form-card signup-width' : 'form-card signin-width'">
+    <h2 class="title">Task Management</h2>
+
+    <mat-tab-group *ngIf="!showOtpVerification" #tabGroup (selectedTabChange)="onTabChange($event)">
+      <!-- Sign In Tab -->
+      <mat-tab label="Sign In">
+        <form [formGroup]="loginForm">
+          <!-- Email Field -->
+          <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" placeholder="Enter your email" formControlName="email" />
+            <mat-error *ngIf="loginForm.get('email')?.hasError('required')">Please Enter Your Email</mat-error>
+            <mat-error
+              *ngIf="(loginForm.get('email')?.hasError('email') || loginForm.get('email')?.hasError('pattern')) && loginForm.get('email')?.touched">
+              Enter a valid email address.
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Password Field -->
+          <!-- <mat-form-field appearance="fill" class="form-field">
+            <mat-label>Password</mat-label>
+            <input matInput [type]="hideLoginPassword ? 'password' : 'text'" placeholder="Enter your password"
+              formControlName="password" />
+            <mat-error *ngIf="loginForm.get('password')?.hasError('required')">Please Enter Your password</mat-error>
+
+            <button type="button" mat-icon-button matSuffix (click)="hideLoginPassword = !hideLoginPassword">
+              <mat-icon>{{ hideLoginPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </mat-form-field> -->
+
+          <!-- Forgot Password Link -->
+          <!-- <div class="forgotpassword">
+            <a href="javascript:void(0)" style="color: #3f51b5; text-decoration: none;" (click)="onForgotPassword()">
+              Forgot Password?
+            </a>
+          </div> -->
+
+          <!-- Login Button -->
+          <!-- Spinner shown while loading -->
+          <!-- Fullscreen centered loader -->
+          <div *ngIf="loadingResendOtp" class="fullscreen-loader">
+            <mat-progress-spinner diameter="50" mode="indeterminate" color="accent">
+            </mat-progress-spinner>
+          </div>
+
+          <!-- Login button (hidden while loading) -->
+          <button *ngIf="!loadingResendOtp" mat-raised-button color="primary" class="register-btn" (click)="login()">
+            Login
+          </button>
+
+
+        </form>
+
+      </mat-tab>
+
+      <!-- Sign Up Tab -->
+      <mat-tab label="Sign Up">
+        <form [formGroup]="registerForm">
+          <!-- Step 1 -->
+          <div *ngIf="registerStep === 1">
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>First Name</mat-label>
+              <input matInput formControlName="firstName" required placeholder="Enter your FirstName" />
+              <mat-error *ngIf="registerForm.get('firstName')?.hasError('required')">
+                Please Enter First Name
+              </mat-error>
+              <mat-error *ngIf="registerForm.get('firstName')?.hasError('whitespace')">
+                Leading/trailing or only whitespace is not allowed
+              </mat-error>
+
+              <mat-error *ngIf="registerForm.get('firstName')?.hasError('invalidChars')">
+                Only letters are allowed
+              </mat-error>
+              <mat-error
+                *ngIf="registerForm.get('firstName')?.hasError('minlength') && registerForm.get('firstName')?.touched">
+                Minimum 2 characters required
+              </mat-error>
+
+              <mat-error
+                *ngIf="registerForm.get('firstName')?.hasError('maxlength') && registerForm.get('firstName')?.touched">
+                Maximum 30 characters allowed
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Middle Name</mat-label>
+              <input matInput formControlName="middleName" placeholder="Enter your Middle Name" />
+              <mat-error *ngIf="registerForm.get('middleName')?.hasError('whitespace')">
+                Leading/trailing or only whitespace is not allowed
+              </mat-error>
+
+              <mat-error *ngIf="registerForm.get('middleName')?.hasError('invalidChars')">
+                Only letters are allowed
+              </mat-error>
+              <mat-error
+                *ngIf="registerForm.get('middleName')?.hasError('minlength') && registerForm.get('middleName')?.touched">
+                Minimum 2 characters required
+              </mat-error>
+
+              <mat-error
+                *ngIf="registerForm.get('middleName')?.hasError('maxlength') && registerForm.get('middleName')?.touched">
+                Maximum 30 characters allowed
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Last Name</mat-label>
+              <input matInput formControlName="lastName" required placeholder="Enter your Last Name" />
+              <mat-error *ngIf="registerForm.get('lastName')?.hasError('required')">
+                Please Enter Last Name
+              </mat-error>
+              <mat-error *ngIf="registerForm.get('lastName')?.hasError('whitespace')">
+                Leading/trailing or only whitespace is not allowed
+              </mat-error>
+
+              <mat-error *ngIf="registerForm.get('lastName')?.hasError('invalidChars')">
+                Only letters and spaces are allowed
+              </mat-error>
+              <mat-error
+                *ngIf="registerForm.get('lastName')?.hasError('minlength') && registerForm.get('lastName')?.touched">
+                Minimum 2 characters required
+              </mat-error>
+
+              <mat-error
+                *ngIf="registerForm.get('lastName')?.hasError('maxlength') && registerForm.get('lastName')?.touched">
+                Maximum 30 characters allowed
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Organisation Email</mat-label>
+              <input matInput type="email" formControlName="email" required
+                placeholder="Enter your Organisation Email" />
+              <mat-error *ngIf="registerForm.get('email')?.hasError('required')">Please Enter Email</mat-error>
+              <mat-error *ngIf="registerForm.get('email')?.hasError('email')">Invalid Email Address</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Organisation Name</mat-label>
+              <input matInput formControlName="organisationName" required placeholder="Enter your Organisation Name" />
+              <mat-error *ngIf="registerForm.get('organisationName')?.hasError('required')">
+                Please Enter Organisation Name
+              </mat-error>
+              <mat-error *ngIf="registerForm.get('organisationName')?.hasError('whitespace')">
+                Whitespace is not allowed
+              </mat-error>
+              <mat-error *ngIf="registerForm.get('organisationName')?.hasError('noLetter')">
+                Organisation name must include at least one letter
+              </mat-error>
+              <mat-error
+                *ngIf="registerForm.get('organisationName')?.hasError('minlength') && registerForm.get('organisationName')?.touched">
+                Minimum 2 characters required
+              </mat-error>
+
+              <mat-error
+                *ngIf="registerForm.get('organisationName')?.hasError('maxlength') && registerForm.get('organisationName')?.touched">
+                Maximum 50 characters allowed
+              </mat-error>
+            </mat-form-field>
+            <!-- <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Password</mat-label>
+              <input matInput [type]="hideSignUpPassword ? 'password' : 'text'" formControlName="password" required
+                placeholder="Enter your password" />
+              <button type="button" mat-icon-button matSuffix (click)="hideSignUpPassword = !hideSignUpPassword">
+                <mat-icon>{{ hideSignUpPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              <mat-error *ngIf="registerForm.get('password')?.hasError('required')">Please Enter Your
+                Password</mat-error>
+              <mat-error *ngIf="registerForm.get('password')?.hasError('minlength')">Password must be at least 6
+                characters</mat-error>
+              <mat-error *ngIf="registerForm.get('password')?.hasError('pattern')">
+                Password must include at least 1 uppercase, 1 lowercase, 1 number, and 1 special character.
+              </mat-error>
+            </mat-form-field> -->
+            <button mat-raised-button color="accent" (click)="nextStep()" [disabled]="!isStepOneValid()">Next</button>
+          </div>
+
+          <!-- Step 2 -->
+          <div *ngIf="registerStep === 2">
+
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Phone Number</mat-label>
+              <ngx-mat-intl-tel-input class="intl-input" [preferredCountries]="['in','us']"
+                formControlName="contactNumber" [enablePlaceholder]="true" [enableSearch]="true" name="contactNumber"
+                id="intlInput" #contactNumber #pNumb (keypress)="onlyNumberKey($event)" placeholder="Enter Phone Number">
+              </ngx-mat-intl-tel-input>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Organisation Website</mat-label>
+              <input matInput formControlName="companyDomain" placeholder="Enter your Organisation Domain" />
+              <mat-error
+                *ngIf="registerForm.get('companyDomain')?.hasError('minlength') && registerForm.get('companyDomain')?.touched">
+                Minimum 2 characters required
+              </mat-error>
+
+              <mat-error
+                *ngIf="registerForm.get('companyDomain')?.hasError('maxlength') && registerForm.get('companyDomain')?.touched">
+                Maximum 50 characters allowed
+              </mat-error>
+               <mat-error *ngIf="registerForm.get('companyDomain')?.hasError('whitespace') && registerForm.get('companyDomain')?.touched">
+      Only white spaces are not allowed
+    </mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Organisation Size</mat-label>
+              <input matInput formControlName="companySize" placeholder="Enter your Organisation Size" type="text"
+                maxlength="50" (keydown)="allowOnlyNumbers($event)" />
+
+              <!-- Only show if user has typed something and it's invalid -->
+              <mat-error *ngIf="
+      registerForm.get('companySize')?.value &&
+      registerForm.get('companySize')?.hasError('pattern') &&
+      (registerForm.get('companySize')?.touched || registerForm.get('companySize')?.dirty)
+    ">
+                Only numeric values are allowed.
+              </mat-error>
+            </mat-form-field>
+
+
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Industry</mat-label>
+              <input matInput formControlName="industry" placeholder="Enter your Industry" />
+              <mat-error
+                *ngIf="registerForm.get('industry')?.hasError('minlength') && registerForm.get('industry')?.touched">
+                Minimum 2 characters required
+              </mat-error>
+
+              <mat-error
+                *ngIf="registerForm.get('industry')?.hasError('maxlength') && registerForm.get('industry')?.touched">
+                Maximum 50 characters allowed
+              </mat-error>
+                     <mat-error *ngIf="registerForm.get('industry')?.hasError('whitespace') && registerForm.get('industry')?.touched">
+      Only white spaces are not allowed
+    </mat-error>
+            </mat-form-field>
+
+
+            <!-- Spinner shown while loading -->
+            <div *ngIf="loadingRegister" class="fullscreen-loader">
+              <mat-progress-spinner diameter="50" mode="indeterminate" color="accent"></mat-progress-spinner>
+            </div>
+
+            <div class="button-group">
+              <button mat-raised-button color="primary" (click)="previousStep()">Back</button>
+
+              <button *ngIf="!loadingRegister" mat-raised-button color="primary" [disabled]="registerForm.invalid"
+                (click)="onRegister()" style="width: 150px;">
+                Register
+              </button>
+            </div>
+
+          </div>
+        </form>
+
+      </mat-tab>
+
+    </mat-tab-group>
+    <!-- OTP Section -->
+    <form [formGroup]="otpForm" *ngIf="showOtpVerification" class="otp-form">
+      <h3>Enter OTP</h3>
+
+      <mat-form-field appearance="fill" class="form-field">
+        <mat-label>OTP</mat-label>
+        <mat-icon matPrefix>vpn_key</mat-icon>
+
+        <input matInput maxlength="6" formControlName="otp" autocomplete="one-time-code"
+          (keydown)="allowOnlyNumbersOtp($event)" (keydown.enter)="verifyOtp()" />
+
+        <mat-error *ngIf="otpForm.get('otp')?.hasError('required')">
+          OTP is required
+        </mat-error>
+
+        <mat-error *ngIf="otpForm.get('otp')?.hasError('minlength')">
+          OTP must be 6 digits
+        </mat-error>
+
+        <mat-error *ngIf="otpForm.get('otp')?.hasError('maxlength')">
+          OTP must be exactly 6 digits
+        </mat-error>
+      </mat-form-field>
+
+
+      <!-- Show fullscreen loader when resending -->
+      <div *ngIf="loadingResendOtp" class="fullscreen-loader">
+        <mat-progress-spinner diameter="50" mode="indeterminate" color="accent">
+        </mat-progress-spinner>
+      </div>
+
+      <!-- Resend OTP button when not loading -->
+      <div class="resend-otp-container" *ngIf="!loadingResendOtp">
+        <a class="resend-text" (click)="login()">Resend OTP</a>
+      </div>
+
+
+      <div class="otp-button">
+        <!-- Fullscreen Loader -->
+        <div *ngIf="loadingOtp" class="fullscreen-loader">
+          <mat-progress-spinner diameter="50" mode="indeterminate" color="accent">
+          </mat-progress-spinner>
+        </div>
+
+        <!-- Verify OTP button (hidden while loadingOtp is true) -->
+        <button *ngIf="!loadingOtp" mat-raised-button color="accent" (click)="verifyOtp()">
+          Verify OTP
+        </button>
+
+      </div>
+    </form>
+
+
+  </mat-card>
+</div>

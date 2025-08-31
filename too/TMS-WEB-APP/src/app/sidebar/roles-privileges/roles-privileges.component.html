@@ -1,0 +1,34 @@
+<!-- Title and Add Role Button -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h2 style="margin: 0;">Roles & Privileges</h2>
+    <button mat-raised-button color="primary" (click)="addRole()">Add Role</button>
+  </div>
+  
+  <!-- Roles Table -->
+  <table mat-table [dataSource]="roleData" class="mat-elevation-z8" style="width: 100%;">
+  
+    <!-- Role Column -->
+    <ng-container matColumnDef="role">
+      <th mat-header-cell *matHeaderCellDef> Role </th>
+      <td mat-cell *matCellDef="let element"> {{ element.role }} </td>
+    </ng-container>
+  
+    <!-- Dynamic Permission Columns -->
+    <ng-container *ngFor="let permission of permissionList" [matColumnDef]="permission.key">
+      <th mat-header-cell *matHeaderCellDef> {{ permission.label }} </th>
+      <td mat-cell *matCellDef="let element">
+        <mat-checkbox
+          [(ngModel)]="element.permissions[permission.key]"
+          (change)="onPermissionChange(element, permission.key)"
+          [ngClass]="{ 'checked-box': element.permissions[permission.key] }"
+        >
+        </mat-checkbox>
+      </td>
+    </ng-container>
+  
+    <!-- Header and Row Rendering -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  
+  </table>
+  

@@ -1,0 +1,147 @@
+<div class="container">
+  <h2 mat-dialog-title class="header-text">
+    {{ isEditMode ? 'Update Resource' : 'Add Resource' }}
+  </h2>
+  <mat-dialog-content>
+    <form [formGroup]="teammember">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>First Name</mat-label>
+        <input matInput formControlName="firstName" placeholder="Enter Your First Name"/>
+        <mat-error *ngIf="teammember.get('firstName')?.hasError('required') && teammember.get('firstName')?.touched">
+          Please Enter First Name
+        </mat-error>
+        <mat-error *ngIf="teammember.get('firstName')?.hasError('whitespace')">
+          Leading/trailing or only whitespace is not allowed
+        </mat-error>
+
+        <mat-error *ngIf="teammember.get('firstName')?.hasError('invalidChars')">
+          Only letters are allowed
+        </mat-error>
+
+        <mat-error *ngIf="teammember.get('firstName')?.hasError('minlength') && teammember.get('firstName')?.touched">
+          Minimum 2 characters required
+        </mat-error>
+
+        <mat-error *ngIf="teammember.get('firstName')?.hasError('maxlength') && teammember.get('firstName')?.touched">
+          Maximum 30 characters allowed
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Middle Name</mat-label>
+        <input matInput formControlName="middleName"  placeholder="Enter Your Middle Name" />
+        <mat-error *ngIf="teammember.get('middleName')?.hasError('whitespace')">
+          Leading/trailing or only whitespace is not allowed
+        </mat-error>
+
+        <mat-error *ngIf="teammember.get('middleName')?.hasError('invalidChars')">
+          Only letters are allowed
+        </mat-error>
+
+        <mat-error *ngIf="teammember.get('middleName')?.hasError('minlength') && teammember.get('middleName')?.touched">
+          Minimum 2 characters required
+        </mat-error>
+
+        <mat-error *ngIf="teammember.get('middleName')?.hasError('maxlength') && teammember.get('middleName')?.touched">
+          Maximum 30 characters allowed
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Last Name</mat-label>
+        <input matInput formControlName="lastName"  placeholder="Enter Your Last Name"/>
+        <mat-error *ngIf="teammember.get('lastName')?.hasError('required')">
+          Please Enter Last Name
+        </mat-error>
+        <mat-error *ngIf="teammember.get('lastName')?.hasError('whitespace')">
+          Leading/trailing or only whitespace is not allowed
+        </mat-error>
+
+        <mat-error *ngIf="teammember.get('lastName')?.hasError('invalidChars')">
+          Only letters and spaces are allowed
+        </mat-error>
+        <mat-error *ngIf="teammember.get('lastName')?.hasError('minlength') && teammember.get('lastName')?.touched">
+          Minimum 2 characters required
+        </mat-error>
+
+        <mat-error *ngIf="teammember.get('lastName')?.hasError('maxlength') && teammember.get('lastName')?.touched">
+          Maximum 30 characters allowed
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email ID</mat-label>
+        <input matInput formControlName="email" placeholder="Enter Your EmailId" />
+        <mat-error *ngIf="teammember.get('email')?.hasError('required') && teammember.get('email')?.touched">
+          Email is required
+        </mat-error>
+
+        <mat-error
+          *ngIf="(teammember.get('email')?.hasError('email') || teammember.get('email')?.hasError('pattern')) && teammember.get('email')?.touched">
+          Enter a valid email address.
+        </mat-error>
+
+
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Phone Number <span class="mat-required">*</span></mat-label>
+        <ngx-mat-intl-tel-input class="intl-input" [preferredCountries]="['in','us']" formControlName="contactNumber"
+          [enablePlaceholder]="true" [enableSearch]="true" name="contactNumber" id="intlInput" #contactNumber #pNumb
+          (keypress)="onlyNumberKey($event)" placeholder="Enter Phone Number">
+        </ngx-mat-intl-tel-input>
+        <mat-error
+          *ngIf="teammember.get('contactNumber')?.hasError('required') && teammember.get('contactNumber')?.touched">
+          Phone number is required
+        </mat-error>
+
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Position</mat-label>
+        <input matInput formControlName="position" placeholder="Enter Your Position" />
+        <mat-error *ngIf="teammember.get('position')?.hasError('required') && teammember.get('position')?.touched">
+          Position is required
+        </mat-error>
+        <mat-error *ngIf="teammember.get('position')?.hasError('whitespace')">
+          Whitespace is not allowed
+        </mat-error>
+        <mat-error *ngIf="teammember.get('position')?.hasError('noLetter')">
+          Position must include at least one letter
+        </mat-error>
+        <mat-error *ngIf="teammember.get('position')?.hasError('minlength') && teammember.get('position')?.touched">
+          Minimum 2 characters required
+        </mat-error>
+
+        <mat-error *ngIf="teammember.get('position')?.hasError('maxlength') && teammember.get('position')?.touched">
+          Maximum 30 characters allowed
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Roles</mat-label>
+        <mat-select formControlName="roleId">
+          <mat-option *ngFor="let role of roleList" [value]="role.roleid">
+            {{ role.roleName }}
+          </mat-option>
+        </mat-select>
+
+        <mat-error *ngIf="teammember.get('roleId')?.hasError('required') && teammember.get('roleId')?.touched">
+          Role is required
+        </mat-error>
+      </mat-form-field>
+
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()" class="actionbutton">Cancel</button>
+
+    <button mat-flat-button color="primary" (click)="onSubmitTask()" class="actionbutton"
+      [disabled]="teammember.invalid || isLoading">
+      <mat-spinner *ngIf="isLoading" diameter="20" color="accent"></mat-spinner>
+      <span *ngIf="!isLoading">{{ isEditMode ? 'Update' : 'Create' }}</span>
+    </button>
+
+  </mat-dialog-actions>
+
+
+</div>

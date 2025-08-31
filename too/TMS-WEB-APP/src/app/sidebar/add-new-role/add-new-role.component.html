@@ -1,0 +1,62 @@
+<!-- top header container -->
+<section class="header-container">
+  <span class="header-text" mat-dialog-title>
+    {{ isEditMode ? 'Update Role' : 'Add Role ' }} </span>
+
+</section>
+<!-- mat-card starts -->
+<mat-card class="card">
+  <!-- form- starts -->
+  <form [formGroup]="RoleForm" class="project-form">
+    <section class="form-container">
+      <mat-form-field appearance="outline" class="project-name-field">
+        <mat-label> Role</mat-label>
+        <input matInput formControlName="rolename" maxlength="64" placeholder="Enter Role Name"/>
+        <mat-error *ngIf="RoleForm.get('rolename')!.hasError('required')">Role Name
+          is Required
+        </mat-error>
+            <mat-error *ngIf="RoleForm.get('rolename')?.hasError('whitespace')">
+          Whitespace is not allowed
+        </mat-error>
+        <mat-error *ngIf="RoleForm.get('rolename')?.hasError('noLetter')">
+          Role Name must include at least one letter
+        </mat-error>
+         <mat-error *ngIf="RoleForm.get('rolename')?.hasError('minlength') && RoleForm.get('rolename')?.touched">
+          Minimum 2 characters required
+        </mat-error>
+
+        <mat-error *ngIf="RoleForm.get('rolename')?.hasError('maxlength') && RoleForm.get('rolename')?.touched">
+          Maximum 50 characters allowed
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Description</mat-label>
+        <textarea maxlength="1024" rows="5" matInput formControlName="description" placeholder="Enter Description"></textarea>
+        <mat-error *ngIf="RoleForm.get('description')!.hasError('required')">Description is
+          Required</mat-error>
+        <mat-error *ngIf="RoleForm.get('description')?.hasError('whitespace')">
+          Whitespace is not allowed
+        </mat-error>
+        <mat-error *ngIf="RoleForm.get('description')?.hasError('noLetter')">
+          Description must include at least one letter
+        </mat-error>
+          <mat-error *ngIf="RoleForm.get('description')?.hasError('minlength') && RoleForm.get('description')?.touched">
+          Minimum 2 characters required
+        </mat-error>
+      </mat-form-field>
+
+    </section>
+  </form>
+</mat-card>
+
+<div class="form-action-buttons">
+  <button mat-raised-button class="btn-cancel" color="white" class="actionbutton" (click)="onCancel()">Cancel</button>
+
+  <button mat-flat-button color="primary" (click)="onSubmitTask()" class="actionbutton"
+    [disabled]="RoleForm.invalid || isLoading"
+    style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+    <mat-spinner *ngIf="isLoading" diameter="20" color="accent"></mat-spinner>
+    <span *ngIf="!isLoading">{{ isEditMode ? 'Update' : 'Create' }}</span>
+  </button>
+
+</div>

@@ -1,0 +1,37 @@
+/* You can add global styles to this file, and also import other style files */
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+/* styles.scss */
+
+
+/* Style for failure - Red background */
+.custom-snack-failure {
+  background-color: #f44336 !important; /* Red for failure */
+  color: white;
+}
+
+/* Style for success - Green background */
+.custom-snack-success {
+  background-color: #4caf50 !important; /* Green for success */
+  color: white;
+}
+.mat-mdc-snack-bar-container .mat-mdc-snackbar-surface {
+  min-width: 344px;
+  max-width: 672px;
+  background: none !important;
+}
+/* Remove focus outline from all elements */
+* {
+  outline: none !important;
+}
+
+/* Also target commonly focusable elements */
+input:focus,
+button:focus,
+select:focus,
+textarea:focus,
+a:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}

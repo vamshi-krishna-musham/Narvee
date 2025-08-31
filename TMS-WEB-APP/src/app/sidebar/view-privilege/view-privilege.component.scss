@@ -1,0 +1,218 @@
+.role-header {
+    box-shadow: var(--mat-app-elevation-shadow-level-1, none);
+    margin: 10px 0px;
+    padding: 10px;
+    background-color: #fff;
+  }
+  
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .left-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .role-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .privilege-icon {
+    font-size: 24px;
+    color:blue;
+  }
+  
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0px;
+    padding: 10px;
+    background-color: #fff;
+  }
+  
+  .header-left {
+    display: flex;
+    align-items: center;
+  }
+  
+  .back-icon {
+    cursor: pointer;
+    margin-right: 8px;
+    color: #555;
+  }
+  
+  .header-text {
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+  
+  
+.mat-mdc-header-row  {
+    background-color: #343dff36 !important;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  
+  /* Add padding and text alignment to headers and cells */
+.mat-header-cell,
+.mat-cell {
+    padding: 12px 16px !important;
+    text-align: left;
+    vertical-align: middle;
+  }
+  
+  /* Optional: nowrap for header columns */
+  .nowrap {
+    white-space: nowrap;
+  }
+  
+  .mat-row:hover .mat-cell {
+    background-color: #f5f7ff !important; /* Light blue-ish background */
+    transition: background-color 0.3s ease;
+  }
+  
+  td a {
+    color: #3f51b5;
+    text-decoration: none;
+  }
+  
+   td a:hover {
+    text-decoration: underline;
+  }
+  
+  .no-data-found {
+    text-align: center;
+    margin-top: 4rem;
+    font-weight: 500;
+    color: #555;
+    position: relative;
+    bottom: 28px;
+  }
+  .mat-mdc-unelevated-button:not(:disabled) {
+    color: var(--mdc-filled-button-label-text-color, var(--mat-app-on-primary));
+    background-color: rgb(52 61 255 / 80%);
+}
+
+.table-wrapper {
+  flex: 1; 
+  overflow: auto;
+}
+
+
+  ::ng-deep.mat-mdc-option .mdc-list-item__primary-text {
+    white-space: normal;
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    line-height: inherit;
+    font-family: inherit;
+    text-decoration: inherit;
+    text-transform: inherit;
+    margin-right: auto;
+    color: black !important;
+}
+
+  ::ng-deep .mat-mdc-select-panel {
+    scrollbar-width: thin !important;
+    scrollbar-color: #999 transparent !important;
+  }
+  
+  ::ng-deep .mat-mdc-select-panel::-webkit-scrollbar {
+    width: 6px !important;
+  }
+  
+  ::ng-deep .mat-mdc-select-panel::-webkit-scrollbar-track {
+    background: transparent !important;
+  }
+  
+  ::ng-deep .mat-mdc-select-panel::-webkit-scrollbar-thumb {
+    background-color: #999 !important;
+    border-radius: 4px !important;
+  }
+  ::ng-deep.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-line-ripple::before {
+    border-bottom-color: transparent !important;
+}
+:host ::ng-deep .custom-status-field .mat-mdc-text-field-wrapper {
+  background-color: rgba(52, 61, 255, 0.19);
+  height: 35px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 14px;
+  margin-top: 15px;
+}
+
+
+.assigned-users {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  cursor: pointer;
+}
+ ::ng-deep .mat-mdc-tooltip-surface {
+  white-space: pre-line !important;
+  background-color: #a494bf !important;
+  color: white !important;
+  padding: 10px 14px !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 1.8 !important; /* Add line spacing */
+}
+
+.roleName{
+    color:#3f51b5 !important ;
+    font-weight: 500;
+    cursor: pointer;
+}
+.roleName:hover{
+  text-decoration: underline;
+}
+.clickable {
+    color: #1976d2;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .dialog-title-with-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .role-title-text {
+    margin: 0;
+    font-size: 20px;
+    color: #3f51b5;
+  }
+  
+  .access-list p {
+    margin: 5px 0;
+  }
+  .actionbutton {
+    background-color: rgb(52 61 255 / 80%) !important;
+    color: white !important;
+    border-radius: 4px !important;
+    padding: 0.5rem 1.5rem !important;
+  
+    &:hover {
+      background-color: #2b33e6 !important;
+    }
+  
+    &:disabled {
+      background-color: #b3b3b3 !important;
+      cursor: not-allowed !important;
+      color: #f1f1f1 !important;
+    }
+}

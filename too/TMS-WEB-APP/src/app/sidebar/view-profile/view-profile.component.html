@@ -1,0 +1,246 @@
+<div class="profile-wrapper">
+  <mat-card class="profile-card">
+    <mat-card-header>
+      <div class="card-title-wrapper">
+        <button
+          mat-icon-button
+          (click)="navigateToDashboard()"
+          matTooltip="Go to Dashboard"
+        >
+          <mat-icon>home</mat-icon>
+        </button>
+        <span class="card-title-text">View Profile</span>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content class="profile-content">
+      <!-- Profile Image Section -->
+      <div
+        class="profile-icon-container"
+        [matMenuTriggerFor]="profileMenu"
+        style="cursor: pointer"
+      >
+        <img [src]="profileImageUrl" alt="Profile" class="profile-icon" />
+      </div>
+
+      <mat-menu #profileMenu="matMenu">
+        <button mat-menu-item (click)="openDialog(dialogTemplate)">
+          <mat-icon>add_a_photo</mat-icon>
+          <span *ngIf="!hasProfileImage">Add Profile Photo</span>
+          <span *ngIf="hasProfileImage">Change Profile Photo</span>
+        </button>
+
+        <button
+          *ngIf="hasProfileImage"
+          mat-menu-item
+          (click)="RemoveuploadedImage()"
+        >
+          <mat-icon>delete</mat-icon>
+          <span>Remove Profile Photo</span>
+        </button>
+      </mat-menu>
+    </mat-card-content>
+
+    <!-- Profile Info Editable Section -->
+    <mat-card-content>
+      <div class="profile-info" [class.editable]="isEditing">
+        <!-- Action Buttons Always Visible -->
+        <div class="action-icons">
+          <button
+            *ngIf="!isEditing"
+            mat-icon-button
+            (click)="enableEdit()"
+            matTooltip="Edit Profile"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+          <div *ngIf="isEditing">
+            <button
+              mat-icon-button
+              color="primary"
+              (click)="saveProfile()"
+              matTooltip="Save"
+            >
+              <mat-icon>check</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="cancelEdit()"
+              matTooltip="Cancel"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Wrapper to center content and limit width -->
+        <div class="profile-fields-wrapper">
+          <div
+            *ngFor="
+              let field of [
+                'firstName',
+                'middleName',
+                'lastName',
+                'organizationName',
+                'companySize',
+                'email',
+                'companyDomain',
+                'industry',
+                'RoleName'
+              ]
+            "
+            class="profile-field-vertical"
+          >
+            <label>
+              {{ fieldLabels[field] }}
+              <span
+                *ngIf="
+                  [
+                    'firstName',
+                    'lastName',
+                    'organizationName',
+                    'email'
+                  ].includes(field)
+                "
+                class="required-star"
+                >*</span
+              >
+            </label>
+
+            <!-- View Mode -->
+            <div *ngIf="!isEditing" class="field-value">
+              {{ toTitleCase(userProfile[field], field) }}
+            </div>
+
+            <!-- Edit Mode -->
+            <!-- Edit Mode -->
+            <ng-container *ngIf="isEditing">
+              <input
+                type="text"
+                [(ngModel)]="editableProfile[field]"
+                class="field-input"
+                [disabled]="
+                  field === 'RoleName' ||
+                  (!isSuperAdmin() &&
+                    [
+                      'organizationName',
+                      'companySize',
+                      'companyDomain',
+                      'industry'
+                    ].includes(field))
+                "
+                [required]="
+                  [
+                    'firstName',
+                    'lastName',
+                    'organizationName',
+                    'email'
+                  ].includes(field)
+                "
+                [pattern]="getPattern(field)"
+                [attr.minlength]="getMinLength(field)"
+                [attr.maxlength]="getMaxLength(field)"
+                name="{{ field }}"
+                #fieldRef="ngModel"
+                [attr.inputmode]="field === 'companySize' ? 'numeric' : 'text'"
+                (keypress)="
+                  field === 'companySize' ? allowOnlyNumber($event) : null
+                "
+              />
+
+              <!-- Error Messages -->
+              <div
+                class="error-message"
+                *ngIf="fieldRef.invalid && fieldRef.touched"
+              >
+                <span *ngIf="fieldRef.errors?.['required']">
+                  {{ fieldLabels[field] }} is required.
+                </span>
+                <span *ngIf="fieldRef.errors?.['minlength']">
+                  {{ fieldLabels[field] }} must be at least
+                  {{ getMinLength(field) }} characters.
+                </span>
+                <span *ngIf="fieldRef.errors?.['maxlength']">
+                  {{ fieldLabels[field] }} must not exceed
+                  {{ getMaxLength(field) }} characters.
+                </span>
+                <span *ngIf="fieldRef.errors?.['pattern']">
+                  <ng-container [ngSwitch]="field">
+                    <span *ngSwitchCase="'email'">
+                      Enter a valid email address.
+                    </span>
+                    <span *ngSwitchCase="'companySize'">
+                      Company Size must contain only numbers.
+                    </span>
+                    <span *ngSwitchDefault>
+                      Only letters allowed. Whitespace is not allowed.
+                    </span>
+                  </ng-container>
+                </span>
+                <!-- Custom organizationName validation messages -->
+                <ng-container *ngIf="field === 'organizationName'">
+                  <span *ngIf="fieldRef.errors?.['whitespace']">
+                    Organization Name cannot be empty or only whitespace.
+                  </span>
+                  <span *ngIf="fieldRef.errors?.['noLetter']">
+                    Organization Name must contain at least one letter.
+                  </span>
+                  <span *ngIf="fieldRef.errors?.['invalidChars']">
+                    Organization Name must contain only letters, numbers, and
+                    spaces.
+                  </span>
+                </ng-container>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<ng-template #dialogTemplate>
+  <h2 mat-dialog-title style="font-weight: 500">Add Profile Photo</h2>
+
+  <!-- Inside your dialog template -->
+  <mat-dialog-content>
+    <div
+      class="upload-box"
+      (drop)="handleDrop($event)"
+      (dragover)="allowDrop($event)"
+    >
+      <ng-container *ngIf="imagePreview; else uploadPlaceholder">
+        <div class="uploaded-image-wrapper">
+          <img [src]="imagePreview" class="uploaded-image" alt="Preview" />
+          <button mat-icon-button class="cancel-icon" (click)="removeImage()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </ng-container>
+
+      <ng-template #uploadPlaceholder>
+        <div class="upload-inner">
+          <mat-icon class="upload-icon">cloud_upload</mat-icon>
+          <p>Drag and drop your image here</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="upload-or">or</div>
+
+    <div class="upload-button-center">
+      <button mat-button color="primary" (click)="fileInput.click()">
+        Upload a photo
+      </button>
+      <input #fileInput type="file" hidden (change)="handleFileInput($event)" />
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cancel</button>
+    <button mat-flat-button color="primary" (click)="uploadUserImage()">
+      Upload
+    </button>
+  </mat-dialog-actions>
+</ng-template>

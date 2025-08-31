@@ -1,0 +1,227 @@
+<div class="project-container">
+  <div class="header-container mat-elevation-z1">
+    <span class="header-text">Projects</span>
+
+    <div class="project-actions">
+      <button class="add-project" mat-raised-button (click)="addProject()" *ngIf="canAddProject">
+        Add Project
+      </button>
+
+      <input matInput type="text" class="search" placeholder="Search projects" [(ngModel)]="field"
+        (ngModelChange)="onSearchChange()" />
+    </div>
+  </div>
+
+  <div id="table-container" class="table-wrapper">
+    <section class="mat-elevation-z8 project-table-style">
+      <table mat-table [dataSource]="dataSource" matSort (matSortChange)="sortData($event)" oncopy="return false">
+        <ng-container matColumnDef="SerialNum">
+          <th mat-header-cell *matHeaderCellDef class="nowrap"> S No
+          </th>
+          <td mat-cell *matCellDef="let element"> {{ element.serialNum }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="projectId">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by projectId"
+            class="nowrap">
+            Project ID </th>
+          <td mat-cell *matCellDef="let element" class="projectid"
+            (click)="addtask(element.projePage.projectid,element.projePage.pid,element.projePage.targetDate,element.projePage.startDate,element.projePage.status ,element.projePage.projectname)">
+            {{ element.projePage.projectid }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="projectName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by projectName"
+            class="nowrap">
+            Project Name
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <span class="ellipsis-text" [matTooltip]="element.projePage.projectname | titlecase">
+              {{ element.projePage.projectname | titlecase }}
+            </span>
+          </td>
+        </ng-container>
+
+
+
+
+
+        <ng-container matColumnDef="AssignedTo">
+          <th mat-header-cell *matHeaderCellDef class="nowrap">
+            Assigned To
+          </th>
+          <td mat-cell *matCellDef="let element" [matTooltip]="getDisplayNames(element.assignUsers)"
+            class="assigned-users-cell">
+            <div class="assigned-users-overlap-wrapper">
+              <ng-container *ngFor="let user of element.assignUsers | slice:0:3; let i = index">
+                <div class="avatar-circle overlapped-avatar"
+                  [ngStyle]="{ 'background-color': getColor(i), 'z-index': 10 - i }" style="cursor: pointer;">
+                  <!-- Call the method getInitial here -->
+                  {{ getInitial(user) |titlecase }}
+                </div>
+              </ng-container>
+
+              <ng-container *ngIf="element.assignUsers.length > 3">
+                <div class="avatar-circle overlapped-avatar more-circle">+{{ element.assignUsers.length - 3 }}</div>
+              </ng-container>
+            </div>
+          </td>
+        </ng-container>
+
+
+        <ng-container matColumnDef="StartDate">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by StartDate"
+            class="nowrap"> Start Date </th>
+          <td mat-cell *matCellDef="let element"> {{ element.projePage.startDate ? (element.projePage.startDate | date:
+            'dd-MM-yyyy') : '-' }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="DueDate">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by DueDate" class="nowrap">
+            Due Date </th>
+          <td mat-cell *matCellDef="let element"> {{ element.projePage.targetDate ? (element.projePage.targetDate |
+            date: 'dd-MM-yyyy') : '-' }} </td>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by status" class="nowrap">
+            Status
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <span [ngStyle]="getStatusStyles(element.projePage.status)">
+              {{ element.projePage.status }}
+            </span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="AddedBy">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by DueDate" class="nowrap">
+            AddedBy </th>
+          <td mat-cell *matCellDef="let element"> {{ element.projePage.addedByFullname ? (element.projePage.addedByFullname |
+            titlecase) : '-' }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="Action">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let element">
+            <span class="action-buttons">
+              <button mat-icon-button (click)="editProject(element.projePage)" *ngIf="canEditProject">
+                <mat-icon class="edit-icon">edit</mat-icon>
+              </button>
+              <button mat-icon-button class="action-button-ed" (click)="deleteProject(element.projePage)"
+                *ngIf="canDeleteProject">
+                <mat-icon class="delete-icon">delete</mat-icon>
+              </button>
+            </span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="ViewFiles">
+          <th mat-header-cell *matHeaderCellDef>Files </th>
+          <td mat-cell *matCellDef="let row">
+            <button mat-button color="primary" (click)="openFilesDialog(row.files)" class="viewfiles">View
+              Files</button>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="MoreInfo">
+          <th mat-header-cell *matHeaderCellDef>Description</th>
+          <td mat-cell *matCellDef="let row">
+            <button mat-icon-button matTooltipPosition="above" (click)="showDescription(row)">
+              <mat-icon style="color: blue;">info</mat-icon>
+            </button>
+
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="dataTableColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: dataTableColumns;"></tr>
+      </table>
+      <p class="no-data-found" *ngIf="!dataSource.data.length">{{'No matching data found'}}</p>
+    </section>
+    <hr>
+  </div>
+  <div class="paginator">
+    <mat-paginator (page)="handlePageEvent($event)" [length]="totalItems" [pageSize]="pageSize" [disabled]="false"
+      [showFirstLastButtons]="showFirstLastButtons" [pageSizeOptions]="showPageSizeOptions ? pageSizeOptions : []"
+      [hidePageSize]="true" [pageIndex]="currentPageIndex" aria-label="Select page">
+    </mat-paginator>
+  </div>
+
+</div>
+<ng-template #filesDialog>
+  <h2 mat-dialog-title>Attached Files</h2>
+  <mat-dialog-content>
+    <ng-container *ngIf="selectedFiles?.length; else noFiles">
+      <table mat-table [dataSource]="selectedFiles" class="file-table mat-elevation-z1">
+
+        <!-- File Icon Column -->
+        <ng-container matColumnDef="icon">
+          <th mat-header-cell *matHeaderCellDef> </th>
+          <td mat-cell *matCellDef="let file">
+            <mat-icon color="primary">insert_drive_file</mat-icon>
+          </td>
+        </ng-container>
+
+        <!-- File Name Column -->
+        <ng-container matColumnDef="fileName">
+          <th mat-header-cell *matHeaderCellDef> File Name </th>
+          <td mat-cell *matCellDef="let file">
+            {{ file.fileName.split('-')[0] }}
+          </td>
+        </ng-container>
+
+        <!-- View Column -->
+        <ng-container matColumnDef="view">
+          <th mat-header-cell *matHeaderCellDef> View </th>
+          <td mat-cell *matCellDef="let file">
+            <button mat-icon-button color="primary" (click)="viewFile(file)">
+              <mat-icon>visibility</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Download Column -->
+        <ng-container matColumnDef="download">
+          <th mat-header-cell *matHeaderCellDef> Download </th>
+          <td mat-cell *matCellDef="let file">
+            <button mat-icon-button color="accent" (click)="downloadFile(file)">
+              <mat-icon>cloud_download</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+
+        <tr mat-header-row *matHeaderRowDef="fileDisplayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: fileDisplayedColumns;"></tr>
+      </table>
+    </ng-container>
+
+    <ng-template #noFiles>
+      <p class="nodata">No files available.</p>
+    </ng-template>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Close</button>
+  </mat-dialog-actions>
+</ng-template>
+<!-- View Container for the Dialog -->
+<ng-template #previewDialog>
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <h2 style="margin: 2;">Image Preview</h2>
+    <button mat-icon-button (click)="closeDialog()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <mat-dialog-content>
+    <img [src]="previewUrl" alt="Image" style="width: 100%; height: 400px; object-fit: contain;" />
+  </mat-dialog-content>
+</ng-template>
+<ng-template #descriptionDialog let-data>
+  <h2 mat-dialog-title class="comment-text">Project Description</h2>
+
+  <mat-dialog-content class="description-content">
+    <p>{{ data.description }}</p>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close class="add-project">Close</button>
+  </mat-dialog-actions>
+</ng-template>

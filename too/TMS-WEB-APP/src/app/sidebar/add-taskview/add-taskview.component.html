@@ -1,0 +1,231 @@
+<div class="container">
+  <h2 mat-dialog-title class="header-text">{{ isEditMode ? 'Update Task' : 'Add Task ' }} </h2>
+  <mat-dialog-content>
+    <form [formGroup]="Taskcreate">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Task Name</mat-label>
+        <input matInput formControlName="taskName" placeholder="Enter Task Name"/>
+        <mat-error *ngIf="Taskcreate.get('taskName')?.hasError('required') && Taskcreate.get('taskName')?.touched">
+          Task Name is required
+        </mat-error>
+        <mat-error *ngIf="Taskcreate.get('taskName')?.hasError('whitespace')">
+          Whitespace is not allowed
+        </mat-error>
+        <mat-error *ngIf="Taskcreate.get('taskName')?.hasError('noLetter')">
+          Task Name must include at least one letter
+        </mat-error>
+        <mat-error *ngIf="Taskcreate.get('taskName')?.hasError('minlength') && Taskcreate.get('taskName')?.touched">
+          Minimum 2 characters required
+        </mat-error>
+
+        <mat-error *ngIf="Taskcreate.get('taskName')?.hasError('maxlength') && Taskcreate.get('taskName')?.touched">
+          Maximum 50 characters allowed
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Task Description</mat-label>
+        <textarea matInput formControlName="taskDescription" rows="5" placeholder="Enter Description"></textarea>
+        <mat-error
+          *ngIf="Taskcreate.get('taskDescription')?.hasError('required') && Taskcreate.get('taskDescription')?.touched">
+          Task Description is required
+        </mat-error>
+        <mat-error *ngIf="Taskcreate.get('taskDescription')?.hasError('whitespace')">
+          Whitespace is not allowed
+        </mat-error>
+        <mat-error *ngIf="Taskcreate.get('taskDescription')?.hasError('noLetter')">
+          Description must include at least one letter
+        </mat-error>
+        <mat-error
+          *ngIf="Taskcreate.get('taskDescription')?.hasError('minlength') && Taskcreate.get('taskDescription')?.touched">
+          Minimum 2 characters required
+        </mat-error>
+      </mat-form-field>
+
+
+     <mat-form-field appearance="outline" class="full-width">
+  <mat-label>Assigned To</mat-label>
+  <mat-select
+    formControlName="assignedTo"
+    multiple
+    panelClass="search-select-panel"
+    (openedChange)="onAssignedDropdownOpen($event)"
+  >
+    <!-- Search Input -->
+    <mat-option disabled class="search-option">
+      <input
+        type="text"
+        [(ngModel)]="searchAssignedUser"
+        [ngModelOptions]="{ standalone: true }"
+        (input)="filterAssignedUsers()"
+        (click)="$event.stopPropagation()"
+        (keydown)="$event.stopPropagation()"
+        placeholder="Search user"
+        class="search-input"
+      />
+    </mat-option>
+
+    <!-- Filtered User Options -->
+    <mat-option *ngFor="let user of filteredAssignedUsers" [value]="user">
+      {{ user.fullname }}
+    </mat-option>
+  </mat-select>
+
+
+</mat-form-field>
+
+
+
+
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          <mat-select-trigger>
+            <span
+              [ngStyle]="{ 'color': getStatusColor(Taskcreate.get('status')?.value), 'background-color': getStatusColor(Taskcreate.get('status')?.value) + '20', 'padding': '4px 8px', 'border-radius': '12px', 'font-weight': '500', 'font-size': '13px' }">
+              {{ getStatusLabel(Taskcreate.get('status')?.value) }}
+            </span>
+          </mat-select-trigger>
+          <mat-option *ngFor="let status of statusList" [value]="status.value">
+            <span
+              [ngStyle]="{ 'color': status.color, 'background-color': status.color + '20', 'padding': '4px 8px', 'border-radius': '12px', 'font-weight': '500', 'font-size': '13px' }">
+              {{ status.label }}
+            </span>
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="Taskcreate.get('status')?.hasError('required') && Taskcreate.get('status')?.touched">
+          Status is required
+        </mat-error>
+      </mat-form-field>
+
+
+
+
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Priority</mat-label>
+        <mat-select formControlName="priority">
+          <mat-select-trigger>
+            <span
+              [ngStyle]="{ 'color': getPriorityColor(Taskcreate.get('priority')?.value), 'background-color': getPriorityColor(Taskcreate.get('priority')?.value) + '20', 'padding': '4px 8px', 'border-radius': '12px', 'font-weight': '500', 'font-size': '13px' }">
+              {{ getPriorityLabel(Taskcreate.get('priority')?.value) }}
+            </span>
+          </mat-select-trigger>
+          <mat-option *ngFor="let priority of priorityList" [value]="priority.value">
+            <span
+              [ngStyle]="{ 'color': priority.color, 'background-color': priority.color + '20', 'padding': '4px 8px', 'border-radius': '12px', 'font-weight': '500', 'font-size': '13px' }">
+              {{ priority.label }}
+            </span>
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="Taskcreate.get('priority')?.hasError('required') && Taskcreate.get('priority')?.touched">
+          Priority is required
+        </mat-error>
+      </mat-form-field>
+
+     <mat-form-field appearance="outline" class="full-width">
+  <mat-label>Start Date</mat-label>
+  <input
+    matInput
+    [matDatepicker]="startPicker"
+    formControlName="startDate"
+    [min]="minStartDate"
+    readonly
+    (dateChange)="onDateChange()"
+  />
+  <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+  <mat-datepicker #startPicker></mat-datepicker>
+</mat-form-field>
+
+      <mat-error *ngIf="missingProjectDatesTouched" style="position: relative; bottom: 30px;">
+        Kindly ensure the Project start date and deadline are defined before setting task dates.
+      </mat-error>
+
+
+      <mat-error *ngIf="startDateExceedsTarget" style="position: relative;bottom: 30px;">Please select a start date that
+        does not exceed the project deadline. ({{ data.targetDate |
+        date:'dd-MM-yyyy' }})</mat-error>
+      <mat-error *ngIf="startDateBeforeProject" style="position: relative; bottom: 30px;">
+        Please select a start date that is on or after the project start date ({{ data.startDate | date: 'dd-MM-yyyy'
+        }}).
+      </mat-error>
+
+      <!-- Due Date -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Due Date</mat-label>
+        <input matInput [matDatepicker]="duePicker" [matDatepickerFilter]="dueDateFilter" formControlName="dueDate"
+          (dateChange)="onDateChange()" readonly />
+        <mat-datepicker-toggle matSuffix [for]="duePicker"></mat-datepicker-toggle>
+        <mat-datepicker #duePicker></mat-datepicker>
+
+
+      </mat-form-field>
+      <mat-error *ngIf="missingProjectDatesTouched" style="position: relative; bottom: 30px;">
+        Kindly ensure the project start date and deadline are defined before setting task dates.
+      </mat-error>
+
+
+      <mat-error *ngIf="dueDateExceedsTarget" style="position: relative;bottom: 30px;">
+        Please select a due date that does not exceed the project deadline. ({{ data.targetDate | date:'dd-MM-yyyy' }})
+      </mat-error>
+      <mat-error *ngIf="dueDateBeforeProject" style="position: relative; bottom: 30px;">
+        Please select a due date that is on or after the project start date ({{ data.startDate | date: 'dd-MM-yyyy' }}).
+      </mat-error>
+      <!-- Duration -->
+      <mat-form-field appearance="outline" class="full-width duration-field">
+        <mat-label>Duration (in days)</mat-label>
+        <input matInput formControlName="duration" [disabled]="true" />
+      </mat-form-field>
+
+      <div class="file-upload-container">
+        <!-- Upload Button -->
+        <label for="file-upload" class="custom-upload-button">
+          <mat-icon>cloud_upload</mat-icon>
+          <span>Upload Files</span>
+        </label>
+        <input id="file-upload" type="file" (change)="onFileChange($event)" multiple class="file-input-hidden" />
+
+        <!-- Preview Existing + Selected Files -->
+        <div class="file-preview-list" *ngIf="existingFiles.length > 0 || selectedFiles.length > 0">
+
+          <!-- Existing Files from Server -->
+          <div class="file-item" *ngFor="let file of existingFiles; let i = index">
+            <span class="file-name">{{ file.fileName }}</span>
+            <button mat-icon-button color="warn" (click)="removeExistingFile(i)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+
+          <!-- Newly Selected Files -->
+          <div class="file-item" *ngFor="let file of selectedFiles; let i = index">
+            <span class="file-name">{{ file.name }}</span>
+            <button mat-icon-button color="warn" (click)="removeFile(i)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="onCancel()" class="actionbutton">Cancel</button>
+    <button mat-flat-button color="primary" (click)="onSubmitTask()" class="actionbutton" [disabled]=" isLoading ||
+    Taskcreate.invalid ||
+    startDateExceedsTarget ||
+    dueDateExceedsTarget ||
+    startDateBeforeProject ||
+    dueDateBeforeProject || missingProjectDatesTouched">
+      <mat-spinner *ngIf="isLoading" diameter="20" color="accent"></mat-spinner>
+      <span *ngIf="!isLoading">{{ isEditMode ? 'Update' : 'Create' }}</span>
+    </button>
+
+
+
+  </mat-dialog-actions>
+
+
+</div>

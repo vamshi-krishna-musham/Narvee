@@ -1,0 +1,93 @@
+<div class="project-container">
+    <div class="header-container mat-elevation-z1">
+        <span class="header-text">Resources</span>
+
+        <div class="action-container">
+            <button class="projectbutton" mat-raised-button (click)="openAddProjectDialog()" *ngIf="canAddProject"
+                style="white-space: nowrap;">
+                Add Resources
+            </button>
+
+            <input matInput type="text" class="search" placeholder="Search Users" [(ngModel)]="field"
+                (ngModelChange)="onSearchChange()" />
+
+        </div>
+    </div>
+
+    <div id="table-container" class="table-wrapper">
+        <section class="mat-elevation-z8 project-table-style">
+            <table mat-table [dataSource]="dataSource" matSort (matSortChange)="sortData($event)">
+                <ng-container matColumnDef="SerialNum">
+                    <th mat-header-cell *matHeaderCellDef sortActionDescription="Sort by SerialNum" class="nowrap"> S No
+                    </th>
+                    <td mat-cell *matCellDef="let element"> {{ element.serialNum }} </td>
+                </ng-container>
+                <ng-container matColumnDef="userName">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by userName"
+                        class="nowrap">
+                        Name
+                    </th>
+                    <td mat-cell *matCellDef="let element">
+                        {{ element.userFullName| titlecase }}
+                    </td>
+                </ng-container>
+
+
+                <ng-container matColumnDef="email">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by email"
+                        class="nowrap"> Email Id </th>
+                    <td mat-cell *matCellDef="let element">
+                        {{ element.email }}
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="PhoneNumber">
+                    <th mat-header-cell *matHeaderCellDef
+                        class="nowrap"> Phone Number</th>
+                    <td mat-cell *matCellDef="let element"> {{ element.phoneNumber }} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="Position">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by Position"
+                        class="nowrap"> Position</th>
+                    <td mat-cell *matCellDef="let element"> {{ element.position | titlecase }} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="RoleName">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by RoleName"
+                        class="nowrap"> Role</th>
+                    <td mat-cell *matCellDef="let element"> {{ element.roleName | titlecase}} </td>
+                </ng-container>
+                    <ng-container matColumnDef="AddedBy">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by RoleName"
+                        class="nowrap"> AddedBy</th>
+                    <td mat-cell *matCellDef="let element"> {{ element.addeByFullName | titlecase}} </td>
+                </ng-container>
+                <ng-container matColumnDef="Action">
+                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                    <td mat-cell *matCellDef="let element">
+                        <span class="action-buttons">
+                            <button mat-icon-button (click)="editTeamMember(element)" *ngIf="canEditProject">
+                                <mat-icon class="edit-icon">edit</mat-icon>
+                            </button>
+                            <button mat-icon-button class="action-button-ed" (click)="deleteTeamMember(element)"
+                                *ngIf="canDeleteProject">
+                                <mat-icon class="delete-icon">delete</mat-icon>
+                            </button>
+                        </span>
+                    </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="dataTableColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: dataTableColumns;"></tr>
+            </table>
+            <p class="no-data-found" *ngIf="!dataSource.data.length">{{'No matching data found'}}</p>
+        </section>
+    </div>
+
+    <div class="paginator">
+        <mat-paginator (page)="handlePageEvent($event)" [length]="totalItems" [pageSize]="pageSize" [disabled]="false"
+            [showFirstLastButtons]="showFirstLastButtons" [pageSizeOptions]="showPageSizeOptions ? pageSizeOptions : []"
+            [hidePageSize]="true" [pageIndex]="currentPageIndex" aria-label="Select page">
+        </mat-paginator>
+    </div>
+</div>

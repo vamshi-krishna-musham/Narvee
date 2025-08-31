@@ -1,0 +1,80 @@
+<div class="mat-elevation-z1 role-header">
+    <div class="header-content">
+      <div class="left-section">
+        <button mat-icon-button (click)="goBack()" class="back-button">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <span class="role-title" >{{ roleName }}</span>
+      </div>
+  
+      <div class="right-section">
+        <mat-icon class="privilege-icon" (click)="addPrivilege()" style="cursor: pointer;">enhanced_encryption</mat-icon>
+      </div>
+    </div>
+  </div>
+  
+  <div id="table-container" class="table-wrapper">
+    <section class="mat-elevation-z8 project-table-style">
+      <table mat-table [dataSource]="dataSource" matSort>
+        <ng-container matColumnDef="SerialNum">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="nowrap"> S No </th>
+          <td mat-cell *matCellDef="let element"> {{ element.serialNum }} </td>
+        </ng-container>
+  
+        <ng-container matColumnDef="Privileges">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="nowrap">Privileges </th>
+          <td mat-cell *matCellDef="let element">
+            <span
+            class="roleName"
+            (click)="openDialog(element.ticketName, element.keyName)">
+            {{ element.ticketName }}
+          </span>
+                    </td>
+        </ng-container>
+  
+        <tr mat-header-row *matHeaderRowDef="dataTableColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: dataTableColumns;"></tr>
+      </table>
+  
+      <p class="no-data-found" *ngIf="!dataSource.data.length">No matching data found</p>
+    </section>
+  </div>
+  <ng-template #roleDialog>
+    <mat-dialog-content>
+  
+      <!-- Title with checkbox and role name -->
+      <div class="dialog-title-with-checkbox">
+        <mat-checkbox [(ngModel)]="allAccessChecked" (change)="toggleAllAccess()">
+        </mat-checkbox>
+        <h2 class="role-title-text"> {{ selectedRoleName }}</h2>
+      </div>
+  
+      <div class="access-list" style="margin-left: 45px;">
+        <p *ngFor="let access of dummyAccessList">
+            <mat-checkbox [(ngModel)]="access.checked" (change)="onIndividualCheckboxChange()">
+              {{ access.name }}
+            </mat-checkbox>
+          </p>
+          
+      </div>
+  
+    </mat-dialog-content>
+  
+    <mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close class="actionbutton">Close</button>
+      <button
+  mat-raised-button
+  color="primary"
+  class="actionbutton"
+  (click)="onsave()"
+  [disabled]="isLoading"
+  style="display: flex; align-items: center; justify-content: center; gap: 8px;"
+>
+  <mat-spinner *ngIf="isLoading" diameter="20" color="accent"></mat-spinner>
+  <span *ngIf="!isLoading">Save</span>
+</button>
+
+    </mat-dialog-actions>
+  </ng-template>
+  
+  
