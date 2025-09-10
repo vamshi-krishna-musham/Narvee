@@ -42,12 +42,20 @@ public class TmsSubTask extends AuditModel {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "subtaskid")
 	private Long subTaskId;
+	
+	
+	@Column(name ="subtasktoken_id",nullable = false)
+	private String subtasktokenid;
+	
 	@Column(name = "subtaskname")
 	private String subTaskName;
 	@Column(name = "subtaskdescription",  columnDefinition = "TEXT")
 	private String subTaskDescription;
 	@Column(name = "addedby")
 	private Long addedby;
+	
+	private Long subtaskmaxnum;
+
 	@Column(name = "updatedby")
 	private Long updatedBy;
 	@Column(name = "status")

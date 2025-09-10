@@ -67,7 +67,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	
 	
 	//----------------------------tms   replicated methods --------------sta
-	@Query(value = "select st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.target_date,st.addedby,st.duration,DATE(st.createddate) AS createddate ,st.priority,st.status, "
+	@Query(value = "select st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.target_date,st.addedby,st.duration,DATE(st.createddate) AS createddate ,st.priority,st.status,st.subtaskmaxnum As subtaskmaxnum,st.subtasktoken_id As subtasktokenid,"
 			+ " st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname  , st.start_date,"
 			+ " CONCAT( "
 			+ "        COALESCE(u1.first_name, u2.first_name), ' ', "
@@ -84,7 +84,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	
 	
 	@Query(value = "SELECT  st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.target_date,st.addedby,st.duration,DATE(st.createddate) AS createddate ,"
-			+ "  st.priority,st.status,st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname , st.start_date ,"
+			+ "  st.priority,st.status,st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname , st.start_date ,st.subtaskmaxnum As subtaskmaxnum,st.subtasktoken_id As subtasktokenid,"
 			+ "CONCAT( "
 			+ "			       COALESCE(u1.first_name, u2.first_name), ' ', "
 			+ "			       COALESCE(u1.middle_name, u2.middle_name, ''), ' ', "
@@ -131,4 +131,8 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	
 	@Query(value = "select subtaskname from tms_sub_task where subtaskid = :subTaskId",nativeQuery = true)
 	public String getSubTaskName(Long subTaskId);
+
+	
+	@Query(value = "select max(subtaskmaxnum) as max from tms_sub_task", nativeQuery = true)
+	public Long subtaskmaxnum();
 }
