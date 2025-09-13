@@ -76,7 +76,7 @@ public class SubTaskServiceImpl implements SubTaskService {
     private fileUploadRepository fileUploadRepository;
 	
 	
-	private static final int DIGIT_PADDING = 4;
+	private static final int DIGIT_PADDING = 6;
 
 	
 	@Value("${AppFilesDir}")
