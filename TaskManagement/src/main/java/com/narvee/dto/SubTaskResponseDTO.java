@@ -18,6 +18,7 @@ public class SubTaskResponseDTO {
 	private String taskName;
 	private String subTaskDescription;
 	private LocalDate startDate;
+	private LocalDate updateddate;
 	private Long subTaskId;
 	private String subtaskName;
 	private LocalDate createddate;
@@ -48,6 +49,7 @@ public class SubTaskResponseDTO {
 		this.subtaskName = dto.getSubtaskname();
 		this.priority = dto.getPriority();
 		this.pid = dto.getPid();
+		this.updateddate=dto.getUpdateddate();
 	}
 
 }

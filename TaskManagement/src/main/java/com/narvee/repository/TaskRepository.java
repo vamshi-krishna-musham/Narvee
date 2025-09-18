@@ -33,7 +33,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	@Query(value = "update  tms_assigned_users set completed= :completed where userid= :userid and assignid= :assignid", nativeQuery = true)
 	public void Iscompletd(boolean completed, Long userid, Long assignid);
 
-	@Query(value = "select ad.pseudoname as createdby, t.ticketid, u.pseudoname, t.createddate, t.targetdate,au.userstatus as  status from tms_task t\r\n"
+	@Query(value = "select ad.pseudoname as createdby, t.ticketid, u.pseudoname, t.createddate,t.updateddate,t.targetdate,au.userstatus as  status from tms_task t\r\n"
 			+ "   join users ad on t.addedby = ad.userid join tms_task_users tu on t.taskid = tu.taskid  join tms_assigned_users au  on au.assignid=tu.assignedto\r\n"
 			+ "   join users u on u.userid= au.userid  and t.taskid = :taskid", nativeQuery = true)
 	public List<TaskAssignDTO> taskAssignInfo(Long taskid);
@@ -56,7 +56,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			+ "    tt.trackid DESC", nativeQuery = true)
 	public List<TaskTrackerDTO> allTasksRecords();
 
-	@Query(value = "SELECT t.taskid, t.ticketid, t.taskname, t.createddate, t.targetdate, tt.trackid, t.status,t.description as taskdescription, tt.description, tt.fromdate, tt.todate,u.pseudoname\r\n"
+	@Query(value = "SELECT t.taskid, t.ticketid, t.taskname, t.createddate, t.updateddate,t.targetdate, tt.trackid, t.status,t.description as taskdescription, tt.description, tt.fromdate, tt.todate,u.pseudoname\r\n"
 			+ "FROM\r\n" + "    tms_task t\r\n" + "LEFT JOIN\r\n"
 			+ "    tms_ticket_tracker tt ON t.taskid = tt.taskid\r\n" + "LEFT JOIN\r\n"
 			+ "    tms_task_users tu ON tu.taskid = t.taskid\r\n" + "LEFT JOIN\r\n"
@@ -66,12 +66,12 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			+ "", nativeQuery = true)
 	public List<TaskTrackerDTO> taskReports(@Param("fromDate") LocalDate fromDate, @Param("toDate") LocalDate toDate);
 
-	@Query(value = "SELECT t.taskid, t.ticketid, t.taskname, t.createddate, t.targetdate, tt.trackid, t.status,t.description as taskdescription, tt.description, tt.fromdate, tt.todate,u.pseudoname\r\n"
+	@Query(value = "SELECT t.taskid, t.ticketid, t.taskname, t.createddate,t.updateddate, t.targetdate, tt.trackid, t.status,t.description as taskdescription, tt.description, tt.fromdate, tt.todate,u.pseudoname\r\n"
 			+ "FROM\r\n" + "    tms_task t\r\n" + "LEFT JOIN\r\n"
 			+ "    tms_ticket_tracker tt ON t.taskid = tt.taskid\r\n" + "LEFT JOIN\r\n"
 			+ "    tms_task_users tu ON tu.taskid = t.taskid\r\n" + "LEFT JOIN\r\n"
 			+ "    tms_assigned_users au ON au.assignid = tu.assignedto\r\n" + "LEFT JOIN\r\n"
-			+ "    users u ON u.userid = au.userid WHERE DATE(t.createddate) >=:fromDate \r\n"
+			+ "    users u ON u.userid = tu.userid WHERE DATE(t.createddate) >=:fromDate \r\n"
 			+ "	AND t.targetdate <=:toDate AND t.department=:dept \r\n" + "		ORDER BY\r\n"
 			+ "		 t.ticketid DESC\r\n" + "", nativeQuery = true)
 	public List<TaskTrackerDTO> taskReportsByDepartment(@Param("fromDate") LocalDate fromDate,
@@ -90,12 +90,13 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 
 	@Query(value = "select u.userid ,u.pseudoname,u.fullname   FROM users u where u.status ='Active' AND u.department=:department ", nativeQuery = true)
 	public List<GetUsersDTO> findDepartmentWiseUsers(String department);
-
+//added vais
+	
 	@Modifying
 	@Transactional
 	@Query(value = "UPDATE tms_task SET status=:status, updatedby=:updatedby , updateddate = :updateddate WHERE taskid =:taskid ", nativeQuery = true)
 	public int updateTaskStatus(@Param("taskid") Long taskid, @Param("status") String status,
-			@Param("updatedby") String updatedby, LocalDateTime updateddate);
+			@Param("updatedby") String updatedby, @Param("updateddate") LocalDateTime updateddate);
 
 	@Query(value = "SELECT  t.taskid,DATE(t.createddate) As createddate,DATE(t.updateddate) AS updateddate,t.addedby,t.department,t.description,t.maxnum,t.status,t.targetdate,t.ticketid,t.updatedby,t.taskname,p.projectid,p.pid,t.duration,t.priority  \r\n"
 			+ "			FROM tms_task t  Join tms_project p ON t.pid = p.pid WHERE p.projectid = :projectid Order by t.updateddate DESC ", nativeQuery = true)
@@ -327,7 +328,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	
 	@Modifying
 	@Transactional
-	@Query(value = "UPDATE tms_task SET status=:status, updatedby=:updatedby , last_status_updateddate = :updateddate WHERE taskid =:taskid ", nativeQuery = true)
+	@Query(value = "UPDATE tms_task SET status=:status, updatedby=:updatedby , updateddate = :updateddate WHERE taskid =:taskid ", nativeQuery = true)
 	public int updateTmsTaskStatus(@Param("taskid") Long taskid, @Param("status") String status,
 			@Param("updatedby") Long updatedby, LocalDateTime updateddate);
 	

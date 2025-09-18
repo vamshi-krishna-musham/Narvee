@@ -372,6 +372,7 @@ public class TaskServiceImpl implements TaskService {
 		update.setDescription(task.getDescription());
 		update.setAssignedto(task.getAssignedto());
 		update.setUpdatedby(task.getUpdatedby());
+	
 		return taskRepo.save(update);
 	}
 
@@ -410,7 +411,7 @@ public class TaskServiceImpl implements TaskService {
 //		addedByToAssignedUsers.addAll(assignedUsers);
 		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
 		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
-		task.setLastStatusUpdateddate(indiaDateTime);
+		task.setUpdateddate(indiaDateTime);
 		TmsTask savedtask = taskRepo.save(task);
 
 		if (files != null && !files.isEmpty()) {
@@ -501,6 +502,10 @@ public class TaskServiceImpl implements TaskService {
 			ticketTracker.setUpdatedby(updateTask.getUpdatedby());
 			listTicketTracker.add(ticketTracker);
 			task.setTrack(listTicketTracker);
+			
+			//added by vaishnavi
+			 task.setUpdateddate(LocalDateTime.now(ZoneId.of("Asia/Kolkata")));
+			
 			taskRepo.save(task);
 			try {
 				
@@ -546,6 +551,10 @@ public class TaskServiceImpl implements TaskService {
 		update.setUpdatedby(task.getUpdatedby());
 		update.setStatus(task.getStatus());
 		update.setDuration(task.getDuration());
+		//added by vaishnavi
+		task.setCreateddate(LocalDateTime.now());
+		update.setUpdateddate(LocalDateTime.now(ZoneId.of("Asia/Kolkata"))); 
+
 
 		// Path path = Paths.get(UPLOAD_DIR + getOriginalFilename);
 		if (files != null && !files.isEmpty()) {
@@ -655,6 +664,9 @@ public class TaskServiceImpl implements TaskService {
 			sortfield = "start_date";
 		else if (sortfield.equalsIgnoreCase("status"))
 			sortfield = "status";
+		//added by vaishnavi
+		else if (sortfield.equalsIgnoreCase("updateddate"))
+			sortfield = "updateddate";
 		else if (sortfield.equalsIgnoreCase("Priority"))
 			sortfield = "priority";
 		Sort.Direction sortDirection = Sort.Direction.ASC;
@@ -759,6 +771,9 @@ public class TaskServiceImpl implements TaskService {
 			sortfield = "targetdate";
 		else if (sortfield.equalsIgnoreCase("status"))
 			sortfield = "status";
+		//added by vaishnavi
+		else if (sortfield.equalsIgnoreCase("updateddate"))
+			sortfield = "updateddate";
 		Sort.Direction sortDirection = Sort.Direction.ASC;
 
 		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
@@ -863,10 +878,10 @@ public class TaskServiceImpl implements TaskService {
 			    if (incompleteTasks > 0 ) {
 			        throw new RuntimeException("Cannot mark Task as Closed. Some subtasks are still not closed.");
 			    }
-			  //  taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);	
+			 	
 			}	
 			 taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);	
-			//taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);	
+			
 			TmsTask taskInfo = taskRepo.findById(taskid).get();
 	
 			Long adminId =	projectRepository.getAdminId(taskid);

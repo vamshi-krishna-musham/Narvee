@@ -26,7 +26,9 @@ public interface ProjectDTO {
 	
 	public LocalDate getstartDate();
 	
-	public LocalDate gettargetDate();
+	public LocalDate gettargetDate();  
+	
+	public LocalDate getUpdateddate();
 	
 	
 	

@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -334,6 +335,8 @@ public class ProjectServiceImpl implements ProjectService {
 		    if (incompleteTasks > 0 ) {
 		        throw new RuntimeException("Cannot mark project as completed. Some tasks are still not closed.");
 		    }
+
+		   
 		}	
 		project.setProjectName(updateproject.getProjectName());
 		project.setAddedBy(updateproject.getAddedBy());
@@ -434,11 +437,13 @@ public class ProjectServiceImpl implements ProjectService {
 		else if (sortfield.equalsIgnoreCase("projectdescription"))
 			sortfield = "projectdescription";
 		else if (sortfield.equalsIgnoreCase("addedBy"))
-			sortfield = "addedBy";
+			sortfield = "addedByFullname";
 		else if (sortfield.equalsIgnoreCase("StartDate"))
 			sortfield = "startDate";
 		else if (sortfield.equalsIgnoreCase("DueDate"))
 			sortfield = "targetDate";
+		else if (sortfield.equalsIgnoreCase("updateddate"))
+			sortfield = "updateddate";
 		else
 			sortfield = "createdDate";
 
@@ -571,4 +576,5 @@ public class ProjectServiceImpl implements ProjectService {
 
 	}
 
+	
 }
