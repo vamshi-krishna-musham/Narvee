@@ -318,7 +318,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 		
 		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
 		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
-		subtask.setLastStatusUpdateddate(indiaDateTime);
+		subtask.setUpdateddate(indiaDateTime);
 		
 		Long subtaskmaxnum = subtaskrepository.subtaskmaxnum();
 		if (subtaskmaxnum == null) {
