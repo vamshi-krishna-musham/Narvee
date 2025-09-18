@@ -67,7 +67,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	
 	
 	//----------------------------tms   replicated methods --------------sta
-	@Query(value = "select st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.target_date,st.addedby,st.duration,DATE(st.createddate) AS createddate ,st.priority,st.status, "
+	@Query(value = "select st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.target_date,st.addedby,st.duration,DATE(st.createddate) AS createddate ,st.priority,st.status,st.subtaskmaxnum As subtaskmaxnum,st.subtasktoken_id As subtasktokenid,"
 			+ " st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname  , st.start_date,"
 			+ " CONCAT( "
 			+ "        COALESCE(u1.first_name, u2.first_name), ' ', "
@@ -84,7 +84,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	
 	
 	@Query(value = "SELECT  st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.target_date,st.addedby,st.duration,DATE(st.createddate) AS createddate ,"
-			+ "  st.priority,st.status,st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname , st.start_date ,"
+			+ "  st.priority,st.status,st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname , st.start_date ,st.subtaskmaxnum As subtaskmaxnum,st.subtasktoken_id As subtasktokenid,"
 			+ "CONCAT( "
 			+ "			       COALESCE(u1.first_name, u2.first_name), ' ', "
 			+ "			       COALESCE(u1.middle_name, u2.middle_name, ''), ' ', "
@@ -107,9 +107,11 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	@Query(value = "       SELECT \r\n"
 			+ "			    st.subtaskid,  \r\n"
 			+ "			    NULL AS fullname,   \r\n"
-			+ "			    NULL AS email,   \r\n"
-			+ "			   concat(creator.first_name,' ',COALESCE(creator.middle_name, ''),' ',creator.last_name)  as cfullname ,  \r\n"
-			+ "			    creator.email as cemail   \r\n"
+			+ "			    NULL AS email,"
+			+ "               Null AS profile ,   \r\n"
+			+ "			  concat(creator.first_name,' ',COALESCE(creator.middle_name, ''),' ',creator.last_name)  as cfullname ,  \r\n"
+			+ "			  creator.email as cemail ,"
+			+ "           creator.profile_photo  AS cprofile "
 			+ "			FROM tms_sub_task st  \r\n"
 			+ "			JOIN tms_users creator ON st.addedby = creator.user_id    \r\n"
 			+ "			WHERE st.subtaskid = :subtaskid \r\n"
@@ -119,9 +121,11 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 			+ "			SELECT   \r\n"
 			+ "			    st.subtaskid,   \r\n"
 			+ "			    concat(u.first_name,' ',COALESCE(u.middle_name, ''),' ',u.last_name) AS full_name  ,   \r\n"
-			+ "			    u.email,   \r\n"
+			+ "			    u.email, "
+			+ "              u. profile_photo AS profile ,    \r\n"
 			+ "			    NULL AS fullname,   \r\n"
-			+ "			    NULL AS email  \r\n"
+			+ "			    NULL AS email ,"
+			+ "              null AS profile  \r\n"
 			+ "			FROM tms_sub_task st \r\n"
 			+ "			\r\n"
 			+ "			JOIN tms_assigned_users au ON st.subtaskid = au.subtaskid  \r\n"
@@ -131,4 +135,8 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	
 	@Query(value = "select subtaskname from tms_sub_task where subtaskid = :subTaskId",nativeQuery = true)
 	public String getSubTaskName(Long subTaskId);
+
+	
+	@Query(value = "select max(subtaskmaxnum) as max from tms_sub_task", nativeQuery = true)
+	public Long subtaskmaxnum();
 }
