@@ -20,6 +20,8 @@ public interface ProjectDTO {
 
 	public String getUpdatedby();
 	
+	public String getUpdatedByFullname();
+	
 	public String getProjectid();
 	
 	public LocalDateTime getCreateddate();
@@ -29,7 +31,6 @@ public interface ProjectDTO {
 	public LocalDate gettargetDate();  
 	
 	public LocalDate getUpdateddate();
-	
 	
 	
 }

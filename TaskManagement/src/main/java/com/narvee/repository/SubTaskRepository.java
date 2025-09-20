@@ -94,7 +94,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 			+ "         LEFT JOIN tms_users u1 ON st.updatedby = u1.user_id "
 			+ "         LEFT JOIN tms_users u2 ON st.addedby = u2.user_id "
 			+ "          WHERE t.ticketid = :ticketId  AND ( "
-			+ "   st.subtaskname LIKE CONCAT('%',:keyword,  '%') OR DATE_FORMAT(st.target_date, '%Y-%m-%d') LIKE CONCAT('%',:keyword,  '%')  OR DATE_FORMAT(st.start_date, '%Y-%m-%d') LIKE CONCAT('%',:keyword, '%') "
+			+ "   st.subtaskname LIKE CONCAT('%',:keyword,  '%') OR DATE_FORMAT(st.target_date, '%d-%m-%Y') LIKE CONCAT('%',:keyword,  '%')  OR DATE_FORMAT(st.start_date, '%d-%m-%Y') LIKE CONCAT('%',:keyword, '%') "
 			+ " OR st.status LIKE CONCAT('%',:keyword, '%') OR st.priority LIKE CONCAT('%',:keyword, '%') OR st.duration LIKE CONCAT('%',:keyword,  '%') "
 			+ " OR    CONCAT( "
 			+ "            COALESCE(u1.first_name, u2.first_name), ' ', "
