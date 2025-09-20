@@ -573,7 +573,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 	}
 	
 	
-	@Override
+	/*@Override
 	public SubTaskResponse findTmsSubTaskByTicketId(RequestDTO requestresponsedto) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: findTmsTaskByProjectid-tms");
 		String sortfield = requestresponsedto.getSortField();
@@ -680,7 +680,94 @@ public class SubTaskServiceImpl implements SubTaskService {
 			taskResp.setTaskId(TicketId);
 			return taskResp;
 		}
+	}*/@Override
+	public SubTaskResponse findTmsSubTaskByTicketId(RequestDTO requestresponsedto) {
+	    logger.info("!!! inside class: SubTaskServiceImpl , !! method: findTmsSubTaskByTicketId-tms");
+
+	    String sortfield = requestresponsedto.getSortField() == null ? "updateddate" : requestresponsedto.getSortField();
+	    String sortorder = requestresponsedto.getSortOrder();
+	    Integer pageNo = requestresponsedto.getPageNumber() == null ? 1 : requestresponsedto.getPageNumber();
+	    Integer pageSize = requestresponsedto.getPageSize() == null ? 10 : requestresponsedto.getPageSize();
+	    String projectid = requestresponsedto.getProjectid();
+	    String keyword = requestresponsedto.getKeyword();
+	    String ticketId = requestresponsedto.getTicketId();
+
+	    // map sort fields (same as your mapping)
+	    if (sortfield.equalsIgnoreCase("subTaskId"))
+	        sortfield = "subTaskId";
+	    else if (sortfield.equalsIgnoreCase("subTaskName"))
+	        sortfield = "subTaskName";
+	    else if (sortfield.equalsIgnoreCase("subTaskDescription"))
+	        sortfield = "subTaskDescription";
+	    else if (sortfield.equalsIgnoreCase("status"))
+	        sortfield = "status";
+	    else if (sortfield.equalsIgnoreCase("DueDate"))
+	        sortfield = "target_date";
+	    else if (sortfield.equalsIgnoreCase("startDate"))
+	        sortfield = "start_date";
+	    else if (sortfield.equalsIgnoreCase("priority"))
+	        sortfield = "priority";
+	    else if (sortfield.equalsIgnoreCase("duration"))
+	        sortfield = "duration";
+	    else
+	        sortfield = "updateddate";
+
+	    Sort.Direction sortDirection = Sort.Direction.ASC;
+	    if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
+	        sortDirection = Sort.Direction.DESC;
+	    }
+	    Sort sort = Sort.by(sortDirection, sortfield);
+	    Pageable pageable = PageRequest.of(Math.max(0, pageNo - 1), pageSize, sort);
+
+	    // Normalize keyword
+	    if (keyword != null) {
+	        keyword = keyword.trim();
+	        if (keyword.isEmpty()) keyword = "empty";
+	    } else {
+	        keyword = "empty";
+	    }
+
+	    Page<TaskTrackerDTO> res;
+	    if ("empty".equalsIgnoreCase(keyword)) {
+	        logger.info("Fetching subtasks for ticketId without search");
+	        res = subtaskrepository.findSubTaskByTicketid(ticketId, pageable);
+	    } else {
+	        logger.info("Fetching subtasks for ticketId with search keyword: {}", keyword);
+	        res = subtaskrepository.findSubTaskByTicketIdWithSearching(ticketId, keyword, pageable);
+	    }
+
+	    List<SubTaskResponseDTO> tasksList = new ArrayList<>();
+	    for (TaskTrackerDTO order : res) {
+	        SubTaskResponseDTO result = new SubTaskResponseDTO(order);
+
+	        List<GetUsersDTO> assignUsers = subtaskrepository.getSubtaskAssignUsersTms(order.getSubtaskid());
+	        List<GetUsersDTO> filteredAssignUsers = assignUsers.stream()
+	                .filter(user -> user.getFullname() != null && !user.getFullname().trim().isEmpty())
+	                .collect(Collectors.toList());
+	        result.setAssignUsers(filteredAssignUsers);
+
+	        List<TmsFileUpload> fileEntities = fileUploadRepository.getFilesBySubTaskId(order.getSubtaskid());
+	        List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
+	            FileUploadDto dto = new FileUploadDto();
+	            dto.setId(file.getId());
+	            dto.setFileName(file.getFileName());
+	            dto.setFilePath(file.getFilePath());
+	            dto.setFileType(file.getFileType());
+	            return dto;
+	        }).collect(Collectors.toList());
+	        result.setFiles(fileDtos);
+
+	        tasksList.add(result);
+	    }
+
+	    Page<SubTaskResponseDTO> tasksPage = new PageImpl<>(tasksList, pageable, res.getTotalElements());
+	    Long TicketId = repository.findTicketId(ticketId);
+	    SubTaskResponse taskResp = new SubTaskResponse();
+	    taskResp.setSubtasks(tasksPage);
+	    taskResp.setTaskId(TicketId);
+	    return taskResp;
 	}
+
 
 	@Override
 	public boolean updateTmsSubTaskTrack(UpdateTask updateTask) {

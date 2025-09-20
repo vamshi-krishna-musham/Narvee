@@ -67,7 +67,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	
 	
 	//----------------------------tms   replicated methods --------------sta
-	@Query(value = "select st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.target_date,st.addedby,st.duration,DATE(st.createddate) AS createddate ,st.priority,st.status, "
+	/*@Query(value = "select st.subtaskid AS subTaskId,  st.subtaskdescription AS description,st.subtaskname ,st.target_date,st.addedby,st.duration,DATE(st.createddate) AS createddate ,st.priority,st.status, "
 			+ " st.taskid,t.ticketid,st.updatedby ,DATE(st.updateddate) AS updateddate ,t.taskname  , st.start_date,"
 			+ " CONCAT( "
 			+ "        COALESCE(u1.first_name, u2.first_name), ' ', "
@@ -127,8 +127,92 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 			+ "			JOIN tms_assigned_users au ON st.subtaskid = au.subtaskid  \r\n"
 			+ "			JOIN tms_users u ON au.tms_user_id = u.user_id    \r\n"
 			+ "			WHERE st.subtaskid = :subtaskid ", nativeQuery = true)
-	public List<GetUsersDTO> getSubtaskAssignUsersTms(Long subtaskid);
-	
+	public List<GetUsersDTO> getSubtaskAssignUsersTms(Long subtaskid);*/
+	// Non-search listing (normalized fullname)
+	@Query(value =
+	  "SELECT "
+	+ "  st.subtaskid AS subTaskId, "
+	+ "  st.subtaskdescription AS description, "
+	+ "  st.subtaskname, "
+	+ "  st.target_date, "
+	+ "  st.addedby, "
+	+ "  st.duration, "
+	+ "  DATE(st.createddate) AS createddate, "
+	+ "  st.priority, "
+	+ "  st.status, "
+	+ "  st.taskid, "
+	+ "  t.ticketid, "
+	+ "  st.updatedby, "
+	+ "  DATE(st.updateddate) AS updateddate, "
+	+ "  t.taskname, "
+	+ "  st.start_date, "
+	+ "  CONCAT_WS(' ', NULLIF(TRIM(u1.first_name), ''), NULLIF(TRIM(u1.middle_name), ''), NULLIF(TRIM(u1.last_name), '')) AS fullname "
+	+ "FROM tms_sub_task st "
+	+ "JOIN tms_task t ON st.taskid = t.taskid "
+	+ "LEFT JOIN tms_users u1 ON st.updatedby = u1.user_id "
+	+ "LEFT JOIN tms_users u2 ON st.addedby = u2.user_id "
+	+ "WHERE t.ticketid = :ticketId",
+	nativeQuery = true)
+	public Page<TaskTrackerDTO> findSubTaskByTicketid(@Param("ticketId") String ticketId, Pageable pageable);
+	// Search listing (includes assigned-user join and case-insensitive searching)
+	@Query(value =
+	  "SELECT DISTINCT "
+	+ "  st.subtaskid AS subTaskId, "
+	+ "  st.subtaskdescription AS description, "
+	+ "  st.subtaskname, "
+	+ "  st.target_date, "
+	+ "  st.addedby, "
+	+ "  st.duration, "
+	+ "  DATE(st.createddate) AS createddate, "
+	+ "  st.priority, "
+	+ "  st.status, "
+	+ "  st.taskid, "
+	+ "  t.ticketid, "
+	+ "  st.updatedby, "
+	+ "  DATE(st.updateddate) AS updateddate, "
+	+ "  t.taskname, "
+	+ "  st.start_date, "
+	+ "  CONCAT_WS(' ', NULLIF(TRIM(u1.first_name), ''), NULLIF(TRIM(u1.middle_name), ''), NULLIF(TRIM(u1.last_name), '')) AS fullname "
+	+ "FROM tms_sub_task st "
+	+ "JOIN tms_task t ON st.taskid = t.taskid "
+	+ "LEFT JOIN tms_users u1 ON st.updatedby = u1.user_id "
+	+ "LEFT JOIN tms_users u2 ON st.addedby = u2.user_id "
+	+ "LEFT JOIN tms_assigned_users au ON st.subtaskid = au.subtaskid "
+	+ "LEFT JOIN tms_users auu ON au.tms_user_id = auu.user_id "
+	+ "WHERE t.ticketid = :ticketId AND ( "
+	+ "  LOWER(st.subtaskname) LIKE LOWER(CONCAT('%', :keyword, '%')) OR "
+	+ "  DATE_FORMAT(st.target_date, '%Y-%m-%d') LIKE CONCAT('%', :keyword, '%') OR "
+	+ "  DATE_FORMAT(st.start_date, '%Y-%m-%d') LIKE CONCAT('%', :keyword, '%') OR "
+	+ "  LOWER(st.status) LIKE LOWER(CONCAT('%', :keyword, '%')) OR "
+	+ "  LOWER(st.priority) LIKE LOWER(CONCAT('%', :keyword, '%')) OR "
+	+ "  LOWER(st.duration) LIKE LOWER(CONCAT('%', :keyword, '%')) OR "
+	+ "  LOWER(CONCAT_WS(' ', NULLIF(TRIM(u1.first_name), ''), NULLIF(TRIM(u1.middle_name), ''), NULLIF(TRIM(u1.last_name), ''))) LIKE LOWER(CONCAT('%', :keyword, '%')) OR "
+	+ "  LOWER(CONCAT_WS(' ', NULLIF(TRIM(auu.first_name), ''), NULLIF(TRIM(auu.middle_name), ''), NULLIF(TRIM(auu.last_name), ''))) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+	+ ")",
+	nativeQuery = true)
+	public Page<TaskTrackerDTO> findSubTaskByTicketIdWithSearching(@Param("ticketId") String ticketId,
+	                                                               @Param("keyword") String keyword, Pageable pageable);
+	// Assigned users + creator: UNION with SAME aliases (fullname, email), trimmed
+	@Query(value =
+	  "SELECT "
+	+ "  st.subtaskid AS subtaskid, "
+	+ "  CONCAT_WS(' ', NULLIF(TRIM(creator.first_name), ''), NULLIF(TRIM(creator.middle_name), ''), NULLIF(TRIM(creator.last_name), '')) AS fullname, "
+	+ "  creator.email AS email "
+	+ "FROM tms_sub_task st "
+	+ "JOIN tms_users creator ON st.addedby = creator.user_id "
+	+ "WHERE st.subtaskid = :subtaskid "
+	+ "UNION ALL "
+	+ "SELECT "
+	+ "  st.subtaskid AS subtaskid, "
+	+ "  CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), '')) AS fullname, "
+	+ "  u.email AS email "
+	+ "FROM tms_sub_task st "
+	+ "JOIN tms_assigned_users au ON st.subtaskid = au.subtaskid "
+	+ "JOIN tms_users u ON au.tms_user_id = u.user_id "
+	+ "WHERE st.subtaskid = :subtaskid",
+	nativeQuery = true)
+	public List<GetUsersDTO> getSubtaskAssignUsersTms(@Param("subtaskid") Long subtaskid);
+
 	@Query(value = "select subtaskname from tms_sub_task where subtaskid = :subTaskId",nativeQuery = true)
 	public String getSubTaskName(Long subTaskId);
 }

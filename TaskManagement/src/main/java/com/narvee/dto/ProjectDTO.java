@@ -28,6 +28,8 @@ public interface ProjectDTO {
 	
 	public LocalDate gettargetDate();
 	
+	 public String getAssignedTo();//added by pratiksha
+	
 	
 	
 }
