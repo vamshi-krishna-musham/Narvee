@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -421,7 +422,148 @@ public class ProjectServiceImpl implements ProjectService {
 
 	}
 
-	/*@Override
+@Override
+	public Page<ProjectResponseDto> findTmsAllProjects(RequestDTO requestresponsedto) {
+	    logger.info("!!! inside class: ProjectServiceImpl , !! method: findTmsAllProjects");
+
+	    String sortOrder = requestresponsedto.getSortOrder();
+	    String sortField = requestresponsedto.getSortField();
+	    String keyword = requestresponsedto.getKeyword();
+	    Integer pageNo = requestresponsedto.getPageNumber();
+	    Integer pageSize = requestresponsedto.getPageSize();
+	    Long userId = requestresponsedto.getUserid();
+	    String access = requestresponsedto.getAccess();
+
+	    // Normalize sort field
+	    switch (sortField.toLowerCase()) {
+	        case "projectid": sortField = "projectId"; break;
+	        case "projectname": sortField = "projectName"; break;
+	        
+	        case "status": sortField = "status"; break;
+	        case "projectdescription": sortField = "projectdescription"; break;
+	        case "addedby": sortField = "addedBy"; break;
+	        case "startdate": sortField = "startDate"; break;
+	        case "duedate": sortField = "targetDate"; break;
+	        default: sortField = "createdDate";
+	    }
+
+	    Sort.Direction direction = "desc".equalsIgnoreCase(sortOrder) ? Sort.Direction.DESC : Sort.Direction.ASC;
+	    Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(direction, sortField));
+
+	    Page<ProjectDTO> page;
+
+	    // Determine which repository method to call
+	    if ("SUPER ADMIN".equalsIgnoreCase(access) || "project manager".equalsIgnoreCase(access) || "ADMIN".equalsIgnoreCase(access)) {
+	        Long adminId = "Super Admin".equalsIgnoreCase(access) ? userId : projectrepository.AdminId(userId);
+	        page = "empty".equalsIgnoreCase(keyword)
+	                ? projectrepository.findAllTmsProjects(pageable, adminId)
+	                : projectrepository.findAllTmsProjectWithFiltering(pageable,  adminId);
+	    } else {
+	        page = "empty".equalsIgnoreCase(keyword)
+	                ? projectrepository.getAllProjectsByTmsUser(userId, pageable)
+	                : projectrepository.getAllProjectsByTmsUserFilter(pageable,  userId);
+	    }
+
+	    // Normalize keyword for search
+	    String normalizedKeyword = keyword != null ? keyword.replaceAll("\\s+", " ").trim().toLowerCase() : "";
+
+	    // Map and filter projects
+	    List<ProjectResponseDto> allProjects = page.stream().map(projectDTO -> {
+	        TmsProject project = projectrepository.findById(projectDTO.getPid()).orElse(null);
+	        ProjectResponseDto proj = new ProjectResponseDto();
+	        proj.setProjePage(projectDTO);
+
+	        // AssignedTo names as list
+	        List<String> assignedUserNames = new ArrayList<>();
+	        if (projectDTO.getAssignedTo() != null && !projectDTO.getAssignedTo().isEmpty()) {
+	            assignedUserNames = Arrays.stream(projectDTO.getAssignedTo().split(","))
+	                    .map(String::trim)
+	                    .collect(Collectors.toList());
+	        }
+
+	        boolean matchesKeyword = "empty".equalsIgnoreCase(keyword);
+
+	        if (!matchesKeyword && normalizedKeyword.length() > 0) {
+
+	            //  Check Project ID
+	            if (String.valueOf(projectDTO.getProjectid()).toLowerCase().contains(normalizedKeyword)) {
+	                matchesKeyword = true;
+	            }
+
+	            //  Check Project Name
+	            else if (projectDTO.getProjectname() != null &&
+	                     projectDTO.getProjectname().toLowerCase().contains(normalizedKeyword)) {
+	                matchesKeyword = true;
+	            }
+
+	            //  Check Start Date
+	            else if (projectDTO.getstartDate() != null &&
+	                     projectDTO.getstartDate().toString().toLowerCase().contains(normalizedKeyword)) {
+	                matchesKeyword = true;
+	            }
+
+	            //  Check Due Date (Target Date)
+	            else if (projectDTO.gettargetDate() != null &&
+	                     projectDTO.gettargetDate().toString().toLowerCase().contains(normalizedKeyword)) {
+	                matchesKeyword = true;
+	            }
+	         // Check Status (matches the DB p.status value)
+	            else if (projectDTO.getStatus() != null &&
+	                     projectDTO.getStatus().replaceAll("\\s+", " ").trim().toLowerCase().contains(normalizedKeyword)) {
+	                matchesKeyword = true;
+	            }
+	            
+
+	            //  Check Added By
+	            else if (projectDTO.getaddedByFullname() != null &&
+	                     projectDTO.getaddedByFullname().replaceAll("\\s+", " ").trim().toLowerCase().contains(normalizedKeyword)) {
+	                matchesKeyword = true;
+	            }
+
+	            //  Check Assigned Users
+	            else {
+	                for (String assigned : assignedUserNames) {
+	                    String normalizedAssignedTo = assigned.replaceAll("\\s+", " ").trim().toLowerCase();
+	                    if (normalizedAssignedTo.contains(normalizedKeyword)) {
+	                        matchesKeyword = true;
+	                        break;
+	                    }
+	                }
+	            }
+	        }
+
+
+	        if (!matchesKeyword) return null;
+
+	        proj.setAssignedUsers(assignedUserNames);
+
+	        // Set assigned users with full names
+	        if (project != null) {
+	            Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
+	                    .map(assignUser -> {
+	                        GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
+	                        if (user != null) assignUser.setFullname(user.getFullname());
+	                        return assignUser;
+	                    }).collect(Collectors.toSet());
+	            proj.setAssignUsers(assignedUsersWithNames);
+	            proj.setFiles(project.getFiles());
+	        }
+
+	        return proj;
+	    })
+	    .filter(Objects::nonNull)
+	    .collect(Collectors.toList());
+
+	    // Manual pagination
+	    int start = Math.min((pageNo - 1) * pageSize, allProjects.size());
+	    int end = Math.min(start + pageSize, allProjects.size());
+	    List<ProjectResponseDto> pagedProjects = allProjects.subList(start, end);
+
+	    return new PageImpl<>(pagedProjects, pageable, allProjects.size());
+	}//added by pratiksha
+
+/*@Override
+
 	public Page<ProjectResponseDto> findTmsAllProjects(RequestDTO requestresponsedto) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: findTmsAllProjects");
 		String sortorder = requestresponsedto.getSortOrder();
@@ -442,14 +584,18 @@ public class ProjectServiceImpl implements ProjectService {
 			sortfield = "projectdescription";
 		else if (sortfield.equalsIgnoreCase("addedBy"))
 			sortfield = "addedByFullname";
+
 		else if (sortfield.equalsIgnoreCase("updatedBy"))
 			sortfield = "updatedByFullname";
+
 		else if (sortfield.equalsIgnoreCase("StartDate"))
 			sortfield = "startDate";
 		else if (sortfield.equalsIgnoreCase("DueDate"))
 			sortfield = "targetDate";
+
 		else if (sortfield.equalsIgnoreCase("updateddate"))
 			sortfield = "updateddate";
+
 		else
 			sortfield = "createdDate";
 
@@ -464,6 +610,8 @@ public class ProjectServiceImpl implements ProjectService {
 
 		List<ProjectResponseDto> res = new ArrayList<>();
 
+		
+		
 		if (access.equalsIgnoreCase("SUPER ADMIN") || access.equalsIgnoreCase("project manager") ||  access.equalsIgnoreCase("ADMIN") ) {
 			
 			Long adminId = ("Super Admin".equalsIgnoreCase(access))
@@ -583,6 +731,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 		}
 		return new PageImpl<>(res, pageable, page.getTotalElements());
+
 
 	}*/@Override
 	public Page<ProjectResponseDto> findTmsAllProjects(RequestDTO requestresponsedto) {
@@ -747,3 +896,4 @@ public class ProjectServiceImpl implements ProjectService {
 
 	}
 }
+

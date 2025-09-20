@@ -154,10 +154,19 @@ public class ProjectController {
 		
 		@PostMapping("/findAllProjects-tms")
 		public ResponseEntity<RestAPIResponse> getAllProjectsTms(@RequestBody RequestDTO requestresponsedto) {
-			logger.info("!!! inside class: ProjectController , !! method: getAllProjectsTms , !! for Tms Users ");
-			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched all projects successfully",
-					projectservice.findTmsAllProjects(requestresponsedto)), HttpStatus.OK);
+		    logger.info("!!! inside ProjectController -> getAllProjectsTms for TMS Users with keyword: {}",
+		            requestresponsedto.getKeyword());
+
+		    return new ResponseEntity<>(
+		            new RestAPIResponse(
+		                    "success",
+		                    "Fetched all projects successfully (with assigned user search)",
+		                    projectservice.findTmsAllProjects(requestresponsedto)
+		            ),
+		            HttpStatus.OK
+		    );
 		}
+
 		
 		
 		
