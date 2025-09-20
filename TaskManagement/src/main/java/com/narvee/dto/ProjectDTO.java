@@ -20,16 +20,20 @@ public interface ProjectDTO {
 
 	public String getUpdatedby();
 	
+	public String getUpdatedByFullname();
+	
 	public String getProjectid();
 	
 	public LocalDateTime getCreateddate();
 	
 	public LocalDate getstartDate();
 	
-	public LocalDate gettargetDate();
+	public LocalDate gettargetDate();  
 	
+
 	 public String getAssignedTo();//added by pratiksha
 	
-	
+
+	public LocalDate getUpdateddate();
 	
 }

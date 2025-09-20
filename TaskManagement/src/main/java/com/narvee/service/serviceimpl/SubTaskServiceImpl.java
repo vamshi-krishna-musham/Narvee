@@ -42,6 +42,7 @@ import com.narvee.dto.TasksResponseDTO;
 import com.narvee.dto.UpdateTask;
 import com.narvee.entity.TmsAssignedUsers;
 import com.narvee.entity.TmsFileUpload;
+import com.narvee.entity.TmsProject;
 import com.narvee.entity.TmsSubTask;
 import com.narvee.entity.TmsTicketTracker;
 import com.narvee.repository.ProjectRepository;
@@ -74,6 +75,9 @@ public class SubTaskServiceImpl implements SubTaskService {
 	@Autowired
     private fileUploadRepository fileUploadRepository;
 	
+	
+	private static final int DIGIT_PADDING = 6;
+
 	
 	@Value("${AppFilesDir}")
     private String UPLOAD_DIR;
@@ -314,8 +318,17 @@ public class SubTaskServiceImpl implements SubTaskService {
 		
 		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
 		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
-		subtask.setLastStatusUpdateddate(indiaDateTime);
+		subtask.setUpdateddate(indiaDateTime);
 		
+		Long subtaskmaxnum = subtaskrepository.subtaskmaxnum();
+		if (subtaskmaxnum == null) {
+			subtaskmaxnum = 0L;
+		}
+		String valueWithPadding = String.format("%0" + DIGIT_PADDING + "d", subtaskmaxnum + 1);
+		String value = "SUBTASK-" + valueWithPadding;
+		subtask.setSubtasktokenid(value);
+		subtask.setSubtaskmaxnum(subtaskmaxnum + 1);
+
 		TmsSubTask subtasks = subtaskrepository.save(subtask);
  
 		  if (files != null && !files.isEmpty()) {
