@@ -1,0 +1,6 @@
+::ng-deep .mat-dialog-container.apply-leave-dialog {
+  border-radius: 12px;
+  padding: 24px;
+  max-height: 90vh;
+  overflow: auto;     // scroll if too tall
+}

@@ -15,7 +15,10 @@ import { ViewPrivilegeComponent } from './sidebar/view-privilege/view-privilege.
 import { ViewProfileComponent } from './sidebar/view-profile/view-profile.component';
 import { NotificationsComponent } from './sidebar/notifications/notifications.component';
 import { AuthGuard } from './guards/auth.guard';
-
+import { LeaveHomeComponent } from './leave/leave-home/leave-home.component';
+import { ApplyLeaveComponent } from './leave/apply-leave/apply-leave.component';
+import { LeaveHistoryComponent } from './leave/leave-history/leave-history.component';
+import { LeaveApprovalsComponent } from './leave/leave-approvals/leave-approvals.component';
 const routes: Routes = [
   {path:'',redirectTo:'/register-login',pathMatch:'full'},
   {path:'register-login',component:RegisterManagmentComponent},
@@ -35,6 +38,10 @@ const routes: Routes = [
       {path:'view-privilege',component:ViewPrivilegeComponent ,  canActivate: [AuthGuard],},
       {path:'view-profile',component:ViewProfileComponent ,  canActivate: [AuthGuard],},
       {path:'notification',component:NotificationsComponent ,  canActivate: [AuthGuard],},
+      {path:'leave',component: LeaveHomeComponent , canActivate: [AuthGuard], },
+      {path:'leave/apply',component: ApplyLeaveComponent , canActivate: [AuthGuard], },
+      {path:'leave/history',component: LeaveHistoryComponent , canActivate: [AuthGuard], },
+      { path: 'leave/approvals', component: LeaveApprovalsComponent },
        {
     path: '**',
     redirectTo: 'register-login'

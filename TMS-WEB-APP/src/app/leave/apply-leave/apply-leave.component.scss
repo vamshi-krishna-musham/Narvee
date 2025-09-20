@@ -1,0 +1,28 @@
+.form-row {
+  display: grid;
+  grid-template-columns: 220px 220px 220px 1fr auto; /* reason grows */
+  gap: 16px;
+  align-items: end; /* bottoms align (same visual height) */
+}
+
+.field { width: 100%; }
+
+/* keep the textarea compact like other fields */
+.reason-field textarea {
+  resize: vertical;
+}
+
+/* button height ~ Material field height */
+.submit-btn {
+  height: 56px;
+  white-space: nowrap;
+}
+
+/* Stack on small screens */
+@media (max-width: 1024px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+  .submit-btn { height: 40px; }
+}

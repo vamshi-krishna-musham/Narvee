@@ -1,0 +1,76 @@
+<app-leave-nav></app-leave-nav>
+<h2>Leave Approvals</h2>
+
+<!-- Loading bar -->
+<mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+
+<!-- Empty state -->
+<div *ngIf="!loading && (!pending || pending.length === 0)" class="mat-elevation-z1" style="padding:16px;border-radius:8px;">
+  No pending leave requests.
+</div>
+
+<!-- Table -->
+<table *ngIf="!loading && pending?.length"
+       mat-table
+       [dataSource]="pending"
+       class="mat-elevation-z2"
+       style="width:100%;">
+
+  <!-- User -->
+  <ng-container matColumnDef="user">
+    <th mat-header-cell *matHeaderCellDef>User</th>
+    <td mat-cell *matCellDef="let r">
+      {{ r.userName || r.userId }}
+    </td>
+  </ng-container>
+
+  <!-- Type -->
+  <ng-container matColumnDef="type">
+    <th mat-header-cell *matHeaderCellDef>Type</th>
+    <td mat-cell *matCellDef="let r">{{ r.leaveType }}</td>
+  </ng-container>
+
+  <!-- Dates -->
+  <ng-container matColumnDef="dates">
+    <th mat-header-cell *matHeaderCellDef>Dates</th>
+    <td mat-cell *matCellDef="let r">
+      {{ r.startDate | date }} → {{ r.endDate | date }}
+    </td>
+  </ng-container>
+
+  <!-- Reason -->
+  <ng-container matColumnDef="reason">
+    <th mat-header-cell *matHeaderCellDef>Reason</th>
+    <td mat-cell *matCellDef="let r">
+      <span title="{{ r.reason }}">{{ r.reason }}</span>
+    </td>
+  </ng-container>
+
+  <!-- Status -->
+  <ng-container matColumnDef="status">
+    <th mat-header-cell *matHeaderCellDef>Status</th>
+    <td mat-cell *matCellDef="let r">
+      <mat-chip-set>
+        <mat-chip [disabled]="true">{{ r.status || 'PENDING' }}</mat-chip>
+      </mat-chip-set>
+    </td>
+  </ng-container>
+
+  <!-- Actions -->
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef>Actions</th>
+    <td mat-cell *matCellDef="let r">
+      <button mat-stroked-button color="primary" (click)="approve(r.id!)" style="margin-right:8px;">
+        Approve
+      </button>
+      <button mat-stroked-button color="warn" (click)="deny(r.id!)">
+        Deny
+      </button>
+    </td>
+  </ng-container>
+
+  <!-- ✅ Correct Angular 20 row syntax -->
+  <tr mat-header-row *matHeaderRowDef="['type','dates','reason','status','actions']"></tr>
+  <tr mat-row *matRowDef="let row; columns: ['type','dates','reason','status','actions']"></tr>
+
+</table>

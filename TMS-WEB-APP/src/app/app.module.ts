@@ -1,5 +1,9 @@
-import { NgModule } from '@angular/core';
+import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTableModule }        from '@angular/material/table';
+import { MatChipsModule }        from '@angular/material/chips';
+import { TextFieldModule } from '@angular/cdk/text-field';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -8,7 +12,11 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule }     from '@angular/material/select';
+import { MatOptionModule }     from '@angular/material/core';
 import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -31,9 +39,16 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { ChangepasswordComponent } from './sidebar/changepassword/changepassword.component';
 import { NgxMatIntlTelInputComponent } from 'ngx-mat-intl-tel-input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatRippleModule } from '@angular/material/core';
 
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { ViewProfileComponent } from './sidebar/view-profile/view-profile.component';
+import { LeaveHomeComponent } from './leave/leave-home/leave-home.component';
+import { ApplyLeaveComponent } from './leave/apply-leave/apply-leave.component';
+import { LeaveHistoryComponent } from './leave/leave-history/leave-history.component';
+import { LeaveApprovalsComponent } from './leave/leave-approvals/leave-approvals.component';
+import { LeaveNavComponent } from './leave/leave-nav/leave-nav.component';
+import { ApplyLeaveDialogComponent } from './leave/apply-leave-dialog/apply-leave-dialog.component';
 
 @NgModule({
   declarations: [
@@ -45,6 +60,12 @@ import { ViewProfileComponent } from './sidebar/view-profile/view-profile.compon
     ForgotPasswordComponent,
     ChangepasswordComponent,
     ViewProfileComponent,
+    LeaveHomeComponent,
+    ApplyLeaveComponent,
+    LeaveHistoryComponent,
+    LeaveApprovalsComponent,
+    LeaveNavComponent,
+    ApplyLeaveDialogComponent,
 
 
 
@@ -54,12 +75,17 @@ import { ViewProfileComponent } from './sidebar/view-profile/view-profile.compon
     AppRoutingModule,
     BrowserAnimationsModule,
     FormsModule,
+    MatProgressBarModule,
+    MatRippleModule,
+    MatTableModule,
+    MatChipsModule,
     ReactiveFormsModule,
     HttpClientModule,
     MatTabsModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    TextFieldModule,
     MatSnackBarModule,
     MatCardModule,
     MatSidenavModule,
@@ -72,6 +98,10 @@ import { ViewProfileComponent } from './sidebar/view-profile/view-profile.compon
     MatTooltipModule, // ✅ add this here
     NgxMatIntlTelInputComponent,
     MatProgressSpinnerModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
 
 
   ],
@@ -85,6 +115,8 @@ import { ViewProfileComponent } from './sidebar/view-profile/view-profile.compon
       multi: true
     }
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  schemas: [NO_ERRORS_SCHEMA]
+
 })
 export class AppModule { }

@@ -1,0 +1,44 @@
+:host { display: block; }
+h2 { margin: 8px 0 18px; font-weight: 800; }
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.tile {
+  border-radius: 16px;
+  padding: 18px 20px;
+  cursor: pointer;
+  border: 1px solid rgba(0,0,0,.08);
+  transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
+}
+
+.tile-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 110px; /* consistent height */
+}
+
+.tile-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: grid; place-items: center;
+  background: #e3f2fd;             /* pale blue */
+}
+.tile-icon mat-icon { color: #1976d2; font-size: 26px; }
+
+.tile-text { flex: 1; min-width: 0; }
+.tile-title { font-size: 20px; font-weight: 700; line-height: 1.2; }
+.tile-sub   { font-size: 14px; color: rgba(0,0,0,.62); margin-top: 2px; }
+.tile-desc  { font-size: 13px; color: rgba(0,0,0,.54); margin-top: 10px; }
+
+.tile-caret { color: rgba(0,0,0,.38); }
+
+.tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0,0,0,.08);
+  border-color: #1976d2;
+}

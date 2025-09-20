@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SnackbarService } from '../../PathService/snack-bar.service';
 import { Router } from '@angular/router';
 
@@ -7,13 +7,14 @@ import { Router } from '@angular/router';
   templateUrl: './sidenav.component.html',
   styleUrl: './sidenav.component.scss',
 })
-export class SidenavComponent {
+export class SidenavComponent implements OnInit {
   firstName: any = '';
   MiddleName: any = '';
   lastName: any = '';
 profileName:any='';
 profilePic:any='';
   isAdmin = false;
+  isAdminOrSuperAdmin = false;
   constructor(private router: Router, private snackBarServ: SnackbarService) {}
 Role:any
 Email:any
@@ -24,17 +25,19 @@ this.Role=localStorage.getItem('profileRole');
 this.Email=localStorage.getItem('profileEmail');
 this.profilePic=localStorage.getItem('profilePic')
   const fullName = [this.firstName,this.lastName]
-    .filter(name => name && name.trim()) 
+    .filter(name => name && name.trim())
     .join(' ');
 
   this.profileName = fullName || 'Profile';
 
-  const profileRole = localStorage.getItem('profileRole');
-this.isAdmin = profileRole === 'Super Admin' || profileRole === 'Admin';
+  const roleUpper = (this.Role || '').toUpperCase();
+      this.isAdmin = roleUpper === 'SUPER ADMIN' || roleUpper === 'ADMIN' || roleUpper === 'SUPER_ADMIN' || roleUpper === 'SUPERADMIN';
+      this.isAdminOrSuperAdmin = this.isAdmin;
 
 }
-
-
+goToApplyLeave() {
+    this.router.navigate(['/leave/apply']);
+  }
 
   signOut(): void {
     localStorage.clear();

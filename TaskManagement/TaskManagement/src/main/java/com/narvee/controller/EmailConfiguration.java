@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.narvee.commons.RestAPIResponse;
 import com.narvee.dto.TmsEmailConfigurationDto;
 import com.narvee.entity.TmsEmailConfiguration;
-import com.narvee.service.service.EmailConfigurationService;
+import com.narvee.service.EmailConfigurationService;
 
 @RestController
 @RequestMapping("/EmailConfiguration")

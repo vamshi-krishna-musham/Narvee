@@ -30,6 +30,11 @@
         <span style="font-weight: 400;">View Profile</span>
       </button>
 
+      <button mat-menu-item [routerLink]="['/leave']">
+        <mat-icon class="icon">event_note</mat-icon>
+        <span style="font-weight: 400;">Leaves</span>
+      </button>
+
       <mat-divider></mat-divider>
 
       <button mat-menu-item (click)="signOut()">
@@ -64,7 +69,7 @@
           <span>Resources</span>
         </a>
         <!-- Settings Parent Link -->
-        <a mat-list-item (click)="toggleSettings()" class="nav-item" 
+        <a mat-list-item (click)="toggleSettings()" class="nav-item"
           matTooltipPosition="right">
           <mat-icon>settings</mat-icon>
           <span>Settings</span>

@@ -11,6 +11,16 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   color: white;
 }
 
+/* Make all mat-select dropdown options black (except disabled) */
+.mat-mdc-select-panel .mat-mdc-option:not(.mdc-list-item--disabled) .mdc-list-item__primary-text {
+  color: #000 !important;
+}
+
+/* Selected option text also black */
+.mat-mdc-select-panel .mat-mdc-option.mdc-list-item--selected .mdc-list-item__primary-text {
+  color: #000 !important;
+}
+
 /* Style for success - Green background */
 .custom-snack-success {
   background-color: #4caf50 !important; /* Green for success */

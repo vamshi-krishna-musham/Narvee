@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import com.narvee.dto.TmsEmailConfigurationDto;
 import com.narvee.entity.TmsEmailConfiguration;
 import com.narvee.repository.EmailConfigRepo;
-import com.narvee.service.service.EmailConfigurationService;
+import com.narvee.service.EmailConfigurationService;
 
 @Service
 public class EmailConfigurationServiceImpl implements EmailConfigurationService{
