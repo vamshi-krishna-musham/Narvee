@@ -1,14 +1,9 @@
 <div style="display:flex; gap:12px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
-  <button mat-stroked-button (click)="openApply()" [color]="isActive('/leave/apply') ? 'primary' : undefined">
-    Apply Leave
-  </button>
+
 
   <button mat-stroked-button routerLink="/leave/history" [color]="isActive('/leave/history') ? 'primary' : undefined">
     Leave History
   </button>
 
-  <button *ngIf="isAdminOrSuperAdmin" mat-stroked-button routerLink="/leave/approvals"
-          [color]="isActive('/leave/approvals') ? 'primary' : undefined">
-    Manage Leaves
-  </button>
+
 </div>

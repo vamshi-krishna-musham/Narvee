@@ -1,70 +1,76 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LeaveService } from '../../services/leave.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-apply-leave',
-  templateUrl: './apply-leave.component.html'
+  templateUrl: './apply-leave.component.html',
+  styleUrls: ['./apply-leave.component.scss']
 })
 export class ApplyLeaveComponent implements OnInit {
-  // datepicker minimum = today (date-only)
   minDate = this.toDateOnly(new Date());
+  durationDays = 0;
+
+  private holidaysYMD: string[] = [];
+  private holidaySet = new Set(this.holidaysYMD);
 
   form = this.fb.group({
     leaveType: [null, Validators.required],
     startDate: [null, Validators.required],
-    endDate:   [null, Validators.required],
-    reason:    ['', [Validators.required, Validators.maxLength(500)]],
+    endDate: [null, Validators.required],
+    reason: ['', [Validators.required, Validators.maxLength(500)]],
   });
 
   constructor(
     private fb: FormBuilder,
     private leave: LeaveService,
-    private router: Router,
-    private snack: MatSnackBar
+    private snack: MatSnackBar,
+    private router: Router
   ) {}
 
-  ngOnInit(): void {}
-
-  submit(): void {
-    if (this.form.invalid) {
-      this.snack.open('Please fill all required fields', 'OK', { duration: 2500 });
-      return;
-    }
-
-    const start = this.toDateOnly(this.form.value.startDate!);
-    const end   = this.toDateOnly(this.form.value.endDate!);
-
-    if (end.getTime() < start.getTime()) {
-      this.snack.open('End date must be on or after start date', 'OK', { duration: 3000 });
-      return;
-    }
-
-    const payload = {
-      leaveType: this.form.value.leaveType!,
-      startDate: this.toYMD(start),  // 'yyyy-MM-dd'
-      endDate:   this.toYMD(end),    // 'yyyy-MM-dd'
-      reason:    (this.form.value.reason || '').trim()
-    };
-
-    this.leave.apply(payload).subscribe({
-      next: () => {
-        this.snack.open('Leave submitted', 'OK', { duration: 2000 });
-        this.router.navigate(['/leave/history']);
-      },
-      error: (e) => {
-        const msg = e?.error?.message || 'Submission failed';
-        this.snack.open(msg, 'OK', { duration: 3500 });
-      }
-    });
+  ngOnInit(): void {
+    this.form.valueChanges.subscribe(() => this.computeDuration());
+    setTimeout(() => this.computeDuration());
   }
 
-  // ----- helpers -----
-  private toDateOnly(d: string | Date): Date {
-    const date = typeof d === 'string' ? new Date(d) : d;
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate()); // local midnight
+  private computeDuration(): void {
+    const s = this.form.get('startDate')!.value as Date | string | null;
+    const e = this.form.get('endDate')!.value as Date | string | null;
+
+    if (!s || !e) { this.durationDays = 0; return; }
+
+    const start = this.toDateOnly(s);
+    const end = this.toDateOnly(e);
+    if (end.getTime() < start.getTime()) { this.durationDays = 0; return; }
+
+    this.durationDays = this.businessDaysBetween(start, end);
+  }
+
+  private businessDaysBetween(start: Date, end: Date): number {
+    let count = 0;
+    const cur = new Date(start);
+    while (cur.getTime() <= end.getTime()) {
+      const d = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate());
+      if (!this.isWeekend(d) && !this.isHoliday(d)) count++;
+      cur.setDate(cur.getDate() + 1);
+    }
+    return count;
+  }
+
+  private isWeekend(d: Date): boolean {
+    const w = d.getDay();
+    return w === 0 || w === 6;
+  }
+
+  private isHoliday(d: Date): boolean {
+    return this.holidaySet.has(this.toYMD(d));
+  }
+
+  private toDateOnly(v: string | Date): Date {
+    const d = typeof v === 'string' ? new Date(v) : v;
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
   }
 
   private toYMD(d: Date): string {
@@ -72,5 +78,40 @@ export class ApplyLeaveComponent implements OnInit {
     const m = `${d.getMonth() + 1}`.padStart(2, '0');
     const day = `${d.getDate()}`.padStart(2, '0');
     return `${y}-${m}-${day}`;
+  }
+
+  submit(): void {
+    if (this.form.invalid || this.durationDays <= 0) {
+      this.snack.open(
+        this.durationDays <= 0 ? 'No working days in selected range' : 'Please fill all required fields',
+        'OK', { duration: 2800 }
+      );
+      return;
+    }
+
+    const start = this.toDateOnly(this.form.value.startDate!);
+    const end   = this.toDateOnly(this.form.value.endDate!);
+    const payload = {
+      userId: Number(localStorage.getItem('profileId')),
+      leaveCategory: this.form.value.leaveType,
+      fromDate: this.toYMD(start),
+      toDate: this.toYMD(end),
+      reason: (this.form.value.reason || '').trim(),
+      status: 'PENDING'
+    };
+
+    this.leave.apply(payload as any).subscribe({
+      next: () => {
+        this.snack.open('Leave submitted successfully', 'OK', { duration: 2000 });
+        this.router.navigate(['/leave/history']); // ✅ go back to history after success
+      },
+      error: e => {
+        this.snack.open(e.error?.message || 'Submission failed', 'OK', { duration: 3500 });
+      }
+    });
+  }
+
+  cancel(): void {
+    this.router.navigate(['/leave/history']); // ✅ cancel → back to history
   }
 }

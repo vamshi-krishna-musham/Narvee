@@ -36,7 +36,7 @@ this.profilePic=localStorage.getItem('profilePic')
 
 }
 goToApplyLeave() {
-    this.router.navigate(['/leave/apply']);
+    this.router.navigate(['/leave/history']);
   }
 
   signOut(): void {

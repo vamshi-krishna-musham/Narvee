@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog } from '@angular/material/dialog';
 import { LeaveService, LeaveRequest } from '../../services/leave.service';
-import { ApplyLeaveDialogComponent } from '../apply-leave-dialog/apply-leave-dialog.component';
-import { LeaveApprovalsComponent } from '../leave-approvals/leave-approvals.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-leave-history',
@@ -15,15 +13,17 @@ export class LeaveHistoryComponent implements OnInit {
   loading = false;
 
   // role check flag
-  isManager = localStorage.getItem('profileRole') === 'Super Admin';
+  isManager = localStorage.getItem('profileRole')?.toUpperCase() === 'SUPER ADMIN';
 
   constructor(
     private leave: LeaveService,
     private snack: MatSnackBar,
-    private dialog: MatDialog
+    private router: Router
   ) {}
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.load();
+  }
 
   load(): void {
     this.loading = true;
@@ -47,7 +47,11 @@ export class LeaveHistoryComponent implements OnInit {
     if (!r?.startDate) return false;
     const today = this.toDateOnly(new Date());
     const start = this.toDateOnly(r.startDate);
-    return start.getTime() > today.getTime() && r.status !== 'CANCELED' && r.status !== 'REJECTED';
+    return (
+      start.getTime() > today.getTime() &&
+      r.status !== 'CANCELED' &&
+      r.status !== 'REJECTED'
+    );
   }
 
   cancel(id: number): void {
@@ -60,27 +64,14 @@ export class LeaveHistoryComponent implements OnInit {
     });
   }
 
-  // NEW: open Apply Leave dialog
+  // Navigate to full-page Apply Leave
   openApplyLeave(): void {
-    const ref = this.dialog.open(ApplyLeaveDialogComponent, {
-      width: '60vw',       // responsive width (60% of viewport)
-      maxWidth: '800px',   // cap at 800px
-      height: 'auto',      // let content decide height
-      panelClass: 'apply-leave-dialog'
-    });
-    ref.afterClosed().subscribe(result => {
-      if (result) this.load(); // refresh list after applying leave
-    });
+    this.router.navigate(['/leave/apply']);
   }
 
-  // NEW: open Manage Leaves dialog
+  // Navigate to Manage Leaves (manager/super admin only)
   openManageLeaves(): void {
-    this.dialog.open(LeaveApprovalsComponent, {
-      width: '100%',
-      height: '100%',
-      maxWidth: '100vw',
-      panelClass: 'full-screen-dialog'
-    });
+    this.router.navigate(['/leave/approvals']);
   }
 
   private toDateOnly(d: string | Date): Date {
@@ -88,5 +79,8 @@ export class LeaveHistoryComponent implements OnInit {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   }
 
-  trackById(_: number, r: LeaveRequest) { return r.id; }
+  trackById(_: number, r: LeaveRequest) {
+    return r.id;
+  }
+
 }

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { ApplyLeaveDialogComponent } from '../apply-leave-dialog/apply-leave-dialog.component';
+import { ApplyLeaveComponent } from '../apply-leave/apply-leave.component';
 
 @Component({
   selector: 'app-leave-nav',
@@ -17,7 +17,7 @@ export class LeaveNavComponent {
   isActive(url: string) { return this.router.url === url; }
 
   openApply(): void {
-    const ref = this.dialog.open(ApplyLeaveDialogComponent, {
+    const ref = this.dialog.open(ApplyLeaveComponent, {
       width: '720px',
       maxWidth: '95vw',
       autoFocus: false,

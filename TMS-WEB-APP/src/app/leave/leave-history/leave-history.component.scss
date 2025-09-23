@@ -1,10 +1,19 @@
-.leave-history-header {
+.leave-history-container {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px;
+}
+
+.header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
 }
 
-.actions button {
-  margin-left: 8px;
+.empty-state {
+  padding: 16px;
+  text-align: center;
+  color: gray;
 }

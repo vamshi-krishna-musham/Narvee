@@ -1,2 +1,103 @@
-<app-leave-nav></app-leave-nav>
-<p style="margin: 8px 0 0;"><b>Apply Leave</b></p>
+<div class="apply-leave-container mat-elevation-z2">
+  <h2>Apply Leave</h2>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="leave-form">
+
+    <!-- Leave Type -->
+    <mat-form-field appearance="fill">
+      <mat-label>Leave Type</mat-label>
+      <mat-select formControlName="leaveType" required>
+        <mat-option value="Sick">Sick Leave</mat-option>
+        <mat-option value="Casual">Casual Leave</mat-option>
+        <mat-option value="Vacation">Vacation</mat-option>
+        <mat-option value="Unpaid">Unpaid Leave</mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.get('leaveType')?.hasError('required')">
+        Leave type is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Dates + Duration -->
+    <div class="dates-row">
+      <!-- Start Date -->
+      <mat-form-field appearance="fill">
+        <mat-label>Start Date</mat-label>
+        <input
+          matInput
+          [matDatepicker]="p1"
+          [min]="minDate"
+          formControlName="startDate"
+          required
+        />
+        <mat-datepicker-toggle matSuffix [for]="p1"></mat-datepicker-toggle>
+        <mat-datepicker #p1></mat-datepicker>
+        <mat-error *ngIf="form.get('startDate')?.hasError('required')">
+          Start date is required
+        </mat-error>
+      </mat-form-field>
+
+      <!-- End Date -->
+      <mat-form-field appearance="fill">
+        <mat-label>End Date</mat-label>
+        <input
+          matInput
+          [matDatepicker]="p2"
+          [min]="form.get('startDate')?.value || minDate"
+          formControlName="endDate"
+          required
+        />
+        <mat-datepicker-toggle matSuffix [for]="p2"></mat-datepicker-toggle>
+        <mat-datepicker #p2></mat-datepicker>
+        <mat-error *ngIf="form.get('endDate')?.hasError('required')">
+          End date is required
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Duration -->
+      <mat-form-field appearance="fill">
+        <mat-label>Duration (working days)</mat-label>
+        <input matInput [value]="durationDays" readonly />
+      </mat-form-field>
+    </div>
+
+    <small class="hint-text">
+      Duration excludes weekends and company holidays.
+    </small>
+
+    <!-- Reason -->
+    <mat-form-field appearance="fill" class="reason-field">
+      <mat-label>Reason</mat-label>
+      <textarea
+        matInput
+        rows="4"
+        formControlName="reason"
+        maxlength="500"
+        required
+      ></textarea>
+      <mat-hint align="end">
+        {{ (form.get('reason')?.value?.length || 0) }}/500
+      </mat-hint>
+      <mat-error *ngIf="form.get('reason')?.hasError('required')">
+        Reason is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button mat-stroked-button color="warn" type="button" (click)="cancel()">
+        Cancel
+      </button>
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        [disabled]="form.invalid || durationDays <= 0"
+      >
+        Submit
+      </button>
+    </div>
+  </form>
+</div>
+
+
+

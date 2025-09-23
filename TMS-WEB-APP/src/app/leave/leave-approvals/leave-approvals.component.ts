@@ -80,4 +80,8 @@ export class LeaveApprovalsComponent implements OnInit {
   trackById(_: number, r: LeaveRequest) {
     return r.id;
   }
+  backToHistory(): void {
+    this.router.navigate(['/leave/history']);
+  }
+
 }
