@@ -23,6 +23,14 @@
       </button>
     </div>
   </div>
+  
+<mat-chip-set>
+  <mat-chip>Applied Leaves: {{ totalLeaves }}</mat-chip>
+  <mat-chip color="primary" selected>Approved Leaves: {{ approvedLeaves }}</mat-chip>
+  <mat-chip color="accent" selected>Pending Leaves: {{ pendingLeaves }}</mat-chip>
+  <mat-chip color="warn" selected>Denied Leaves: {{ deniedLeaves }}</mat-chip>
+  <mat-chip>Canceled Leaves: {{ canceledLeaves }}</mat-chip>
+</mat-chip-set>
 
   <!-- Loading -->
   <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
@@ -44,6 +52,7 @@
     class="mat-elevation-z2 full-table"
     style="width:100%;"
   >
+    
     <!-- Type -->
     <ng-container matColumnDef="type">
       <th mat-header-cell *matHeaderCellDef>Type</th>

@@ -11,6 +11,11 @@ export class LeaveHistoryComponent implements OnInit {
   displayedColumns = ['type', 'dates', 'reason', 'status', 'actions'];
   leaves: LeaveRequest[] = [];
   loading = false;
+  totalLeaves = 0;
+  approvedLeaves = 0;
+  pendingLeaves = 0;
+  deniedLeaves = 0;
+  canceledLeaves = 0;
 
   // role check flag
   isManager = localStorage.getItem('profileRole')?.toUpperCase() === 'SUPER ADMIN';
@@ -24,7 +29,7 @@ export class LeaveHistoryComponent implements OnInit {
   ngOnInit(): void {
     this.load();
   }
-
+  
   load(): void {
     this.loading = true;
     this.leave.listMine().subscribe({
@@ -34,6 +39,13 @@ export class LeaveHistoryComponent implements OnInit {
           const bd = new Date(b.startDate).getTime();
           return bd - ad; // newest first
         });
+        // summary counts
+        this.totalLeaves = this.leaves.length;
+        this.approvedLeaves = this.leaves.filter(l => l.status === 'APPROVED').length;
+        this.pendingLeaves = this.leaves.filter(l => l.status === 'PENDING').length;
+        this.deniedLeaves = this.leaves.filter(l => l.status === 'DENIED').length;
+        this.canceledLeaves = this.leaves.filter(l => l.status === 'CANCELED').length;
+
         this.loading = false;
       },
       error: () => {
@@ -41,6 +53,9 @@ export class LeaveHistoryComponent implements OnInit {
         this.snack.open('Failed to load leaves', 'OK', { duration: 2500 });
       }
     });
+  }
+  summary(): void{
+    this
   }
 
   isCancellable(r: LeaveRequest): boolean {
