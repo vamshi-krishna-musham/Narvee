@@ -48,8 +48,8 @@ public interface TaskTrackerDTO {
 	
 	public String getEmail();
 
-	public String getsubtasktokenid();
+	public String getSubtasktokenid();
 
-	public Long getsubtaskmaxnum();
+	public Long getSubtaskmaxnum();
 
 }
