@@ -5,7 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -178,6 +178,8 @@ public class ProjectServiceImpl implements ProjectService {
 		else
 			sortfield = "updateddate";
 
+
+		
 		Sort.Direction sortDirection = Sort.Direction.ASC;
 		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
 			sortDirection = Sort.Direction.DESC;
@@ -209,7 +211,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 	}
 
-	// --------------------------------------- all methods replicated foor tms users
+	// --------------------------------------- all methods replicated for tms users
 	// Added By keerthi ----------------------
 	@Override
 	public TmsProject saveTmsproject(TmsProject project, List<MultipartFile> files) {
@@ -231,6 +233,7 @@ public class ProjectServiceImpl implements ProjectService {
 				.collect(Collectors.toList());
 		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(project.getAddedBy(), usersids);
 		try {
+			
 			
 			EmailConfigResponseDto dto = projectrepository.getEmailNotificationStatus(project.getAdminId(), "PROJECT_CREATE");
 			if(dto != null) {
@@ -422,10 +425,11 @@ public class ProjectServiceImpl implements ProjectService {
 
 	}
 
-@Override
+	@Override
 	public Page<ProjectResponseDto> findTmsAllProjects(RequestDTO requestresponsedto) {
-	    logger.info("!!! inside class: ProjectServiceImpl , !! method: findTmsAllProjects");
+	    logger.info("Inside ProjectServiceImpl → findTmsAllProjects");
 
+	    // Extract request params
 	    String sortOrder = requestresponsedto.getSortOrder();
 	    String sortField = requestresponsedto.getSortField();
 	    String keyword = requestresponsedto.getKeyword();
@@ -434,466 +438,111 @@ public class ProjectServiceImpl implements ProjectService {
 	    Long userId = requestresponsedto.getUserid();
 	    String access = requestresponsedto.getAccess();
 
-	    // Normalize sort field
+	    // Normalize sort field → map DTO names to DB/projection names
 	    switch (sortField.toLowerCase()) {
 	        case "projectid": sortField = "projectId"; break;
 	        case "projectname": sortField = "projectName"; break;
-	        
 	        case "status": sortField = "status"; break;
 	        case "projectdescription": sortField = "projectdescription"; break;
-	        case "addedby": sortField = "addedBy"; break;
+	        case "addedby": sortField = "addedby"; break;
+	        case "updatedby": sortField = "updatedby"; break;
 	        case "startdate": sortField = "startDate"; break;
 	        case "duedate": sortField = "targetDate"; break;
+	        case "updateddate": sortField = "updatedDate"; break;
+	        case "department": sortField = "department"; break;
 	        default: sortField = "createdDate";
 	    }
 
+	    // Build pageable with sorting
 	    Sort.Direction direction = "desc".equalsIgnoreCase(sortOrder) ? Sort.Direction.DESC : Sort.Direction.ASC;
 	    Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(direction, sortField));
-
+  
+	    
+	    //normalize keyword (empty string means no filter)
+	    String keywordParam = (keyword == null || keyword.trim().isEmpty() || "empty".equalsIgnoreCase(keyword))
+	            ? ""
+	            : keyword.trim(); 
+	    
+	    // Pick repository method
 	    Page<ProjectDTO> page;
+	    if ("SUPER ADMIN".equalsIgnoreCase(access) || "ADMIN".equalsIgnoreCase(access) || "PROJECT MANAGER".equalsIgnoreCase(access)) {
+	        Long adminId = "SUPER ADMIN".equalsIgnoreCase(access) ? userId : projectrepository.AdminId(userId);
 
-	    // Determine which repository method to call
-	    if ("SUPER ADMIN".equalsIgnoreCase(access) || "project manager".equalsIgnoreCase(access) || "ADMIN".equalsIgnoreCase(access)) {
-	        Long adminId = "Super Admin".equalsIgnoreCase(access) ? userId : projectrepository.AdminId(userId);
-	        page = "empty".equalsIgnoreCase(keyword)
-	                ? projectrepository.findAllTmsProjects(pageable, adminId)
-	                : projectrepository.findAllTmsProjectWithFiltering(pageable,  adminId);
+	        page = ("empty".equalsIgnoreCase(keyword) || keyword == null)
+	                ? projectrepository.findAllTmsProjects(pageable, adminId, userId)
+	                : projectrepository.findAllTmsProjectWithFiltering(pageable, keyword, adminId, userId);
+
 	    } else {
-	        page = "empty".equalsIgnoreCase(keyword)
+	        page = ("empty".equalsIgnoreCase(keyword) || keyword == null)
 	                ? projectrepository.getAllProjectsByTmsUser(userId, pageable)
-	                : projectrepository.getAllProjectsByTmsUserFilter(pageable,  userId);
+	                : projectrepository.getAllProjectsByTmsUserFilter(pageable, keyword, userId);
 	    }
 
-	    // Normalize keyword for search
-	    String normalizedKeyword = keyword != null ? keyword.replaceAll("\\s+", " ").trim().toLowerCase() : "";
+	    // Normalize keyword for manual filtering
+	    String normalizedKeyword = (keyword != null) ? keyword.replaceAll("\\s+", " ").trim().toLowerCase() : "";
 
-	    // Map and filter projects
-	    List<ProjectResponseDto> allProjects = page.stream().map(projectDTO -> {
-	        TmsProject project = projectrepository.findById(projectDTO.getPid()).orElse(null);
-	        ProjectResponseDto proj = new ProjectResponseDto();
-	        proj.setProjePage(projectDTO);
+	    // Map results to response DTO
+	    List<ProjectResponseDto> allProjects = page.stream()
+	            .map(projectDTO -> {
+	                TmsProject project = projectrepository.findById(projectDTO.getPid()).orElse(null);
+	                ProjectResponseDto proj = new ProjectResponseDto();
+	                proj.setProjePage(projectDTO);
 
-	        // AssignedTo names as list
-	        List<String> assignedUserNames = new ArrayList<>();
-	        if (projectDTO.getAssignedTo() != null && !projectDTO.getAssignedTo().isEmpty()) {
-	            assignedUserNames = Arrays.stream(projectDTO.getAssignedTo().split(","))
-	                    .map(String::trim)
-	                    .collect(Collectors.toList());
-	        }
-
-	        boolean matchesKeyword = "empty".equalsIgnoreCase(keyword);
-
-	        if (!matchesKeyword && normalizedKeyword.length() > 0) {
-
-	            //  Check Project ID
-	            if (String.valueOf(projectDTO.getProjectid()).toLowerCase().contains(normalizedKeyword)) {
-	                matchesKeyword = true;
-	            }
-
-	            //  Check Project Name
-	            else if (projectDTO.getProjectname() != null &&
-	                     projectDTO.getProjectname().toLowerCase().contains(normalizedKeyword)) {
-	                matchesKeyword = true;
-	            }
-
-	            //  Check Start Date
-	            else if (projectDTO.getstartDate() != null &&
-	                     projectDTO.getstartDate().toString().toLowerCase().contains(normalizedKeyword)) {
-	                matchesKeyword = true;
-	            }
-
-	            //  Check Due Date (Target Date)
-	            else if (projectDTO.gettargetDate() != null &&
-	                     projectDTO.gettargetDate().toString().toLowerCase().contains(normalizedKeyword)) {
-	                matchesKeyword = true;
-	            }
-	         // Check Status (matches the DB p.status value)
-	            else if (projectDTO.getStatus() != null &&
-	                     projectDTO.getStatus().replaceAll("\\s+", " ").trim().toLowerCase().contains(normalizedKeyword)) {
-	                matchesKeyword = true;
-	            }
-	            
-
-	            //  Check Added By
-	            else if (projectDTO.getaddedByFullname() != null &&
-	                     projectDTO.getaddedByFullname().replaceAll("\\s+", " ").trim().toLowerCase().contains(normalizedKeyword)) {
-	                matchesKeyword = true;
-	            }
-
-	            //  Check Assigned Users
-	            else {
-	                for (String assigned : assignedUserNames) {
-	                    String normalizedAssignedTo = assigned.replaceAll("\\s+", " ").trim().toLowerCase();
-	                    if (normalizedAssignedTo.contains(normalizedKeyword)) {
-	                        matchesKeyword = true;
-	                        break;
-	                    }
+	                // AssignedTo handling
+	                List<String> assignedUserNames = new ArrayList<>();
+	                if (projectDTO.getAssignedTo() != null && !projectDTO.getAssignedTo().isEmpty()) {
+	                    assignedUserNames = Arrays.stream(projectDTO.getAssignedTo().split(","))
+	                            .map(String::trim)
+	                            .filter(s -> !s.isEmpty())
+	                            .collect(Collectors.toList());
 	                }
-	            }
-	        }
+	                proj.setAssignedUsers(assignedUserNames);
 
+	                // Additional mapping from entity
+	                if (project != null) {
+	                    Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
+	                            .map(assignUser -> {
+	                                GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
+	                                if (user != null) assignUser.setFullname(user.getFullname());
+	                                return assignUser;
+	                            }).collect(Collectors.toSet());
+	                    proj.setAssignUsers(assignedUsersWithNames);
+	                    proj.setFiles(project.getFiles());
+	                }
 
-	        if (!matchesKeyword) return null;
+	                // Manual keyword filter (for safety/fallback)
+	                boolean matchesKeyword = "empty".equalsIgnoreCase(keyword) || normalizedKeyword.isEmpty();
+	                if (!matchesKeyword) { DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+	                matchesKeyword =
+	                        (projectDTO.getProjectid() != null && projectDTO.getProjectid().toLowerCase().contains(normalizedKeyword))
+	                        || (projectDTO.getProjectname() != null && projectDTO.getProjectname().toLowerCase().contains(normalizedKeyword))
+	                        || (projectDTO.getstartDate() != null && 
+	                            projectDTO.getstartDate().format(formatter).toLowerCase().contains(normalizedKeyword))
+	                        || (projectDTO.gettargetDate() != null && 
+	                            projectDTO.gettargetDate().format(formatter).toLowerCase().contains(normalizedKeyword))
+	                        || (projectDTO.getUpdateddate() != null && 
+	                            projectDTO.getUpdateddate().format(formatter).toLowerCase().contains(normalizedKeyword))
+	                        || (projectDTO.getStatus() != null && projectDTO.getStatus().replaceAll("\\s+", " ").trim().toLowerCase().contains(normalizedKeyword))
+	                        || (projectDTO.getaddedByFullname() != null && projectDTO.getaddedByFullname().replaceAll("\\s+", " ").trim().toLowerCase().contains(normalizedKeyword))
+	                        || (projectDTO.getUpdatedByFullname() != null && projectDTO.getUpdatedByFullname().replaceAll("\\s+", " ").trim().toLowerCase().contains(normalizedKeyword))
+	                        || assignedUserNames.stream().anyMatch(name ->
+	                            name.replaceAll("\\s+", " ").trim().toLowerCase().contains(normalizedKeyword));
+	                }
 
-	        proj.setAssignedUsers(assignedUserNames);
+	                return matchesKeyword ? proj : null;
+	            })
+	            .filter(Objects::nonNull)
+	            .collect(Collectors.toList());
 
-	        // Set assigned users with full names
-	        if (project != null) {
-	            Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
-	                    .map(assignUser -> {
-	                        GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
-	                        if (user != null) assignUser.setFullname(user.getFullname());
-	                        return assignUser;
-	                    }).collect(Collectors.toSet());
-	            proj.setAssignUsers(assignedUsersWithNames);
-	            proj.setFiles(project.getFiles());
-	        }
-
-	        return proj;
-	    })
-	    .filter(Objects::nonNull)
-	    .collect(Collectors.toList());
-
-	    // Manual pagination
+	    // Manual pagination (for safety with filtered list)
 	    int start = Math.min((pageNo - 1) * pageSize, allProjects.size());
 	    int end = Math.min(start + pageSize, allProjects.size());
 	    List<ProjectResponseDto> pagedProjects = allProjects.subList(start, end);
 
 	    return new PageImpl<>(pagedProjects, pageable, allProjects.size());
-	}//added by pratiksha
-
-/*@Override
-
-	public Page<ProjectResponseDto> findTmsAllProjects(RequestDTO requestresponsedto) {
-		logger.info("!!! inside class: ProjectServiceImpl , !! method: findTmsAllProjects");
-		String sortorder = requestresponsedto.getSortOrder();
-		String sortfield = requestresponsedto.getSortField();
-		String keyword = requestresponsedto.getKeyword();
-		Integer pageNo = requestresponsedto.getPageNumber();
-		Integer pageSize = requestresponsedto.getPageSize();
-		Long userid = requestresponsedto.getUserid();
-		String access = requestresponsedto.getAccess();
-
-		if (sortfield.equalsIgnoreCase("projectid"))
-			sortfield = "projectId";
-		else if (sortfield.equalsIgnoreCase("projectName"))
-			sortfield = "projectName";
-		else if (sortfield.equalsIgnoreCase("status"))
-			sortfield = "status";
-		else if (sortfield.equalsIgnoreCase("projectdescription"))
-			sortfield = "projectdescription";
-		else if (sortfield.equalsIgnoreCase("addedBy"))
-			sortfield = "addedByFullname";
-
-		else if (sortfield.equalsIgnoreCase("updatedBy"))
-			sortfield = "updatedByFullname";
-
-		else if (sortfield.equalsIgnoreCase("StartDate"))
-			sortfield = "startDate";
-		else if (sortfield.equalsIgnoreCase("DueDate"))
-			sortfield = "targetDate";
-
-		else if (sortfield.equalsIgnoreCase("updateddate"))
-			sortfield = "updateddate";
-
-		else
-			sortfield = "createdDate";
-
-		Sort.Direction sortDirection = Sort.Direction.ASC;
-		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
-			sortDirection = Sort.Direction.DESC;
-		}
-		Sort sort = Sort.by(sortDirection, sortfield);
-		Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
-
-		Page<ProjectDTO> page;
-
-		List<ProjectResponseDto> res = new ArrayList<>();
-
-		
-		
-		if (access.equalsIgnoreCase("SUPER ADMIN") || access.equalsIgnoreCase("project manager") ||  access.equalsIgnoreCase("ADMIN") ) {
-			
-			Long adminId = ("Super Admin".equalsIgnoreCase(access))
-	                ? userid
-	                : projectrepository.AdminId(userid);
-			
-			if (keyword.equalsIgnoreCase("empty")) {
-				logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllTmsProjects, Empty");
-				
-				page = projectrepository.findAllTmsProjects(pageable, adminId);
-				res = page.stream().map(projectDTO -> {
-					TmsProject project = projectrepository.findById(projectDTO.getPid()).orElse(null);
-					ProjectResponseDto proj = new ProjectResponseDto();
-					proj.setProjePage(projectDTO);
-
-					if (project != null) {
-						Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
-								.map(assignUser -> {
-									GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
-									if (user != null) {
-										assignUser.setFullname(user.getFullname());
-										assignUser.setEmail(user.getEmail());
-										assignUser.setUserProfile(user.getProfile());
-
-									}
-									return assignUser;
-								}).collect(Collectors.toSet());
-
-						proj.setAssignUsers(assignedUsersWithNames);
-						proj.setFiles(project.getFiles());
-					}
-
-					return proj;
-				}).collect(Collectors.toList());
-
-			} else {
-				logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllTmsProjectWithFiltering, Filter");
-				page = projectrepository.findAllTmsProjectWithFiltering(pageable, keyword, adminId);
-				res = page.stream().map(projectDTO -> {
-					TmsProject project = projectrepository.findById(projectDTO.getPid()).orElse(null);
-					ProjectResponseDto proj = new ProjectResponseDto();
-					proj.setProjePage(projectDTO);
-					if (project != null) {
-						Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
-								.map(assignUser -> {
-									GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
-									if (user != null) {
-										assignUser.setFullname(user.getFullname());
-										assignUser.setEmail(user.getEmail());
-										assignUser.setUserProfile(user.getProfile());
-
-									}
-									return assignUser;
-								}).collect(Collectors.toSet());
-
-						proj.setAssignUsers(assignedUsersWithNames);
-						proj.setFiles(project.getFiles());
-					}
-
-					return proj;
-				}).collect(Collectors.toList());
-			}
-		} else {
-
-			if (keyword.equalsIgnoreCase("empty")) {
-				logger.info("!!! inside class: ProjectServiceImpl , !! method: getAllProjectsByTmsUser, Empty");
-				page = projectrepository.getAllProjectsByTmsUser(userid, pageable); // changed query Ats users to tms
-																					// users
-				res = page.stream().map(projectDTO -> {
-					TmsProject project = projectrepository.findById(projectDTO.getPid()).orElse(null);
-					ProjectResponseDto proj = new ProjectResponseDto();
-					proj.setProjePage(projectDTO);
-					if (project != null) {
-						Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
-								.map(assignUser -> {
-									GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
-									if (user != null) {
-										assignUser.setFullname(user.getFullname());
-
-									}
-									return assignUser;
-								}).collect(Collectors.toSet());
-
-						proj.setAssignUsers(assignedUsersWithNames);
-						proj.setFiles(project.getFiles());
-					}
-
-					return proj;
-				}).collect(Collectors.toList());
-			} else {
-				logger.info("!!! inside class: ProjectServiceImpl , !! method: getAllProjectsByTmsUserFilter, Filter");
-				page = projectrepository.getAllProjectsByTmsUserFilter(pageable, keyword, userid); // chenged Query Ats
-																									// users to tms
-																									// users
-				res = page.stream().map(projectDTO -> {
-					TmsProject project = projectrepository.findById(projectDTO.getPid()).orElse(null);
-					ProjectResponseDto proj = new ProjectResponseDto();
-					proj.setProjePage(projectDTO);
-					if (project != null) {
-						Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
-								.map(assignUser -> {
-									GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
-									if (user != null) {
-										assignUser.setFullname(user.getFullname());
-
-									}
-									return assignUser;
-								}).collect(Collectors.toSet());
-
-						proj.setAssignUsers(assignedUsersWithNames);
-						proj.setFiles(project.getFiles());
-					}
-
-					return proj;
-				}).collect(Collectors.toList());
-			}
-
-		}
-		return new PageImpl<>(res, pageable, page.getTotalElements());
-
-
-	}*/@Override
-	public Page<ProjectResponseDto> findTmsAllProjects(RequestDTO requestresponsedto) {
-	    logger.info("!!! inside class: ProjectServiceImpl , !! method: findTmsAllProjects");
-	    String sortorder = requestresponsedto.getSortOrder();
-	    String sortfield = requestresponsedto.getSortField();
-	    String keyword = requestresponsedto.getKeyword();
-	    Integer pageNo = requestresponsedto.getPageNumber();
-	    Integer pageSize = requestresponsedto.getPageSize();
-	    Long userid = requestresponsedto.getUserid();
-	    String access = requestresponsedto.getAccess();
-
-	    if (sortfield.equalsIgnoreCase("projectid"))
-	        sortfield = "projectId";
-	    else if (sortfield.equalsIgnoreCase("projectName"))
-	        sortfield = "projectName";
-	    else if (sortfield.equalsIgnoreCase("status"))
-	        sortfield = "status";
-	    else if (sortfield.equalsIgnoreCase("projectdescription"))
-	        sortfield = "projectdescription";
-	    else if (sortfield.equalsIgnoreCase("addedBy"))
-	        sortfield = "addedByFullname";
-	    //added by vaishnavi
-	    else if (sortfield.equalsIgnoreCase("updatedBy"))
-	        sortfield = "updatedByFullname";
-	    else if (sortfield.equalsIgnoreCase("StartDate"))
-	        sortfield = "startDate";
-	    else if (sortfield.equalsIgnoreCase("DueDate"))
-	        sortfield = "targetDate";
-	    else if (sortfield.equalsIgnoreCase("updateddate"))
-	        sortfield = "updateddate";
-	    else
-	        sortfield = "createdDate";
-
-	    Sort.Direction sortDirection = Sort.Direction.ASC;
-	    if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
-	        sortDirection = Sort.Direction.DESC;
-	    }
-	    Sort sort = Sort.by(sortDirection, sortfield);
-	    Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
-
-	    Page<ProjectDTO> page;
-
-	    List<ProjectResponseDto> res = new ArrayList<>();
-
-	    if (access.equalsIgnoreCase("SUPER ADMIN") || access.equalsIgnoreCase("project manager") ||  access.equalsIgnoreCase("ADMIN") ) {
-	        
-	        Long adminId = ("Super Admin".equalsIgnoreCase(access))
-	                ? userid
-	                : projectrepository.AdminId(userid);
-	        
-	        if (keyword.equalsIgnoreCase("empty")) {
-	            logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllTmsProjects, Empty");
-	            
-	            page = projectrepository.findAllTmsProjects(pageable, adminId);
-	            res = page.stream().map(projectDTO -> {
-	                TmsProject project = projectrepository.findById(projectDTO.getPid()).orElse(null);
-	                ProjectResponseDto proj = new ProjectResponseDto();
-	                proj.setProjePage(projectDTO);
-
-	                if (project != null) {
-	                    Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
-	                            .map(assignUser -> {
-	                                GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
-	                                if (user != null) {
-	                                    assignUser.setFullname(user.getFullname());
-
-	                                }
-	                                return assignUser;
-	                            }).collect(Collectors.toSet());
-
-	                    proj.setAssignUsers(assignedUsersWithNames);
-	                    proj.setFiles(project.getFiles());
-	                }
-
-	                return proj;
-	            }).collect(Collectors.toList());
-
-	        } else {
-	            logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllTmsProjectWithFiltering, Filter");
-	            // <-- changed: pass userid as updatedby parameter by vaishnavi
-	            page = projectrepository.findAllTmsProjectWithFiltering(pageable, keyword, adminId, userid);
-	            res = page.stream().map(projectDTO -> {
-	                TmsProject project = projectrepository.findById(projectDTO.getPid()).orElse(null);
-	                ProjectResponseDto proj = new ProjectResponseDto();
-	                proj.setProjePage(projectDTO);
-	                if (project != null) {
-	                    Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
-	                            .map(assignUser -> {
-	                                GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
-	                                if (user != null) {
-	                                    assignUser.setFullname(user.getFullname());
-
-	                                }
-	                                return assignUser;
-	                            }).collect(Collectors.toSet());
-
-	                    proj.setAssignUsers(assignedUsersWithNames);
-	                    proj.setFiles(project.getFiles());
-	                }
-
-	                return proj;
-	            }).collect(Collectors.toList());
-	        }
-	    } else {
-
-	        if (keyword.equalsIgnoreCase("empty")) {
-	            logger.info("!!! inside class: ProjectServiceImpl , !! method: getAllProjectsByTmsUser, Empty");
-	            page = projectrepository.getAllProjectsByTmsUser(userid, pageable); // changed query Ats users to tms
-	                                                                                // users
-	            res = page.stream().map(projectDTO -> {
-	                TmsProject project = projectrepository.findById(projectDTO.getPid()).orElse(null);
-	                ProjectResponseDto proj = new ProjectResponseDto();
-	                proj.setProjePage(projectDTO);
-	                if (project != null) {
-	                    Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
-	                            .map(assignUser -> {
-	                                GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
-	                                if (user != null) {
-	                                    assignUser.setFullname(user.getFullname());
-
-	                                }
-	                                return assignUser;
-	                            }).collect(Collectors.toSet());
-
-	                    proj.setAssignUsers(assignedUsersWithNames);
-	                    proj.setFiles(project.getFiles());
-	                }
-
-	                return proj;
-	            }).collect(Collectors.toList());
-	        } else {
-	            logger.info("!!! inside class: ProjectServiceImpl , !! method: getAllProjectsByTmsUserFilter, Filter");
-	            page = projectrepository.getAllProjectsByTmsUserFilter(pageable, keyword, userid); // chenged Query Ats
-	                                                                                                // users to tms
-	                                                                                                // users
-	            res = page.stream().map(projectDTO -> {
-	                TmsProject project = projectrepository.findById(projectDTO.getPid()).orElse(null);
-	                ProjectResponseDto proj = new ProjectResponseDto();
-	                proj.setProjePage(projectDTO);
-	                if (project != null) {
-	                    Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
-	                            .map(assignUser -> {
-	                                GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
-	                                if (user != null) {
-	                                    assignUser.setFullname(user.getFullname());
-
-	                                }
-	                                return assignUser;
-	                            }).collect(Collectors.toSet());
-
-	                    proj.setAssignUsers(assignedUsersWithNames);
-	                    proj.setFiles(project.getFiles());
-	                }
-
-	                return proj;
-	            }).collect(Collectors.toList());
-	        }
-
-	    }
-	    return new PageImpl<>(res, pageable, page.getTotalElements());
-
 	}
+//added by pratiksha
+
+
 }
 

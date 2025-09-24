@@ -456,7 +456,18 @@ public class SubTaskServiceImpl implements SubTaskService {
 			List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
 					.collect(Collectors.toList());
 			List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(subtask.getAddedby(), usersids);
-			TmsSubTask subtasks = subtaskrepository.save(subtask);
+			// 5️⃣ 🔑 Generate subtask token if not present
+		    if (subtask.getSubtasktokenid() == null || subtask.getSubtasktokenid().trim().isEmpty()) {
+		        Long maxnum = subtaskrepository.subtaskmaxnum();
+		        if (maxnum == null) maxnum = 0L;
+		        String valueWithPadding = String.format("%0" + DIGIT_PADDING + "d", maxnum + 1);
+		        String value = "SUBTASK-" + valueWithPadding;
+		        subtask.setSubtasktokenid(value);
+		        subtask.setSubtaskmaxnum(maxnum + 1);
+		    }
+
+		    // 6️⃣ Save subtask
+		    TmsSubTask subtasks = subtaskrepository.save(subtask);
 	 
 			try {
 			Long adminId =	projectRepository.getAdminId(subtask.getTaskId());
@@ -493,20 +504,79 @@ public class SubTaskServiceImpl implements SubTaskService {
 		Integer pageSize = requestresponsedto.getPageSize();
 		String keyword = requestresponsedto.getKeyword();
 
-		if (sortfield.equalsIgnoreCase("subTaskId"))
-			sortfield = "subTaskId";
+		/*if (sortfield.equalsIgnoreCase("subTaskId"))
+		    sortfield = "subtaskId";
 		else if (sortfield.equalsIgnoreCase("subTaskName"))
-			sortfield = "subTaskName";
+		    sortfield = "subTaskName";
 		else if (sortfield.equalsIgnoreCase("subTaskDescription"))
-			sortfield = "subTaskDescription";
+		    sortfield = "subTaskDescription";
 		else if (sortfield.equalsIgnoreCase("status"))
-			sortfield = "status";
-		else if (sortfield.equalsIgnoreCase("targetDate"))
-			sortfield = "targetDate";
+		    sortfield = "st.status";
+		else if (sortfield.equalsIgnoreCase("targetDate") || sortfield.equalsIgnoreCase("DueDate"))
+		    sortfield = "st.target_date";
 		else if (sortfield.equalsIgnoreCase("startDate"))
-			sortfield = "startDate";
+		    sortfield = "st.start_date";
+		else if (sortfield.equalsIgnoreCase("priority"))
+		    sortfield = "st.priority";
+		else if (sortfield.equalsIgnoreCase("updatedBy"))
+		    sortfield = "st.updatedby";
+		else if (sortfield.equalsIgnoreCase("duration"))
+		    sortfield = "st.duration";
+		else if (sortfield.equalsIgnoreCase("subtasktokenid"))
+		    sortfield = "st.subtasktoken_id";
+		else if (sortfield.equalsIgnoreCase("taskid") || sortfield.equalsIgnoreCase("taskId"))
+		    sortfield = "st.taskid"sss
 		else
-			sortfield = "updateddate";
+		    sortfield = "st.updateddate";
+*/switch (sortfield.toLowerCase()) {
+case "subtaskid":
+    sortfield = "subtaskId";
+    break;
+
+case "subtaskname":
+    sortfield = "subtaskName";
+    break;
+
+case "subtaskdescription":
+    sortfield = "subTaskDescription";
+    break;
+
+case "status":
+    sortfield = "status";
+    break;
+
+
+case "DueDate":case "targetdate": sortfield = "targetDate"; break;
+
+case "startdate":
+    sortfield = "startDate";
+    break;
+
+case "priority":
+    sortfield = "priority";
+    break;
+
+case "updatedby":
+    sortfield = "updatedBy";
+    break;
+
+case "duration":
+    sortfield = "duration";
+    break;
+
+case "subtasktokenid":
+    sortfield = "subtasktokenid";
+    break;
+
+case "taskid":
+    sortfield = "taskId";
+    break;
+
+default:
+    sortfield = "updateDate";  // ✅ fallback to a valid column
+    break;
+}
+
 
 		Sort.Direction sortDirection = Sort.Direction.ASC;
 		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
@@ -585,115 +655,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 		return true;
 	}
 	
-	
-	/*@Override
-	public SubTaskResponse findTmsSubTaskByTicketId(RequestDTO requestresponsedto) {
-		logger.info("!!! inside class: TaskServiceImpl , !! method: findTmsTaskByProjectid-tms");
-		String sortfield = requestresponsedto.getSortField();
-		String sortorder = requestresponsedto.getSortOrder();
-		Integer pageNo = requestresponsedto.getPageNumber();
-		Integer pageSize = requestresponsedto.getPageSize();
-		String projectid = requestresponsedto.getProjectid();
-		String keyword = requestresponsedto.getKeyword();
-		String ticketId = requestresponsedto.getTicketId();
-		
-		if (sortfield.equalsIgnoreCase("subTaskId"))
-			sortfield = "subTaskId";
-		else if (sortfield.equalsIgnoreCase("subTaskName"))
-			sortfield = "subTaskName";
-		else if (sortfield.equalsIgnoreCase("subTaskDescription"))
-			sortfield = "subTaskDescription";
-		else if (sortfield.equalsIgnoreCase("status"))
-			sortfield = "status";
-		else if (sortfield.equalsIgnoreCase("DueDate"))
-			sortfield = "target_date";
-		else if (sortfield.equalsIgnoreCase("startDate"))
-			sortfield = "start_date";
-		else if (sortfield.equalsIgnoreCase("priority"))
-			sortfield = "priority";
-		else if (sortfield.equalsIgnoreCase("duration"))
-			sortfield = "duration";
-		else
-			sortfield = "updateddate";
-		
-		Sort.Direction sortDirection = Sort.Direction.ASC;
-		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
-			sortDirection = Sort.Direction.DESC;
-		}
-		Sort sort = Sort.by(sortDirection, sortfield);
-		Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
-
-		if (keyword.equalsIgnoreCase("empty")) {
-
-			Page<TaskTrackerDTO> res = subtaskrepository.findSubTaskByTicketid(ticketId,pageable);
-			
-			logger.info("!!! inside class: TaskServiceImpl , !! method: findSubTaskByTicketid");
-			List<SubTaskResponseDTO> tasksList = new ArrayList<>();
-
-			for (TaskTrackerDTO order : res) {
-				SubTaskResponseDTO result = new SubTaskResponseDTO(order);
-
-				List<GetUsersDTO> assignUsers = subtaskrepository.getSubtaskAssignUsersTms(order.getSubtaskid());
-
-				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
-						.collect(Collectors.toList());
-				result.setAssignUsers(filteredAssignUsers);
-				
-				  List<TmsFileUpload> fileEntities = fileUploadRepository.getFilesBySubTaskId(order.getSubtaskid()); // Implement this
-				    List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
-				        FileUploadDto dto = new FileUploadDto();
-				        dto.setId(file.getId());
-				        dto.setFileName(file.getFileName());
-				        dto.setFilePath(file.getFilePath());
-				        dto.setFileType(file.getFileType());
-				        return dto;
-				    }).collect(Collectors.toList());
-				    result.setFiles(fileDtos);
-				    
-				tasksList.add(result);
-
-			}
-			Page<SubTaskResponseDTO> tasksPage = new PageImpl<>(tasksList, pageable, res.getTotalElements()); 
-			
-			Long TicketId = repository.findTicketId(ticketId);
-			SubTaskResponse taskResp = new SubTaskResponse();
-			taskResp.setSubtasks(tasksPage);
-			taskResp.setTaskId(TicketId);
-
-			return taskResp;
-		} else {
-			logger.info("!!! inside class: TaskServiceImpl , !! method: findTaskByProjectIdWithSearching , Filter-tms");
-			Page<TaskTrackerDTO> res = subtaskrepository.findSubTaskByTicketIdWithSearching(ticketId, keyword,pageable);
-			List<SubTaskResponseDTO> tasksList = new ArrayList<>();
-
-			for (TaskTrackerDTO order : res) {
-				SubTaskResponseDTO result = new SubTaskResponseDTO(order);
-				List<GetUsersDTO> assignUsers = subtaskrepository.getSubtaskAssignUsersTms(order.getSubtaskid());
-				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
-						.collect(Collectors.toList());
-				result.setAssignUsers(filteredAssignUsers);
-				
-				  List<TmsFileUpload> fileEntities = fileUploadRepository.getFilesBySubTaskId(order.getSubtaskid()); // Implement this
-				    List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
-				        FileUploadDto dto = new FileUploadDto();
-				        dto.setId(file.getId());
-				        dto.setFileName(file.getFileName());
-				        dto.setFilePath(file.getFilePath());
-				        dto.setFileType(file.getFileType());
-				        return dto;
-				    }).collect(Collectors.toList());
-				    result.setFiles(fileDtos);
-				    
-				tasksList.add(result);
-			}
-			Page<SubTaskResponseDTO> tasksPage = new PageImpl<>(tasksList, pageable, res.getTotalElements());
-			Long TicketId = repository.findTicketId(ticketId);
-			SubTaskResponse taskResp = new SubTaskResponse();
-			taskResp.setSubtasks(tasksPage);
-			taskResp.setTaskId(TicketId);
-			return taskResp;
-		}
-	}*/@Override
+	@Override
 	public SubTaskResponse findTmsSubTaskByTicketId(RequestDTO requestresponsedto) {
 	    logger.info("!!! inside class: SubTaskServiceImpl , !! method: findTmsSubTaskByTicketId-tms");
 
@@ -706,24 +668,56 @@ public class SubTaskServiceImpl implements SubTaskService {
 	    String ticketId = requestresponsedto.getTicketId();
 
 	    // map sort fields (same as your mapping)
-	    if (sortfield.equalsIgnoreCase("subTaskId"))
-	        sortfield = "subTaskId";
-	    else if (sortfield.equalsIgnoreCase("subTaskName"))
-	        sortfield = "subTaskName";
-	    else if (sortfield.equalsIgnoreCase("subTaskDescription"))
+	    switch (sortfield.toLowerCase()) {
+	    case "subtaskid":
+	        sortfield = "subtaskId";
+	        break;
+
+	    case "subtaskname":
+	        sortfield = "subtaskName";
+	        break;
+
+	    case "subtaskdescription":
 	        sortfield = "subTaskDescription";
-	    else if (sortfield.equalsIgnoreCase("status"))
+	        break;
+
+	    case "status":
 	        sortfield = "status";
-	    else if (sortfield.equalsIgnoreCase("DueDate"))
-	        sortfield = "target_date";
-	    else if (sortfield.equalsIgnoreCase("startDate"))
+	        break;
+
+	    
+	    case "DueDate":case "targetdate": sortfield = "targetDate"; break;
+
+	    case "startdate":
 	        sortfield = "start_date";
-	    else if (sortfield.equalsIgnoreCase("priority"))
+	        break;
+
+	    case "priority":
 	        sortfield = "priority";
-	    else if (sortfield.equalsIgnoreCase("duration"))
+	        break;
+
+	    case "updatedby":
+	        sortfield = "updatedBy";
+	        break;
+
+	    case "duration":
 	        sortfield = "duration";
-	    else
-	        sortfield = "updateddate";
+	        break;
+
+	    case "subtasktokenid":
+	        sortfield = "subtasktokenid";
+	        break;
+
+	    case "taskid":
+	        sortfield = "taskId";
+	        break;
+
+	    default:
+	        sortfield = "updatedDate";  // ✅ fallback to a valid column
+	        break;
+	    }
+
+
 
 	    Sort.Direction sortDirection = Sort.Direction.ASC;
 	    if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
@@ -826,7 +820,7 @@ logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskTrac
 
 	@Override
 	public List<TasksResponseDTO> ticketTrackerByTmsSubTaskId(Long subtaskid) {
-		logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskStatus");
+		logger.info("!!! inside class: SubTaskServiceImpl , !! method: ticketTrackerByTmsSubTaskId");
 		List<TaskTrackerDTO> tracker = subtaskrepository.ticketTrackerBySubTaskId(subtaskid);
 		List<TasksResponseDTO> tasksList = new ArrayList<>();
 
