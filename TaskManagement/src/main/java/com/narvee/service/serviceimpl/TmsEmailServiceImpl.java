@@ -65,17 +65,18 @@ public class TmsEmailServiceImpl {
 	
 	//---------Send email for project Create and update for task management ----------
 	@Async
-	public void sendCreateProjectEmail(TmsProject project, List<GetUsersDTO> userdetails, boolean projectUpdate,String Emailsubject,List<String> bccMails , List<String> CcMails)  
+	public void sendCreateProjectEmail(TmsProject project, List<GetUsersDTO> userdetails, boolean projectUpdate,
+			String Emailsubject, List<String> bccMails, List<String> CcMails)
 			throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: EmailServiceImpl, !! method: sendCreateProjectEmail");
-	System.err.println("Emailsubject  "+ Emailsubject + " bccMails " +bccMails + " CcMails"+CcMails);
+		System.err.println("Emailsubject  " + Emailsubject + " bccMails " + bccMails + " CcMails" + CcMails);
 
 		StringBuilder assignedUsers = new StringBuilder();
 		StringBuilder createdby = new StringBuilder();
 
 		int i = 0;
 		String emails[] = new String[userdetails.size()];
-		
+
 		for (GetUsersDTO userDTO : userdetails) {
 			if (userDTO.getCreatedby() != null) {
 				createdby.append(userDTO.getCreatedby());
@@ -83,20 +84,18 @@ public class TmsEmailServiceImpl {
 				if (i != 0) {
 					assignedUsers.append(",");
 				}
-				assignedUsers.append(userDTO.getFullname());  
+				assignedUsers.append(userDTO.getFullname());
 			}
 
 			emails[i] = userDTO.getEmail();
 			i++;
 		}
-		
+
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-		String formattedStartDate = project.getStartDate() != null
-			    ? formatter.format(project.getStartDate())
-			    : "Not available";
-			String formattedTargetDate = project.getTargetDate() != null
-			    ? formatter.format(project.getTargetDate())
-			    : "Not available";
+		String formattedStartDate = project.getStartDate() != null ? formatter.format(project.getStartDate())
+				: "Not available";
+		String formattedTargetDate = project.getTargetDate() != null ? formatter.format(project.getTargetDate())
+				: "Not available";
 
 		Set<String> emailSet = new HashSet<>(Arrays.asList(emails));
 		String[] uniqueEmails = emailSet.toArray(new String[0]);
@@ -766,11 +765,11 @@ public class TmsEmailServiceImpl {
 		    helper.setCc(ccList.toArray(new String[0]));
 		}
 		if (bccList != null && !bccList.isEmpty()) {
-		    helper.setBcc(bccList.toArray(new String[0]));
+			helper.setBcc(bccList.toArray(new String[0]));
 		}
 		mailSender.send(message);
 
 		logger.info("!!! inside class: EmailServiceImpl, !! method: End sendStatusUpdateSubtaskEmail");
 	}
-	
+
 }
