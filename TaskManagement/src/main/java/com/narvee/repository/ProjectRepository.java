@@ -207,7 +207,7 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
             "OR LOWER(CONCAT_WS(' ', TRIM(auu.first_name), NULLIF(TRIM(auu.middle_name), ''), TRIM(auu.last_name))) LIKE CONCAT('%', LOWER(:keyword), '%') ) "+
             "OR DATE_FORMAT(p.start_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
             "OR DATE_FORMAT(p.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')"
-+            "OR DATE_FORMAT(p.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
++            "OR DATE_FORMAT(p.updateddate, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
              "GROUP BY p.pid " ,
          
             nativeQuery = true)
@@ -244,6 +244,10 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
            
             nativeQuery = true)
     Page<ProjectDTO> getAllProjectsByTmsUser(@Param("userid") Long userid, Pageable pageable);
+    
+ 
+        // 1) Get all projects for a TMS user with filtering (search + sort)
+            
 
     // 4) Assigned-user list (with keyword)
     @Query(value = "SELECT DISTINCT p.pid, " +
@@ -280,7 +284,7 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
            
             "OR DATE_FORMAT(p.start_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
             "OR DATE_FORMAT(p.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')"
-+            "OR DATE_FORMAT(p.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
++            "OR DATE_FORMAT(p.updateddate, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
              "GROUP BY p.pid " ,
         
             nativeQuery = true)
