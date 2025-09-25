@@ -439,16 +439,18 @@ public class ProjectServiceImpl implements ProjectService {
 	    String access = requestresponsedto.getAccess();
 
 	    // Normalize sort field → map DTO names to DB/projection names
-	    switch (sortField.toLowerCase()) {
+	    String sf = (sortField == null) ? "" : sortField.trim().toLowerCase();
+
+	    switch (sf) {
 	        case "projectid": sortField = "projectId"; break;
 	        case "projectname": sortField = "projectName"; break;
 	        case "status": sortField = "status"; break;
 	        case "projectdescription": sortField = "projectdescription"; break;
-	        case "addedby": sortField = "addedby"; break;
-	        case "updatedby": sortField = "updatedby"; break;
+	        case "addedby": sortField = "addedByFullname"; break;   // ✅ changed
+	        case "updatedby": sortField = "updatedByFullname"; break; // ✅ changed
 	        case "startdate": sortField = "startDate"; break;
 	        case "duedate": sortField = "targetDate"; break;
-	        case "updateddate": sortField = "updatedDate"; break;
+	        case "updateddate": sortField = "updateddate"; break;
 	        case "department": sortField = "department"; break;
 	        default: sortField = "createdDate";
 	    }
@@ -531,6 +533,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 	                return matchesKeyword ? proj : null;
 	            })
+	           
 	            .filter(Objects::nonNull)
 	            .collect(Collectors.toList());
 

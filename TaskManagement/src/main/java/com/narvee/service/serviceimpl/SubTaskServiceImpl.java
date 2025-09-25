@@ -670,15 +670,15 @@ default:
 	    // map sort fields (same as your mapping)
 	    switch (sortfield.toLowerCase()) {
 	    case "subtaskid":
-	        sortfield = "subtaskId";
+	        sortfield = "subtaskid";
 	        break;
 
 	    case "subtaskname":
-	        sortfield = "subtaskName";
+	        sortfield = "subtaskname";
 	        break;
 
 	    case "subtaskdescription":
-	        sortfield = "subTaskDescription";
+	        sortfield = "subTaskdescription";
 	        break;
 
 	    case "status":
@@ -686,7 +686,7 @@ default:
 	        break;
 
 	    
-	    case "DueDate":case "targetdate": sortfield = "targetDate"; break;
+	    case "DueDate":case "targetdate": sortfield = "target_date"; break;
 
 	    case "startdate":
 	        sortfield = "start_date";
@@ -697,7 +697,7 @@ default:
 	        break;
 
 	    case "updatedby":
-	        sortfield = "updatedBy";
+	        sortfield = "updatedby";
 	        break;
 
 	    case "duration":
@@ -709,11 +709,11 @@ default:
 	        break;
 
 	    case "taskid":
-	        sortfield = "taskId";
+	        sortfield = "taskid";
 	        break;
 
 	    default:
-	        sortfield = "updatedDate";  // ✅ fallback to a valid column
+	        sortfield = "updateddate";  // ✅ fallback to a valid column
 	        break;
 	    }
 

@@ -379,6 +379,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
             "  LOWER(t.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "  DATE_FORMAT(t.start_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') OR " +
             "  DATE_FORMAT(t.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') OR " +
+            "  DATE_FORMAT(t.updateddate, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') OR " +
             "  LOWER(t.status) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "  LOWER(t.priority) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "  LOWER(t.duration) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
