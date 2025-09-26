@@ -14,7 +14,7 @@ public interface ProjectDTO {
 
 	public String getAddedby();
 	
-	public String getaddedByFullname();
+	public String getAddedByFullname();
 	
 	public String getStatus();
 
@@ -26,12 +26,12 @@ public interface ProjectDTO {
 	
 	public LocalDateTime getCreateddate();
 	
-	public LocalDate getstartDate();
+	public LocalDate getStartDate();
 	
-	public LocalDate gettargetDate();  
+	public LocalDate getTargetDate();  
 	
 
-	 public String getAssignedTo();//added by pratiksha
+	 public String getAssignedTo();
 	
 
 	public LocalDate getUpdateddate();
