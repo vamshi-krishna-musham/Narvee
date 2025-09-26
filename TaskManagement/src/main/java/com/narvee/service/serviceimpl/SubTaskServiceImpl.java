@@ -549,7 +549,7 @@ case "status":
 case "DueDate":case "targetdate": sortfield = "target_date"; break;
 
 case "startdate":
-    sortfield = "startDate";
+    sortfield = "start_date";
     break;
 
 case "priority":
@@ -557,7 +557,7 @@ case "priority":
     break;
 
 case "updatedby":
-    sortfield = "updatedBy";
+    sortfield = "updatedby";
     break;
 
 case "duration":
@@ -573,7 +573,7 @@ case "taskid":
     break;
 
 default:
-    sortfield = "updateDate";  // ✅ fallback to a valid column
+    sortfield = "updatedate";  // ✅ fallback to a valid column
     break;
 }
 
@@ -678,7 +678,7 @@ default:
 	        break;
 
 	    case "subtaskdescription":
-	        sortfield = "subTaskdescription";
+	        sortfield = "subtaskdescription";
 	        break;
 
 	    case "status":
