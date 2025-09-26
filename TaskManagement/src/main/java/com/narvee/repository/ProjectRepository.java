@@ -140,37 +140,36 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
 
 	//public Page<ProjectDTO> findAllTmsProjectWithFiltering(Pageable pageable, @Param("keyword") String keyword,  @Param("addedby") Long addedby);
 	// ✅ Repository Interface
+
 	// 1️⃣ Method to fetch all projects (with assignedTo, updatedBy, updatedDate)
 	// 1) Admin / manager: all projects (no keyword)
-    @Query(value = "SELECT DISTINCT p.pid, " +
-            "p.projectname, " +
-            "p.projectdescription, " +
-            "DATE(p.start_date) AS startDate, " +
-            "DATE(p.target_date) AS targetDate, " +
-            "p.addedby, " +
-            "REPLACE(CONCAT(TRIM(tu.first_name),' ',TRIM(COALESCE(tu.middle_name,'')),' ',TRIM(tu.last_name)), '  ', ' ') AS addedByFullname, " +
-            "p.status, " +
-            "p.updatedby, " +
-            "CASE WHEN p.updatedby IS NOT NULL AND p.updatedby <> p.addedby " +
-            "     THEN REPLACE(CONCAT(TRIM(uu.first_name),' ',TRIM(COALESCE(uu.middle_name,'')),' ',TRIM(uu.last_name)), '  ', ' ') " +
-            "     ELSE REPLACE(CONCAT(TRIM(tu.first_name),' ',TRIM(COALESCE(tu.middle_name,'')),' ',TRIM(tu.last_name)), '  ', ' ') END AS updatedByFullname, " +
-            "p.projectid, " +
-            "p.createddate, " +
-            "p.updateddate, " +
-            "p.department, " +
-            "GROUP_CONCAT(DISTINCT REPLACE(CONCAT(TRIM(auu.first_name),' ',TRIM(COALESCE(auu.middle_name,'')),' ',TRIM(auu.last_name)), '  ', ' ')) AS assignedTo " +
-            "FROM tms_project p " +
-            "LEFT JOIN tms_assigned_users au ON au.pid = p.pid " +
-            "JOIN tms_users tu ON p.addedby = tu.user_id " +
-            "LEFT JOIN tms_users uu ON p.updatedby = uu.user_id " +
-            "LEFT JOIN tms_users auu ON au.tms_user_id = auu.user_id " +
-            "WHERE (p.admin_id = :addedby OR p.addedby = :addedby OR au.tms_user_id = :addedby OR p.updatedby = :updatedby) " +
-            "GROUP BY p.pid " ,
-          
-            nativeQuery = true)
-    Page<ProjectDTO> findAllTmsProjects(Pageable pageable,
-                                        @Param("addedby") Long addedby,
-                                        @Param("updatedby") Long updatedby);
+   
+
+/*	@Query(value = "SELECT DISTINCT p.pid, " +
+	        "p.projectname, " +
+	        "p.projectdescription, " +
+	        "DATE(p.start_date) AS startDate, " +
+	        "DATE(p.target_date) AS targetDate, " +
+	        "p.addedby, " +
+	        "CONCAT(tu.first_name,' ',COALESCE(tu.middle_name,''),' ',tu.last_name) AS addedByFullname, " +
+	        "p.status, " +
+	        "p.updatedby, " +
+	        "CASE WHEN p.updatedby IS NOT NULL AND p.updatedby <> p.addedby " +
+	        "     THEN CONCAT(uu.first_name,' ',COALESCE(uu.middle_name,''),' ',uu.last_name) " +
+	        "     ELSE CONCAT(tu.first_name,' ',COALESCE(tu.middle_name,''),' ',tu.last_name) END AS updatedByFullname, " +
+	        "p.projectid, " +
+	        "p.createddate, " +
+	        "p.updateddate " +
+	        "FROM tms_project p " +
+	        "LEFT JOIN tms_assigned_users au ON au.pid = p.pid " +
+	        "JOIN tms_users tu ON p.addedby = tu.user_id " +
+	        "LEFT JOIN tms_users uu ON p.updatedby = uu.user_id " +
+	        "WHERE p.admin_id = :addedby " +
+	        "   OR p.addedby = :addedby " +
+	        "   OR au.tms_user_id = :addedby",
+	       nativeQuery = true)
+	Page<ProjectDTO> findAllTmsProjects(Pageable pageable, Long addedby);
+
 
     // 2) Admin / manager: with keyword filtering (fixed assignedTo/ name search)
     @Query(value = "SELECT DISTINCT p.pid, " +
@@ -249,6 +248,7 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
         // 1) Get all projects for a TMS user with filtering (search + sort)
             
 
+
     // 4) Assigned-user list (with keyword)
     @Query(value = "SELECT DISTINCT p.pid, " +
             "p.projectname, " +
@@ -291,16 +291,365 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
     Page<ProjectDTO> getAllProjectsByTmsUserFilter(Pageable pageable,
                                                    @Param("keyword") String keyword,
                                                    @Param("userid") Long userid);
+
+	@Query(value = "SELECT  p.pid , p.projectname , p.projectdescription , p.addedby , DATE(p.start_date) AS startDate , DATE(p.target_date) AS targetDate, p.status , p.updatedby , p.projectid , p.department ,p.createddate,p.updateddate FROM   tms_project p , tms_assigned_users au where au.pid= p.pid AND au.tms_user_id=:userid", nativeQuery = true)
+	public Page<ProjectDTO> getAllProjectsByTmsUser(Long userid,Pageable pageable );  // --- query for get all projects for tms users --- 
 	
-	@Query(value = "select bcc_mails AS bccMails ,cc_mails AS ccMails ,email_notification_type As notificationType ,is_enabled AS isEnabled ,subject from tms_email_configuration where admin_id = :adminId and email_notification_type = :notificationType",nativeQuery = true)
-   public EmailConfigResponseDto  getEmailNotificationStatus(Long adminId, String notificationType);
 	
-	@Query(value = "SELECT admin_id  FROM tms_task ts join tms_project tp on ts.pid = tp.pid where ts.taskid = :TaskId",nativeQuery = true)
-	public Long getAdminId(Long TaskId);
+	@Query(value = "SELECT  p.pid , p.projectname , p.projectdescription ,  DATE(p.start_date) AS startDate , DATE(p.target_date) AS targetDate,p.addedby , p.status , p.updatedby , p.projectid , p.createddate , p.updateddate,p.department FROM tms_project p  , tms_assigned_users au where au.pid= p.pid AND"
+			+ " au.tms_user_id=:userid AND (p.projectname LIKE CONCAT('%', :keyword, '%') OR p.projectid LIKE CONCAT('%', :keyword, '%') or  p.status LIKE CONCAT('%', :keyword, '%')   OR DATE_FORMAT(p.start_date, '%Y-%m-%d') LIKE CONCAT('%', :keyword, '%') OR  DATE_FORMAT(p.target_date, '%Y-%m-%d') LIKE CONCAT('%', :keyword, '%'))", nativeQuery = true)
+	public Page<ProjectDTO> getAllProjectsByTmsUserFilter(Pageable pageable, @Param("keyword") String keyword , Long userid); // --- QUERY FOR GET ALL PROJECT BY USER ID FOR TMS USERS ADDED BY KEERTHI
+	/*@Query(value = "SELECT DISTINCT p.pid, " +
+		    "p.projectname, " +
+		    "p.projectdescription, " +
+		    "DATE(p.start_date) AS startDate, " +
+		    "DATE(p.target_date) AS targetDate, " +
+		    "p.addedby, " +
+		    "CONCAT(tu.first_name,' ',COALESCE(tu.middle_name,''),' ',tu.last_name) AS addedByFullname, " +
+		    "p.status, " +
+		    "p.updatedby, " +
+		    "CASE WHEN p.updatedby IS NOT NULL AND p.updatedby <> p.addedby " +
+		    "     THEN CONCAT(uu.first_name,' ',COALESCE(uu.middle_name,''),' ',uu.last_name) " +
+		    "     ELSE CONCAT(tu.first_name,' ',COALESCE(tu.middle_name,''),' ',tu.last_name) END AS updatedByFullname, " +
+		    "p.projectid, " +
+		    "p.department, " +
+		    "p.createddate, " +
+		    "p.updateddate " +
+		    "FROM tms_project p " +
+		    "JOIN tms_assigned_users au ON au.pid = p.pid " +
+		    "JOIN tms_users tu ON p.addedby = tu.user_id " +
+		    "LEFT JOIN tms_users uu ON p.updatedby = uu.user_id " +
+		    "WHERE au.tms_user_id = :userid",
+		    nativeQuery = true)
+		Page<ProjectDTO> getAllProjectsByTmsUser(@Param("userid") Long userid, Pageable pageable);
 	
-	@Query(value = "  select Admin_id  from tms_users where user_id = :userId",nativeQuery = true)
-	 Long  AdminId (@Param("userId") Long userId);
-	
+	@Query(value = "SELECT DISTINCT p.pid, " +
+		    "p.projectname, " +
+		    "p.projectdescription, " +
+		    "DATE(p.start_date) AS startDate, " +
+		    "DATE(p.target_date) AS targetDate, " +
+		    "p.addedby, " +
+		    "CONCAT(tu.first_name,' ',COALESCE(tu.middle_name,''),' ',tu.last_name) AS addedByFullname, " +
+		    "p.status, " +
+		    "p.updatedby, " +
+		    "CASE WHEN p.updatedby IS NOT NULL AND p.updatedby <> p.addedby " +
+		    "     THEN CONCAT(uu.first_name,' ',COALESCE(uu.middle_name,''),' ',uu.last_name) " +
+		    "     ELSE CONCAT(tu.first_name,' ',COALESCE(tu.middle_name,''),' ',tu.last_name) END AS updatedByFullname, " +
+		    "p.projectid, " +
+		    "p.createddate, " +
+		    "p.updateddate, " +
+		    "p.department " +
+		    "FROM tms_project p " +
+		    "JOIN tms_assigned_users au ON au.pid = p.pid " +
+		    "JOIN tms_users tu ON p.addedby = tu.user_id " +
+		    "LEFT JOIN tms_users uu ON p.updatedby = uu.user_id " +
+		    "WHERE au.tms_user_id = :userid " +
+		    "AND (p.projectname LIKE CONCAT('%', :keyword, '%') " +
+		    "OR p.projectid LIKE CONCAT('%', :keyword, '%') " +
+		    "OR p.status LIKE CONCAT('%', :keyword, '%') " +
+		    "OR tu.first_name LIKE CONCAT('%', :keyword, '%') " +
+		    "OR tu.middle_name LIKE CONCAT('%', :keyword, '%') " +
+		    "OR tu.last_name LIKE CONCAT('%', :keyword, '%') " +
+		    "OR uu.first_name LIKE CONCAT('%', :keyword, '%') " +
+		    "OR uu.middle_name LIKE CONCAT('%', :keyword, '%') " +
+		    "OR uu.last_name LIKE CONCAT('%', :keyword, '%') " +
+		    "OR DATE_FORMAT(p.start_date, '%Y-%m-%d') LIKE CONCAT('%', :keyword, '%') " +
+		    "OR DATE_FORMAT(p.target_date, '%Y-%m-%d') LIKE CONCAT('%', :keyword, '%'))",
+		    nativeQuery = true)
+		Page<ProjectDTO> getAllProjectsByTmsUserFilter(Pageable pageable,
+		                                               @Param("keyword") String keyword,
+		                                               @Param("userid") Long userid);
+
+*/
+
+//	@Query(value = "SELECT DISTINCT p.pid, " +
+//			"p.projectname, " +
+//			"p.projectdescription, " +
+//			"DATE(p.start_date) AS startDate, " +
+//			"DATE(p.target_date) AS targetDate, " +
+//			"p.addedby, " +
+//			"REPLACE(CONCAT(TRIM(tu.first_name),' ',TRIM(COALESCE(tu.middle_name,'')),' ',TRIM(tu.last_name)), ' ', ' ') AS addedByFullname, " +
+//			"p.status, " +
+//			"p.updatedby, " +
+//			"CASE WHEN p.updatedby IS NOT NULL AND p.updatedby <> p.addedby " +
+//			" THEN REPLACE(CONCAT(TRIM(uu.first_name),' ',TRIM(COALESCE(uu.middle_name,'')),' ',TRIM(uu.last_name)), ' ', ' ') " +
+//			" ELSE REPLACE(CONCAT(TRIM(tu.first_name),' ',TRIM(COALESCE(tu.middle_name,'')),' ',TRIM(tu.last_name)), ' ', ' ') END AS updatedByFullname, " +
+//			"p.projectid, " +
+//			"p.createddate, " +
+//			"p.updateddate, " +
+//			"p.department, " +
+//			"GROUP_CONCAT(DISTINCT REPLACE(CONCAT(TRIM(auu.first_name),' ',TRIM(COALESCE(auu.middle_name,'')),' ',TRIM(auu.last_name)), ' ', ' ')) AS assignedTo " +
+//			"FROM tms_project p " +
+//			"LEFT JOIN tms_assigned_users au ON au.pid = p.pid " +
+//			"JOIN tms_users tu ON p.addedby = tu.user_id " +
+//			"LEFT JOIN tms_users uu ON p.updatedby = uu.user_id " +
+//			"LEFT JOIN tms_users auu ON au.tms_user_id = auu.user_id " +
+//			"WHERE (p.admin_id = :addedby OR p.addedby = :addedby OR au.tms_user_id = :addedby OR p.updatedby = :updatedby) " +
+//			"GROUP BY p.pid " ,
+//			nativeQuery = true)
+//			Page<ProjectDTO> findAllTmsProjects(Pageable pageable,
+//			@Param("addedby") Long addedby,
+//			@Param("updatedby") Long updatedby);
+//
+//			// 2) Admin / manager: with keyword filtering (fixed assignedTo/ name search)
+//			@Query(value = "SELECT DISTINCT p.pid, " +
+//			"p.projectname, " +
+//			"p.projectdescription, " +
+//			"DATE(p.start_date) AS startDate, " +
+//			"DATE(p.target_date) AS targetDate, " +
+//			"p.addedby, " +
+//			"REPLACE(CONCAT(TRIM(tu.first_name),' ',TRIM(COALESCE(tu.middle_name,'')),' ',TRIM(tu.last_name)), ' ', ' ') AS addedByFullname, " +
+//			"p.status, " +
+//			"p.updatedby, " +
+//			"CASE WHEN p.updatedby IS NOT NULL AND p.updatedby <> p.addedby " +
+//			" THEN REPLACE(CONCAT(TRIM(uu.first_name),' ',TRIM(COALESCE(uu.middle_name,'')),' ',TRIM(uu.last_name)), ' ', ' ') " +
+//			" ELSE REPLACE(CONCAT(TRIM(tu.first_name),' ',TRIM(COALESCE(tu.middle_name,'')),' ',TRIM(tu.last_name)), ' ', ' ') END AS updatedByFullname, " +
+//			"p.projectid, " +
+//			"p.createddate, " +
+//			"p.updateddate, " +
+//			"p.department, " +
+//			"GROUP_CONCAT(REPLACE(CONCAT(TRIM(auu.first_name),' ',TRIM(COALESCE(auu.middle_name,'')),' ',TRIM(auu.last_name)), ' ', ' ')) AS assignedTo " +
+//			"FROM tms_project p " +
+//			"LEFT JOIN tms_assigned_users au ON au.pid = p.pid " +
+//			"JOIN tms_users tu ON p.addedby = tu.user_id " +
+//			"LEFT JOIN tms_users uu ON p.updatedby = uu.user_id " +
+//			"LEFT JOIN tms_users auu ON au.tms_user_id = auu.user_id " +
+//			"WHERE (p.admin_id = :addedby OR p.addedby = :addedby OR au.tms_user_id = :addedby OR p.updatedby = :updatedby) " +
+//			"AND ( :keyword = '' " +
+//			"OR p.projectname LIKE CONCAT('%', :keyword, '%') " +
+//			"OR p.projectid LIKE CONCAT('%', :keyword, '%') " +
+//			"OR p.status LIKE CONCAT('%', :keyword, '%') " +
+//			"OR LOWER(CONCAT_WS(' ', TRIM(tu.first_name), NULLIF(TRIM(tu.middle_name), ''), TRIM(tu.last_name))) LIKE CONCAT('%', LOWER(:keyword), '%') " +
+//			"OR LOWER(CONCAT_WS(' ', TRIM(uu.first_name), NULLIF(TRIM(uu.middle_name), ''), TRIM(uu.last_name))) LIKE CONCAT('%', LOWER(:keyword), '%') " +
+//			"OR LOWER(CONCAT_WS(' ', TRIM(auu.first_name), NULLIF(TRIM(auu.middle_name), ''), TRIM(auu.last_name))) LIKE CONCAT('%', LOWER(:keyword), '%') ) "+
+//			"OR DATE_FORMAT(p.start_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
+//			"OR DATE_FORMAT(p.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')"
+//			+ "OR DATE_FORMAT(p.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
+//			"GROUP BY p.pid " ,
+//			nativeQuery = true)
+//			Page<ProjectDTO> findAllTmsProjectWithFiltering(Pageable pageable,
+//			@Param("keyword") String keyword,
+//			@Param("addedby") Long addedby,
+//			@Param("updatedby") Long updatedby);
+//
+//			// 3) Assigned-user list (non-filtered)
+//			@Query(value = "SELECT DISTINCT p.pid, " +
+//			"p.projectname, " +
+//			"p.projectdescription, " +
+//			"DATE(p.start_date) AS startDate, " +
+//			"DATE(p.target_date) AS targetDate, " +
+//			"p.addedby, " +
+//			"CONCAT(tu.first_name,' ',COALESCE(tu.middle_name,''),' ',tu.last_name) AS addedByFullname, " +
+//			"p.status, " +
+//			"p.updatedby, " +
+//			"CASE WHEN p.updatedby IS NOT NULL AND p.updatedby <> p.addedby " +
+//			" THEN CONCAT(uu.first_name,' ',COALESCE(uu.middle_name,''),' ',uu.last_name) " +
+//			" ELSE CONCAT(tu.first_name,' ',COALESCE(tu.middle_name,''),' ',tu.last_name) END AS updatedByFullname, " +
+//			"p.projectid, " +
+//			"p.department, " +
+//			"p.createddate, " +
+//			"p.updateddate, " +
+//			"GROUP_CONCAT(DISTINCT CONCAT_WS(' ', auu.first_name, auu.middle_name, auu.last_name)) AS assignedTo " +
+//			"FROM tms_project p " +
+//			"JOIN tms_assigned_users au ON au.pid = p.pid " +
+//			"JOIN tms_users tu ON p.addedby = tu.user_id " +
+//			"LEFT JOIN tms_users uu ON p.updatedby = uu.user_id " +
+//			"LEFT JOIN tms_users auu ON au.tms_user_id = auu.user_id " +
+//			"WHERE au.tms_user_id = :userid " +
+//			"GROUP BY p.pid " ,
+//			nativeQuery = true)
+//			Page<ProjectDTO> getAllProjectsByTmsUser(@Param("userid") Long userid, Pageable pageable);
+//
+//			// 4) Assigned-user list (with keyword)
+//			@Query(value = "SELECT DISTINCT p.pid, " +
+//			"p.projectname, " +
+//			"p.projectdescription, " +
+//			"p.addedby, " +
+//			"CONCAT(tu.first_name,' ',COALESCE(tu.middle_name,''),' ',tu.last_name) AS addedByFullname, " +
+//			"p.status, " +
+//			"p.updatedby, " +
+//			"CASE WHEN p.updatedby IS NOT NULL AND p.updatedby <> p.addedby " +
+//			" THEN CONCAT(uu.first_name,' ',COALESCE(uu.middle_name,''),' ',uu.last_name) " +
+//			" ELSE CONCAT(tu.first_name,' ',COALESCE(tu.middle_name,''),' ',tu.last_name) END AS updatedByFullname, " +
+//			"p.projectid, " +
+//			"p.department, " +
+//			"p.createddate, " +
+//			"p.updateddate, " +
+//			"DATE(p.start_date) AS startDate, " +
+//			"DATE(p.target_date) AS targetDate, " +
+//			"GROUP_CONCAT(DISTINCT REPLACE(CONCAT(TRIM(auu.first_name),' ',TRIM(COALESCE(auu.middle_name,'')),' ',TRIM(auu.last_name)), ' ', ' ')) AS assignedTo"+
+//			"FROM tms_project p " +
+//			"JOIN tms_assigned_users au ON au.pid = p.pid " +
+//			"JOIN tms_users tu ON p.addedby = tu.user_id " +
+//			"LEFT JOIN tms_users uu ON p.updatedby = uu.user_id " +
+//			"LEFT JOIN tms_users auu ON au.tms_user_id = auu.user_id " +
+//			"WHERE au.tms_user_id = :userid " +
+//			"AND ( :keyword = '' " +
+//			"OR p.projectname LIKE CONCAT('%', :keyword, '%') " +
+//			"OR p.projectid LIKE CONCAT('%', :keyword, '%') " +
+//			"OR p.status LIKE CONCAT('%', :keyword, '%') " +
+//			"OR LOWER(CONCAT_WS(' ', TRIM(tu.first_name), NULLIF(TRIM(tu.middle_name), ''), TRIM(tu.last_name))) LIKE CONCAT('%', LOWER(:keyword), '%') " +
+//			"OR LOWER(CONCAT_WS(' ', TRIM(uu.first_name), NULLIF(TRIM(uu.middle_name), ''), TRIM(uu.last_name))) LIKE CONCAT('%', LOWER(:keyword), '%') " +
+//			"OR LOWER(CONCAT_WS(' ', TRIM(auu.first_name), NULLIF(TRIM(auu.middle_name), ''), TRIM(auu.last_name))) LIKE CONCAT('%', LOWER(:keyword), '%') ) " +
+//			"OR DATE_FORMAT(p.start_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
+//			"OR DATE_FORMAT(p.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')"
+//			+ "OR DATE_FORMAT(p.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
+//			"GROUP BY p.pid " ,
+//			nativeQuery = true)
+//			Page<ProjectDTO> getAllProjectsByTmsUserFilter(Pageable pageable,
+//			@Param("keyword") String keyword,
+//			@Param("userid") Long userid);
+//
+//
+//	
+
+//	
+    @Query(value = "SELECT DISTINCT p.pid, " +
+    		"p.projectname, " +
+    		"p.projectdescription, " +
+    		"DATE(p.start_date) AS startDate, " +
+    		"DATE(p.target_date) AS targetDate, " +
+    		"p.addedby, " +
+    		"REPLACE(CONCAT(TRIM(tu.first_name),' ',TRIM(COALESCE(tu.middle_name,'')),' ',TRIM(tu.last_name)), ' ', ' ') AS addedByFullname, " +
+    		"p.status, " +
+    		"p.updatedby, " +
+    		"CASE WHEN p.updatedby IS NOT NULL AND p.updatedby <> p.addedby " +
+    		" THEN REPLACE(CONCAT(TRIM(uu.first_name),' ',TRIM(COALESCE(uu.middle_name,'')),' ',TRIM(uu.last_name)), ' ', ' ') " +
+    		" ELSE REPLACE(CONCAT(TRIM(tu.first_name),' ',TRIM(COALESCE(tu.middle_name,'')),' ',TRIM(tu.last_name)), ' ', ' ') END AS updatedByFullname, " +
+    		"p.projectid, " +
+    		"p.createddate, " +
+    		"p.updateddate, " +
+    		"p.department, " +
+    		"GROUP_CONCAT(DISTINCT REPLACE(CONCAT(TRIM(auu.first_name),' ',TRIM(COALESCE(auu.middle_name,'')),' ',TRIM(auu.last_name)), ' ', ' ')) AS assignedTo " +
+    		"FROM tms_project p " +
+    		"LEFT JOIN tms_assigned_users au ON au.pid = p.pid " +
+    		"JOIN tms_users tu ON p.addedby = tu.user_id " +
+    		"LEFT JOIN tms_users uu ON p.updatedby = uu.user_id " +
+    		"LEFT JOIN tms_users auu ON au.tms_user_id = auu.user_id " +
+    		"WHERE (p.admin_id = :addedby OR p.addedby = :addedby OR au.tms_user_id = :addedby OR p.updatedby = :updatedby) " +
+    		"GROUP BY p.pid " ,
+    		nativeQuery = true)
+    		Page<ProjectDTO> findAllTmsProjects(Pageable pageable,
+    		@Param("addedby") Long addedby,
+    		@Param("updatedby") Long updatedby);
+
+    		// 2) Admin / manager: with keyword filtering (fixed assignedTo/ name search)
+    		@Query(value = "SELECT DISTINCT p.pid, " +
+    		"p.projectname, " +
+    		"p.projectdescription, " +
+    		"DATE(p.start_date) AS startDate, " +
+    		"DATE(p.target_date) AS targetDate, " +
+    		"p.addedby, " +
+    		"REPLACE(CONCAT(TRIM(tu.first_name),' ',TRIM(COALESCE(tu.middle_name,'')),' ',TRIM(tu.last_name)), ' ', ' ') AS addedByFullname, " +
+    		"p.status, " +
+    		"p.updatedby, " +
+    		"CASE WHEN p.updatedby IS NOT NULL AND p.updatedby <> p.addedby " +
+    		" THEN REPLACE(CONCAT(TRIM(uu.first_name),' ',TRIM(COALESCE(uu.middle_name,'')),' ',TRIM(uu.last_name)), ' ', ' ') " +
+    		" ELSE REPLACE(CONCAT(TRIM(tu.first_name),' ',TRIM(COALESCE(tu.middle_name,'')),' ',TRIM(tu.last_name)), ' ', ' ') END AS updatedByFullname, " +
+    		"p.projectid, " +
+    		"p.createddate, " +
+    		"p.updateddate, " +
+    		"p.department, " +
+    		"GROUP_CONCAT(REPLACE(CONCAT(TRIM(auu.first_name),' ',TRIM(COALESCE(auu.middle_name,'')),' ',TRIM(auu.last_name)), ' ', ' ')) AS assignedTo " +
+    		"FROM tms_project p " +
+    		"LEFT JOIN tms_assigned_users au ON au.pid = p.pid " +
+    		"JOIN tms_users tu ON p.addedby = tu.user_id " +
+    		"LEFT JOIN tms_users uu ON p.updatedby = uu.user_id " +
+    		"LEFT JOIN tms_users auu ON au.tms_user_id = auu.user_id " +
+    		"WHERE (p.admin_id = :addedby OR p.addedby = :addedby OR au.tms_user_id = :addedby OR p.updatedby = :updatedby) " +
+    		"AND ( :keyword = '' " +
+    		"OR p.projectname LIKE CONCAT('%', :keyword, '%') " +
+    		"OR p.projectid LIKE CONCAT('%', :keyword, '%') " +
+    		"OR p.status LIKE CONCAT('%', :keyword, '%') " +
+    		"OR LOWER(CONCAT_WS(' ', TRIM(tu.first_name), NULLIF(TRIM(tu.middle_name), ''), TRIM(tu.last_name))) LIKE CONCAT('%', LOWER(:keyword), '%') " +
+    		"OR LOWER(CONCAT_WS(' ', TRIM(uu.first_name), NULLIF(TRIM(uu.middle_name), ''), TRIM(uu.last_name))) LIKE CONCAT('%', LOWER(:keyword), '%') " +
+    		"OR LOWER(CONCAT_WS(' ', TRIM(auu.first_name), NULLIF(TRIM(auu.middle_name), ''), TRIM(auu.last_name))) LIKE CONCAT('%', LOWER(:keyword), '%') ) "+
+    		"OR DATE_FORMAT(p.start_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
+    		"OR DATE_FORMAT(p.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')"
+    		+ "OR DATE_FORMAT(p.updateddate, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
+    		"GROUP BY p.pid " ,
+    		nativeQuery = true)
+    		Page<ProjectDTO> findAllTmsProjectWithFiltering(Pageable pageable,
+    		@Param("keyword") String keyword,
+    		@Param("addedby") Long addedby,
+    		@Param("updatedby") Long updatedby);
+
+    		// 3) Assigned-user list (non-filtered)
+    		@Query(value = "SELECT DISTINCT p.pid, " +
+    		"p.projectname, " +
+    		"p.projectdescription, " +
+    		"DATE(p.start_date) AS startDate, " +
+    		"DATE(p.target_date) AS targetDate, " +
+    		"p.addedby, " +
+    		"CONCAT(tu.first_name,' ',COALESCE(tu.middle_name,''),' ',tu.last_name) AS addedByFullname, " +
+    		"p.status, " +
+    		"p.updatedby, " +
+    		"CASE WHEN p.updatedby IS NOT NULL AND p.updatedby <> p.addedby " +
+    		" THEN CONCAT(uu.first_name,' ',COALESCE(uu.middle_name,''),' ',uu.last_name) " +
+    		" ELSE CONCAT(tu.first_name,' ',COALESCE(tu.middle_name,''),' ',tu.last_name) END AS updatedByFullname, " +
+    		"p.projectid, " +
+    		"p.department, " +
+    		"p.createddate, " +
+    		"p.updateddate, " +
+    		"GROUP_CONCAT(DISTINCT CONCAT_WS(' ', auu.first_name, auu.middle_name, auu.last_name)) AS assignedTo " +
+    		"FROM tms_project p " +
+    		"JOIN tms_assigned_users au ON au.pid = p.pid " +
+    		"JOIN tms_users tu ON p.addedby = tu.user_id " +
+    		"LEFT JOIN tms_users uu ON p.updatedby = uu.user_id " +
+    		"LEFT JOIN tms_users auu ON au.tms_user_id = auu.user_id " +
+    		"WHERE au.tms_user_id = :userid " +
+    		"GROUP BY p.pid " ,
+    		nativeQuery = true)
+    		Page<ProjectDTO> getAllProjectsByTmsUser(@Param("userid") Long userid, Pageable pageable);
+    		// 1) Get all projects for a TMS user with filtering (search + sort)
+
+    		// 4) Assigned-user list (with keyword)
+    		@Query(value = "SELECT DISTINCT p.pid, " +
+    		"p.projectname, " +
+    		"p.projectdescription, " +
+    		"p.addedby, " +
+    		"CONCAT(tu.first_name,' ',COALESCE(tu.middle_name,''),' ',tu.last_name) AS addedByFullname, " +
+    		"p.status, " +
+    		"p.updatedby, " +
+    		"CASE WHEN p.updatedby IS NOT NULL AND p.updatedby <> p.addedby " +
+    		" THEN CONCAT(uu.first_name,' ',COALESCE(uu.middle_name,''),' ',uu.last_name) " +
+    		" ELSE CONCAT(tu.first_name,' ',COALESCE(tu.middle_name,''),' ',tu.last_name) END AS updatedByFullname, " +
+    		"p.projectid, " +
+    		"p.department, " +
+    		"p.createddate, " +
+    		"p.updateddate, " +
+    		"DATE(p.start_date) AS startDate, " +
+    		"DATE(p.target_date) AS targetDate, " +
+    		"GROUP_CONCAT(DISTINCT REPLACE(CONCAT(TRIM(auu.first_name),' ',TRIM(COALESCE(auu.middle_name,'')),' ',TRIM(auu.last_name)), ' ', ' ')) AS assignedTo"+
+    		"FROM tms_project p " +
+    		"JOIN tms_assigned_users au ON au.pid = p.pid " +
+    		"JOIN tms_users tu ON p.addedby = tu.user_id " +
+    		"LEFT JOIN tms_users uu ON p.updatedby = uu.user_id " +
+    		"LEFT JOIN tms_users auu ON au.tms_user_id = auu.user_id " +
+    		"WHERE au.tms_user_id = :userid " +
+    		"AND ( :keyword = '' " +
+    		"OR p.projectname LIKE CONCAT('%', :keyword, '%') " +
+    		"OR p.projectid LIKE CONCAT('%', :keyword, '%') " +
+    		"OR p.status LIKE CONCAT('%', :keyword, '%') " +
+    		"OR LOWER(CONCAT_WS(' ', TRIM(tu.first_name), NULLIF(TRIM(tu.middle_name), ''), TRIM(tu.last_name))) LIKE CONCAT('%', LOWER(:keyword), '%') " +
+    		"OR LOWER(CONCAT_WS(' ', TRIM(uu.first_name), NULLIF(TRIM(uu.middle_name), ''), TRIM(uu.last_name))) LIKE CONCAT('%', LOWER(:keyword), '%') " +
+    		"OR LOWER(CONCAT_WS(' ', TRIM(auu.first_name), NULLIF(TRIM(auu.middle_name), ''), TRIM(auu.last_name))) LIKE CONCAT('%', LOWER(:keyword), '%') ) " +
+    		"OR DATE_FORMAT(p.start_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
+    		"OR DATE_FORMAT(p.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')"
+    		+ "OR DATE_FORMAT(p.updateddate, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
+    		"GROUP BY p.pid " ,
+    		nativeQuery = true)
+    		Page<ProjectDTO> getAllProjectsByTmsUserFilter(Pageable pageable,
+    		@Param("keyword") String keyword,
+    		@Param("userid") Long userid);
+    		@Query(value = "select bcc_mails AS bccMails ,cc_mails AS ccMails ,email_notification_type As notificationType ,is_enabled AS isEnabled ,subject from tms_email_configuration where admin_id = :adminId and email_notification_type = :notificationType",nativeQuery = true)
+    		public EmailConfigResponseDto getEmailNotificationStatus(Long adminId, String notificationType);
+    		@Query(value = "SELECT admin_id FROM tms_task ts join tms_project tp on ts.pid = tp.pid where ts.taskid = :TaskId",nativeQuery = true)
+    		public Long getAdminId(Long TaskId);
+    		@Query(value = " select Admin_id from tms_users where user_id = :userId",nativeQuery = true)
+    		Long AdminId (@Param("userId") Long userId);
+
+
 
 
 }

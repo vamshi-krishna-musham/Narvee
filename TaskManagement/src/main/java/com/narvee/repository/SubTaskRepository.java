@@ -1,6 +1,7 @@
 package com.narvee.repository;
 
 import java.time.LocalDate;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -135,7 +136,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 			+ "			WHERE st.subtaskid = :subtaskid ", nativeQuery = true)
 	public List<GetUsersDTO> getSubtaskAssignUsersTms(Long subtaskid);*/
 	// Non-search listing (normalized fullname)
-	
+
 	@Query(value =
 	  "SELECT "
 	+ "  st.subtaskid AS subTaskId, "
@@ -215,31 +216,21 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 
 
 	@Query(value =
-	  "SELECT "
-	+ "  st.subtaskid AS subtaskid, "
-	+ "  CONCAT_WS(' ', NULLIF(TRIM(creator.first_name), ''), NULLIF(TRIM(creator.middle_name), ''), NULLIF(TRIM(creator.last_name), '')) AS fullname, "
-	+ "  creator.email AS email "
-	+ "FROM tms_sub_task st "
-	+ "JOIN tms_users creator ON st.addedby = creator.user_id "
-	+ "WHERE st.subtaskid = :subtaskid "
-	+ "UNION ALL "
-	+ "SELECT "
-	+ "  st.subtaskid AS subtaskid, "
-	+ "  CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), '')) AS fullname, "
-	+ "  u.email AS email "
-	+ "FROM tms_sub_task st "
-	+ "JOIN tms_assigned_users au ON st.subtaskid = au.subtaskid "
-	+ "JOIN tms_users u ON au.tms_user_id = u.user_id "
-	+ "WHERE st.subtaskid = :subtaskid",
-	nativeQuery = true)
-	public List<GetUsersDTO> getSubtaskAssignUsersTms(@Param("subtaskid") Long subtaskid);
+			  "SELECT au.tms_user_id AS userid, " +
+			  "  CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), '')) AS fullname, " +
+			  "  u.email AS email " +
+			  "FROM tms_assigned_users au " +
+			  "JOIN tms_users u ON au.tms_user_id = u.user_id " +
+			  "WHERE au.subtaskid = :subtaskid",
+			  nativeQuery = true)
+			public List<GetUsersDTO> getSubtaskAssignUsersTms(@Param("subtaskid") Long subtaskid);
 	@Query(
 			  value =
 			    "SELECT " +
 			    "  st.subtaskid               AS subtaskid, " +
 			    "  st.subtaskdescription      AS description, " +
 			    "  st.subtaskname             AS subtaskname, " +
-			    "  st.target_date             AS target_date, " +
+			    "  st.target_date   "+        
 			    "  st.addedby                 AS addedby, " +
 			    "  st.duration                AS duration, " +
 			    "  DATE(st.createddate)       AS createddate, " +
@@ -304,8 +295,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 			)
 			public Page<TaskTrackerDTO> findSubTaskByTicketIdWithSearching(@Param("ticketId") String ticketId,
 			                                                               @Param("keyword") String keyword, Pageable pageable);
-
-	@Query(value = "select subtaskname from tms_sub_task where subtaskid = :subTaskId",nativeQuery = true)
+@Query(value = "select subtaskname from tms_sub_task where subtaskid = :subTaskId",nativeQuery = true)
 	public String getSubTaskName(Long subTaskId);
 
 
