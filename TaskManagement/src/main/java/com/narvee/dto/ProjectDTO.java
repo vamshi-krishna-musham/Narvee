@@ -31,7 +31,7 @@ public interface ProjectDTO {
 	public LocalDate getTargetDate();  
 	
 
-	 public String getAssignedTo();//added by pratiksha
+	 public String getAssignedTo();
 	
 
 	public LocalDate getUpdateddate();

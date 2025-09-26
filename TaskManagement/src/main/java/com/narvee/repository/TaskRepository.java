@@ -90,7 +90,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 
 	@Query(value = "select u.userid ,u.pseudoname,u.fullname   FROM users u where u.status ='Active' AND u.department=:department ", nativeQuery = true)
 	public List<GetUsersDTO> findDepartmentWiseUsers(String department);
-//added vais
+
 	
 	@Modifying
 	@Transactional
@@ -221,7 +221,8 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
     public List<GetUsersDTO> getProjectByTmsUsers(@Param("projectId") String projectId);
 
 	/*@Query(value = "select u.full_name FROM tms_users u  JOIN tms_task t ON t.updatedby = u.user_id WHERE t.updatedby = :updatedby and t.taskid = :taskid ",nativeQuery = true)
-	public String getUpdatedByName(Long updatedby,Long taskid);*/@Query(value = "SELECT TRIM(u.full_name) FROM tms_users u JOIN tms_task t ON t.updatedby = u.user_id " +
+	public String getUpdatedByName(Long updatedby,Long taskid);*/
+	@Query(value = "SELECT TRIM(u.full_name) FROM tms_users u JOIN tms_task t ON t.updatedby = u.user_id " +
             "WHERE t.updatedby = :updatedby AND t.taskid = :taskid", nativeQuery = true)
     public String getUpdatedByName(@Param("updatedby") Long updatedby, @Param("taskid") Long taskid);
 
@@ -279,6 +280,8 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			+ "		WHERE t.taskid = :taskId ", nativeQuery = true) 
 
 	public List<GetUsersDTO> getTmsAssignUsers(Long taskId);*/
+<<<<<<< HEAD
+=======
 	/*@Query(value =
 	        "SELECT " +
 	        "  t.taskid, " +
@@ -299,6 +302,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	        "WHERE t.taskid = :taskId",
 	        nativeQuery = true)
 	    public List<GetUsersDTO> getTmsAssignUsers(@Param("taskId") Long taskId);*/
+>>>>>>> 910de319ccb1a5e52f53548d2a9b05137bcb676d
 	@Query(value =
 			  "SELECT u.user_id AS userid, " +
 			  "  CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), '')) AS fullname, " +
@@ -310,7 +314,11 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			  nativeQuery = true)
 			public List<GetUsersDTO> getTmsAssignUsers(@Param("taskId") Long taskId);
 
+<<<<<<< HEAD
+		/*@Query(value = " select concat(u.first_name,' ', COALESCE(u.middle_name, ''),' ',u.last_name) AS fullname ,u.email from tms_users u where u.user_id = :userid ", nativeQuery = true)
+=======
 	/*@Query(value = " select concat(u.first_name,' ', COALESCE(u.middle_name, ''),' ',u.last_name) AS fullname ,u.email from tms_users u where u.user_id = :userid ", nativeQuery = true)
+>>>>>>> 910de319ccb1a5e52f53548d2a9b05137bcb676d
 
 	public GetUsersDTO gettmsUser(Long userid);
 	
