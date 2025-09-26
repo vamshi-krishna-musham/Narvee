@@ -546,7 +546,7 @@ case "status":
     break;
 
 
-case "DueDate":case "targetdate": sortfield = "targetDate"; break;
+case "DueDate":case "targetdate": sortfield = "target_date"; break;
 
 case "startdate":
     sortfield = "startDate";
