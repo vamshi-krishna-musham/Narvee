@@ -449,6 +449,8 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	@Query(value = "SELECT COUNT(*) FROM tms_sub_task st WHERE st.taskid = :taskid AND st.status <> :status",nativeQuery = true)
 	long countByProjectIdAndStatusNot(@Param("taskid") Long taskid, @Param("status") String status);
 
-
+	/*@Query(value = "SELECT COUNT(*) FROM tms_sub_task st WHERE st.taskid = :taskid AND st.status <> :status",nativeQuery = true)
+	long countProjectIdAndStatusNot(@Param("taskid") Long taskid, @Param("status") String status);//removethis i just added for pushing 
+*/
 	
 }
