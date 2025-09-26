@@ -13,9 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.mail.MessagingException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +25,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.narvee.dto.EmailConfigResponseDto;
 import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.ProjectDTO;
@@ -445,6 +442,7 @@ public class ProjectServiceImpl implements ProjectService {
 	    String sf = (sortField == null) ? "" : sortField.trim().toLowerCase();
 
 	    switch (sf) {
+<<<<<<< HEAD
         case "projectid": sortField = "projectId"; break;
         case "projectname": sortField = "projectName"; break;
         case "status": sortField = "status"; break;
@@ -462,11 +460,30 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
 
+=======
+	        case "projectid": sortField = "projectId"; break;
+	        case "projectname": sortField = "projectName"; break;
+	        case "status": sortField = "status"; break;
+	        case "projectdescription": sortField = "projectdescription"; break;
+	        case "addedby": sortField = "addedByFullname"; break;   // ✅ changed
+	        case "updatedby": sortField = "updatedByFullname"; break; // ✅ changed
+	        case "startdate": sortField = "startDate"; break;
+	        case "duedate":
+	        case "targetdate":
+	            sortField = "targetDate"; break;
+
+	        case "updateddate": sortField = "updateddate"; break;
+	        case "department": sortField = "department"; break;
+	        default: sortField = "createdDate";
+	    }
+>>>>>>> 910de319ccb1a5e52f53548d2a9b05137bcb676d
 
 	    // Build pageable with sorting
 	    Sort.Direction direction = "desc".equalsIgnoreCase(sortOrder) ? Sort.Direction.DESC : Sort.Direction.ASC;
-	    Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(direction, sortField));
+	    /*Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(direction, sortField));*/
+	    Pageable pageable = PageRequest.of(Math.max(0, pageNo - 1), pageSize, Sort.by(direction, sortField));
   
+	    
 	    
 	    //normalize keyword (empty string means no filter)
 	    String keywordParam = (keyword == null || keyword.trim().isEmpty() || "empty".equalsIgnoreCase(keyword))

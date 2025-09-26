@@ -280,6 +280,29 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			+ "		WHERE t.taskid = :taskId ", nativeQuery = true) 
 
 	public List<GetUsersDTO> getTmsAssignUsers(Long taskId);*/
+<<<<<<< HEAD
+=======
+	/*@Query(value =
+	        "SELECT " +
+	        "  t.taskid, " +
+	        "  CONCAT_WS(' ', NULLIF(TRIM(creator.first_name), ''), NULLIF(TRIM(creator.middle_name), ''), NULLIF(TRIM(creator.last_name), '')) AS fullname, " +
+	        "  creator.email AS email " +
+	        "FROM tms_task t " +
+	        "JOIN tms_users creator ON t.addedby = creator.user_id " +
+	        "WHERE t.taskid = :taskId " +
+	        "UNION ALL " +
+	        "SELECT " +
+	        "  t.taskid, " +
+	        "  CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), '')) AS fullname, " +
+	        "  u.email AS email " +
+	        "FROM tms_task t " +
+	        "JOIN tms_task_users tu ON t.taskid = tu.taskid " +
+	        "JOIN tms_assigned_users au ON tu.assignedto = au.assignid " +
+	        "JOIN tms_users u ON au.tms_user_id = u.user_id " +
+	        "WHERE t.taskid = :taskId",
+	        nativeQuery = true)
+	    public List<GetUsersDTO> getTmsAssignUsers(@Param("taskId") Long taskId);*/
+>>>>>>> 910de319ccb1a5e52f53548d2a9b05137bcb676d
 	@Query(value =
 			  "SELECT u.user_id AS userid, " +
 			  "  CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), '')) AS fullname, " +
@@ -291,7 +314,11 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			  nativeQuery = true)
 			public List<GetUsersDTO> getTmsAssignUsers(@Param("taskId") Long taskId);
 
+<<<<<<< HEAD
 		/*@Query(value = " select concat(u.first_name,' ', COALESCE(u.middle_name, ''),' ',u.last_name) AS fullname ,u.email from tms_users u where u.user_id = :userid ", nativeQuery = true)
+=======
+	/*@Query(value = " select concat(u.first_name,' ', COALESCE(u.middle_name, ''),' ',u.last_name) AS fullname ,u.email from tms_users u where u.user_id = :userid ", nativeQuery = true)
+>>>>>>> 910de319ccb1a5e52f53548d2a9b05137bcb676d
 
 	public GetUsersDTO gettmsUser(Long userid);
 	

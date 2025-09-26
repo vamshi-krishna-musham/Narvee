@@ -143,6 +143,7 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
 
 	// 1️⃣ Method to fetch all projects (with assignedTo, updatedBy, updatedDate)
 	// 1) Admin / manager: all projects (no keyword)
+<<<<<<< HEAD
    
 
 /*	@Query(value = "SELECT DISTINCT p.pid, " +
@@ -170,13 +171,51 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
 	       nativeQuery = true)
 	Page<ProjectDTO> findAllTmsProjects(Pageable pageable, Long addedby);
 
+=======
+    @Query(value = "SELECT \r\n"
+    		+ "    p.pid, \r\n"
+    		+ "    p.projectname, \r\n"
+    		+ "    p.projectdescription, \r\n"
+    		+ "    DATE(p.start_date) AS startDate, \r\n"
+    		+ "    p.target_date AS targetDate, \r\n"
+    		+ "    p.addedby, \r\n"
+    		+ "    REPLACE(CONCAT(TRIM(tu.first_name), ' ', TRIM(COALESCE(tu.middle_name, '')), ' ', TRIM(tu.last_name)), '  ', ' ') AS addedByFullname, \r\n"
+    		+ "    p.status, \r\n"
+    		+ "    p.updatedby, \r\n"
+    		+ "    CASE \r\n"
+    		+ "        WHEN p.updatedby IS NOT NULL AND p.updatedby <> p.addedby THEN \r\n"
+    		+ "            REPLACE(CONCAT(TRIM(uu.first_name), ' ', TRIM(COALESCE(uu.middle_name, '')), ' ', TRIM(uu.last_name)), '  ', ' ') \r\n"
+    		+ "        ELSE \r\n"
+    		+ "            REPLACE(CONCAT(TRIM(tu.first_name), ' ', TRIM(COALESCE(tu.middle_name, '')), ' ', TRIM(tu.last_name)), '  ', ' ') \r\n"
+    		+ "    END AS updatedByFullname, \r\n"
+    		+ "    p.projectid, \r\n"
+    		+ "    p.createddate, \r\n"
+    		+ "    p.updateddate, \r\n"
+    		+ "    p.department, \r\n"
+    		+ "    (\r\n"
+    		+ "        SELECT GROUP_CONCAT(DISTINCT REPLACE(CONCAT(TRIM(auu.first_name), ' ', TRIM(COALESCE(auu.middle_name, '')), ' ', TRIM(auu.last_name)), '  ', ' '))\r\n"
+    		+ "        FROM tms_assigned_users au\r\n"
+    		+ "        LEFT JOIN tms_users auu ON au.tms_user_id = auu.user_id\r\n"
+    		+ "        WHERE au.pid = p.pid\r\n"
+    		+ "    ) AS assignedTo\r\n"
+    		+ "FROM tms_project p\r\n"
+    		+ "JOIN tms_users tu ON p.addedby = tu.user_id\r\n"
+    		+ "LEFT JOIN tms_users uu ON p.updatedby = uu.user_id\r\n"
+    		+ "WHERE p.admin_id =:addedby OR p.addedby = :addedby OR au.tms_user_id = :addedby OR p.updatedby = :updatedby) " +
+            "GROUP BY p.pid " ,
+          
+            nativeQuery = true)
+    Page<ProjectDTO> findAllTmsProjects(Pageable pageable,
+                                        @Param("addedby") Long addedby,
+                                        @Param("updatedby") Long updatedby);
+>>>>>>> 910de319ccb1a5e52f53548d2a9b05137bcb676d
 
     // 2) Admin / manager: with keyword filtering (fixed assignedTo/ name search)
     @Query(value = "SELECT DISTINCT p.pid, " +
             "p.projectname, " +
             "p.projectdescription, " +
             "DATE(p.start_date) AS startDate, " +
-            "DATE(p.target_date) AS targetDate, " +
+            "p.target_date AS targetDate, " +
             "p.addedby, " +
             "REPLACE(CONCAT(TRIM(tu.first_name),' ',TRIM(COALESCE(tu.middle_name,'')),' ',TRIM(tu.last_name)), '  ', ' ') AS addedByFullname, " +
             "p.status, " +
@@ -205,8 +244,8 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
             "OR LOWER(CONCAT_WS(' ', TRIM(uu.first_name), NULLIF(TRIM(uu.middle_name), ''), TRIM(uu.last_name))) LIKE CONCAT('%', LOWER(:keyword), '%') " +
             "OR LOWER(CONCAT_WS(' ', TRIM(auu.first_name), NULLIF(TRIM(auu.middle_name), ''), TRIM(auu.last_name))) LIKE CONCAT('%', LOWER(:keyword), '%') ) "+
             "OR DATE_FORMAT(p.start_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
-            "OR DATE_FORMAT(p.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')"
-+            "OR DATE_FORMAT(p.updateddate, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
+            "OR p.target_date = STR_TO_DATE(:keyword, '%d-%m-%Y') " +
+           "OR DATE_FORMAT(p.updateddate, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') )" +
              "GROUP BY p.pid " ,
          
             nativeQuery = true)
@@ -220,7 +259,7 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
             "p.projectname, " +
             "p.projectdescription, " +
             "DATE(p.start_date) AS startDate, " +
-            "DATE(p.target_date) AS targetDate, " +
+            "p.target_date AS targetDate, " +
             "p.addedby, " +
             "CONCAT(tu.first_name,' ',COALESCE(tu.middle_name,''),' ',tu.last_name) AS addedByFullname, " +
             "p.status, " +
@@ -266,7 +305,7 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
             "p.createddate, " +
             "p.updateddate, " +
             "DATE(p.start_date) AS startDate, " +
-            "DATE(p.target_date) AS targetDate, " +
+            "p.target_date AS targetDate, " +
             "GROUP_CONCAT(DISTINCT REPLACE(CONCAT(TRIM(auu.first_name),' ',TRIM(COALESCE(auu.middle_name,'')),' ',TRIM(auu.last_name)), '  ', ' ')) AS assignedTo"+
             "FROM tms_project p " +
             "JOIN tms_assigned_users au ON au.pid = p.pid " +
@@ -283,8 +322,8 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
             "OR LOWER(CONCAT_WS(' ', TRIM(auu.first_name), NULLIF(TRIM(auu.middle_name), ''), TRIM(auu.last_name))) LIKE CONCAT('%', LOWER(:keyword), '%') ) " +
            
             "OR DATE_FORMAT(p.start_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
-            "OR DATE_FORMAT(p.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')"
-+            "OR DATE_FORMAT(p.updateddate, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') " +
+            "OR DATE_FORMAT(p.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')"+
+          "OR DATE_FORMAT(p.updateddate, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')) " +
              "GROUP BY p.pid " ,
         
             nativeQuery = true)
