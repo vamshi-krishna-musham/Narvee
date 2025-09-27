@@ -31,8 +31,8 @@ export class LeaveService {
     return this.http.post(`${this.base}/task/leaves`, body);
   }
 
-  listMine(): Observable<LeaveRequest[]> {
-    return this.http.get<any[]>(`${this.base}/task/leaves`).pipe(
+  listMine(id: number): Observable<LeaveRequest[]> {
+    return this.http.get<any[]>(`${this.base}/task/leaves/user/${id}`).pipe(
       map(res => res.map(r => ({
         id: r.id,
         userId: r.userId,
