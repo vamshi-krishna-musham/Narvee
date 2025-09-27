@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/leaves")   // <-- matches Angular calls
 @CrossOrigin(origins = "http://localhost:4200") // allow Angular dev server
@@ -41,6 +42,14 @@ public class TmsLeaveController {
     public TmsLeave getById(@PathVariable Long id) {
         return service.getById(id);
     }
+
+    @GetMapping("/user/{userId}")
+    public List<TmsLeave> leavesByUser(@PathVariable Long userId) {
+        return service.findByUser(userId);
+    }
+
+
+    
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLeave(@PathVariable Long id) {

@@ -84,4 +84,8 @@ public class TmsLeaveService {
     }).orElse(null); // return null if not found
 }
 
+    public List<TmsLeave> findByUser(Long userId) {
+        return repo.findByUserId(userId);
+    }
+
 }

@@ -25,14 +25,14 @@ export class LeaveHistoryComponent implements OnInit {
     private snack: MatSnackBar,
     private router: Router
   ) {}
-
   ngOnInit(): void {
-    this.load();
+    const profileId = Number(localStorage.getItem('profileId'));
+    this.load(profileId);
   }
   
-  load(): void {
+  load(id: number): void {
     this.loading = true;
-    this.leave.listMine().subscribe({
+    this.leave.listMine(id).subscribe({
       next: (res: LeaveRequest[]) => {
         this.leaves = (res || []).sort((a: LeaveRequest, b: LeaveRequest) => {
           const ad = new Date(a.startDate).getTime();
@@ -73,7 +73,8 @@ export class LeaveHistoryComponent implements OnInit {
     this.leave.cancel(id).subscribe({
       next: () => {
         this.snack.open('Leave cancelled', 'OK', { duration: 2000 });
-        this.load();
+        const profileId = Number(localStorage.getItem('profileId'));
+        this.load(profileId);
       },
       error: () => this.snack.open('Cancel failed', 'OK', { duration: 3000 })
     });
