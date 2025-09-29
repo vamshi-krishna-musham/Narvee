@@ -71,14 +71,14 @@ export class LeaveHistoryComponent implements OnInit {
         this.balanceCl = 0;
         this.balancePl = 0;
 
-        this.totalLeavesConsumed = this.leaves.length;
-        this.totalEligible = this.totalEligible-this.totalLeavesConsumed
         this.totalLeavesApproved = this.leaves.filter(l => l.status === 'APPROVED').length;
+        this.totalLeavesConsumed = this.totalLeavesApproved;
+        this.totalEligible = this.totalEligible-this.totalLeavesConsumed
         this.CancelledLeaves = this.leaves.filter(l => l.status === 'CANCELED').length;
         this.pendingLeaves = this.leaves.filter(l => l.status === 'PENDING').length;
-        this.balanceSl = this.sickLeaves - this.leaves.filter(l => l.status === 'APPROVED' && l.leaveType === 'Sick Leave').length;
-        this.balanceCl = this.casualLeaves - this.leaves.filter(l => l.status === 'APPROVED' && l.leaveType === 'Casual Leave').length;
-        this.balancePl = this.paidLeaves - this.leaves.filter(l => l.status === 'APPROVED' && l.leaveType === 'Paid Leave').length;
+        this.balanceSl = this.sickLeaves - this.leaves.filter(l => l.status === 'APPROVED' && l.leaveType === 'Sick').length;
+        this.balanceCl = this.casualLeaves - this.leaves.filter(l => l.status === 'APPROVED' && l.leaveType === 'Casual').length;
+        this.balancePl = this.paidLeaves - this.leaves.filter(l => l.status === 'APPROVED' && l.leaveType === 'Paid').length;
 
         // Prepare summary data for the summary table
         
