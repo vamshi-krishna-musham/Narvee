@@ -18,19 +18,20 @@ export class LeaveHistoryComponent implements OnInit {
   'balanceCl',
   'balancePl'
 ];
+  casualLeaves: number = 12;
+  sickLeaves: number = 10;
+  paidLeaves: number = 8;
+  totalEligible: number = 30;
+  totalLeavesConsumed: number = 0;
+  totalLeavesApproved: number = 0;
+  CancelledLeaves: number = 0;
+  pendingLeaves: number = 0;
+  balanceSl: number = 0;
+  balanceCl: number = 0;
+  balancePl: number = 0;
   leaves: LeaveRequest[] = [];
   loading = false;
-  casualLeaves = 12;
-  sickLeaves=10;
-  paidLeaves=8;
-  totalEligible=30;
-  totalLeavesConsumed=0
-  totalLeavesApproved=0; 
-  CancelledLeaves=0;	
-  pendingLeaves=0;
-  balanceSl=0;
-  balanceCl=0;
-  balancePl=0;
+
 
   summaryData: any[] = [];
  
@@ -58,6 +59,17 @@ export class LeaveHistoryComponent implements OnInit {
           const bd = new Date(b.startDate).getTime();
           return bd - ad; // newest first
         });
+        this.casualLeaves = 12;
+        this.sickLeaves = 10;
+        this.paidLeaves = 8;
+        this.totalEligible = 30;
+        this.totalLeavesConsumed = 0;
+        this.totalLeavesApproved = 0;
+        this.CancelledLeaves = 0;
+        this.pendingLeaves = 0;
+        this.balanceSl = 0;
+        this.balanceCl = 0;
+        this.balancePl = 0;
 
         this.totalLeavesConsumed = this.leaves.length;
         this.totalEligible = this.totalEligible-this.totalLeavesConsumed
@@ -79,6 +91,7 @@ export class LeaveHistoryComponent implements OnInit {
             balanceSl: this.balanceSl,
             balanceCl: this.balanceCl,
             balancePl: this.balancePl
+            
           }
         ];
 
@@ -132,5 +145,6 @@ export class LeaveHistoryComponent implements OnInit {
   trackById(_: number, r: LeaveRequest) {
     return r.id;
   }
+
 
 }
