@@ -17,8 +17,11 @@
   text-align: center;
   color: gray;
 }
-.summary-table {
-  margin-bottom: 16px;
-  width: 100%;
+
+
+:host ::ng-deep .summary-table .mat-header-cell,
+:host ::ng-deep .summary-table .mat-cell {
+  border: 1px solid black !important;
 }
+
 
