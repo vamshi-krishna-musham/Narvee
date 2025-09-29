@@ -91,14 +91,23 @@ export class ApplyLeaveComponent implements OnInit {
 
     const start = this.toDateOnly(this.form.value.startDate!);
     const end   = this.toDateOnly(this.form.value.endDate!);
+    const duration =
+      Math.floor(
+        (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+      ) + 1; // +1 to include both start & end dates
+
     const payload = {
       userId: Number(localStorage.getItem('profileId')),
       leaveCategory: this.form.value.leaveType,
       fromDate: this.toYMD(start),
       toDate: this.toYMD(end),
       reason: (this.form.value.reason || '').trim(),
-      status: 'PENDING'
+      status: 'PENDING',
+      duration: duration
     };
+
+
+
 
     this.leave.apply(payload as any).subscribe({
       next: () => {
