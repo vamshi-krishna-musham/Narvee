@@ -42,6 +42,15 @@ public class TmsLeave {
     @Column(name="updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name="duration", length=100)
+    private Long duration;
+    public Long getDuration() {
+    return duration;
+    }
+    public void setDuration(Long duration) {
+        this.duration = duration;
+    }
+
     // Optional: default status if not set
     @PrePersist
     public void prePersist() {
