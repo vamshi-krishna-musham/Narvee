@@ -9,13 +9,32 @@ import { Router } from '@angular/router';
 })
 export class LeaveHistoryComponent implements OnInit {
   displayedColumns = ['type', 'dates', 'reason', 'status', 'actions'];
+  displayedSummaryColumns =[
+  'totalConsumed',
+  'approved',
+  'cancelled',
+  'pending',
+  'balanceSl',
+  'balanceCl',
+  'balancePl'
+];
   leaves: LeaveRequest[] = [];
   loading = false;
-  totalLeaves = 0;
-  approvedLeaves = 0;
-  pendingLeaves = 0;
-  deniedLeaves = 0;
-  canceledLeaves = 0;
+  casualLeaves = 12;
+  sickLeaves=10;
+  paidLeaves=8;
+  totalEligible=30;
+  totalLeavesConsumed=0
+  totalLeavesApproved=0; 
+  CancelledLeaves=0;	
+  pendingLeaves=0;
+  balanceSl=0;
+  balanceCl=0;
+  balancePl=0;
+
+  summaryData: any[] = [];
+ 
+  
 
   // role check flag
   isManager = localStorage.getItem('profileRole')?.toUpperCase() === 'SUPER ADMIN';
@@ -28,7 +47,7 @@ export class LeaveHistoryComponent implements OnInit {
   ngOnInit(): void {
     const profileId = Number(localStorage.getItem('profileId'));
     this.load(profileId);
-  }
+ }
   
   load(id: number): void {
     this.loading = true;
@@ -39,12 +58,29 @@ export class LeaveHistoryComponent implements OnInit {
           const bd = new Date(b.startDate).getTime();
           return bd - ad; // newest first
         });
-        // summary counts
-        this.totalLeaves = this.leaves.length;
-        this.approvedLeaves = this.leaves.filter(l => l.status === 'APPROVED').length;
+
+        this.totalLeavesConsumed = this.leaves.length;
+        this.totalEligible = this.totalEligible-this.totalLeavesConsumed
+        this.totalLeavesApproved = this.leaves.filter(l => l.status === 'APPROVED').length;
+        this.CancelledLeaves = this.leaves.filter(l => l.status === 'CANCELED').length;
         this.pendingLeaves = this.leaves.filter(l => l.status === 'PENDING').length;
-        this.deniedLeaves = this.leaves.filter(l => l.status === 'DENIED').length;
-        this.canceledLeaves = this.leaves.filter(l => l.status === 'CANCELED').length;
+        this.balanceSl = this.sickLeaves - this.leaves.filter(l => l.status === 'APPROVED' && l.leaveType === 'Sick Leave').length;
+        this.balanceCl = this.casualLeaves - this.leaves.filter(l => l.status === 'APPROVED' && l.leaveType === 'Casual Leave').length;
+        this.balancePl = this.paidLeaves - this.leaves.filter(l => l.status === 'APPROVED' && l.leaveType === 'Paid Leave').length;
+
+        // Prepare summary data for the summary table
+        
+        this.summaryData = [
+          {
+            totalEligible: this.totalEligible,
+            approved: this.totalLeavesApproved,
+            cancelled: this.CancelledLeaves,
+            pending: this.pendingLeaves,
+            balanceSl: this.balanceSl,
+            balanceCl: this.balanceCl,
+            balancePl: this.balancePl
+          }
+        ];
 
         this.loading = false;
       },
@@ -54,9 +90,7 @@ export class LeaveHistoryComponent implements OnInit {
       }
     });
   }
-  summary(): void{
-    this
-  }
+
 
   isCancellable(r: LeaveRequest): boolean {
     if (!r?.startDate) return false;
@@ -70,10 +104,10 @@ export class LeaveHistoryComponent implements OnInit {
   }
 
   cancel(id: number): void {
+    const profileId = Number(localStorage.getItem('profileId'));
     this.leave.cancel(id).subscribe({
       next: () => {
         this.snack.open('Leave cancelled', 'OK', { duration: 2000 });
-        const profileId = Number(localStorage.getItem('profileId'));
         this.load(profileId);
       },
       error: () => this.snack.open('Cancel failed', 'OK', { duration: 3000 })

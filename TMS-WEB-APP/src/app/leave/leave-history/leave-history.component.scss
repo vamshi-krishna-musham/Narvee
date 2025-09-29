@@ -17,3 +17,11 @@
   text-align: center;
   color: gray;
 }
+
+
+:host ::ng-deep .summary-table .mat-header-cell,
+:host ::ng-deep .summary-table .mat-cell {
+  border: 1px solid black !important;
+}
+
+
