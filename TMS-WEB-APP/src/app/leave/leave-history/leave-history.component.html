@@ -1,50 +1,76 @@
-<div class="leave-container">
-  <!-- Header with actions -->
-  <div
-    class="header-row"
-    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;"
-  >
-    <h2>Leave History</h2>
-    <div>
-      <!-- Always visible for users -->
-      <button mat-raised-button color="primary" (click)="openApplyLeave()">
-        Apply Leave
-      </button>
-
-      <!-- Visible only if user is manager/super admin -->
-      <button
-        mat-raised-button
-        color="accent"
-        *ngIf="isManager"
-        (click)="openManageLeaves()"
-        style="margin-left:8px;"
-      >
+<button mat-raised-button color="primary" (click)="openApplyLeave()" style="float:right;">Apply Leave</button>
+      <button mat-raised-button color="primary" *ngIf="isManager" (click)="openManageLeaves()" style="float:right;">
         Manage Leaves
       </button>
+<div class="leave-container">
+  <!-- Header -->
+  <div class="header-row">
+    <h2>Summary</h2>
+    <div>
     </div>
   </div>
-  
-<mat-chip-set>
-  <mat-chip>Applied Leaves: {{ totalLeaves }}</mat-chip>
-  <mat-chip color="primary" selected>Approved Leaves: {{ approvedLeaves }}</mat-chip>
-  <mat-chip color="accent" selected>Pending Leaves: {{ pendingLeaves }}</mat-chip>
-  <mat-chip color="warn" selected>Denied Leaves: {{ deniedLeaves }}</mat-chip>
-  <mat-chip>Canceled Leaves: {{ canceledLeaves }}</mat-chip>
-</mat-chip-set>
 
+  <!-- Summary Table (always visible) -->
+<mat-table [dataSource]="summaryData" class="mat-elevation-z2 summary-table">
+
+  <!-- Total Consumed -->
+  <ng-container matColumnDef="totalConsumed">
+    <th mat-header-cell *matHeaderCellDef>Total Eligible</th>
+    <td mat-cell *matCellDef="let s">{{ s.totalEligible }}</td>
+  </ng-container>
+
+  <!-- Approved -->
+  <ng-container matColumnDef="approved">
+    <th mat-header-cell *matHeaderCellDef>Approved</th>
+    <td mat-cell *matCellDef="let s">{{ s.approved }}</td>
+  </ng-container>
+
+  <!-- Cancelled -->
+  <ng-container matColumnDef="cancelled">
+    <th mat-header-cell *matHeaderCellDef>Cancelled</th>
+    <td mat-cell *matCellDef="let s">{{ s.cancelled }}</td>
+  </ng-container>
+
+  <!-- Pending -->
+  <ng-container matColumnDef="pending">
+    <th mat-header-cell *matHeaderCellDef>Pending</th>
+    <td mat-cell *matCellDef="let s">{{ s.pending }}</td>
+  </ng-container>
+
+  <!-- Balance SL -->
+  <ng-container matColumnDef="balanceSl">
+    <th mat-header-cell *matHeaderCellDef>Balance SL</th>
+    <td mat-cell *matCellDef="let s">{{ s.balanceSl }}</td>
+  </ng-container>
+
+  <!-- Balance CL -->
+  <ng-container matColumnDef="balanceCl">
+    <th mat-header-cell *matHeaderCellDef>Balance CL</th>
+    <td mat-cell *matCellDef="let s">{{ s.balanceCl }}</td>
+  </ng-container>
+
+  <!-- Balance PL -->
+  <ng-container matColumnDef="balancePl">
+    <th mat-header-cell *matHeaderCellDef>Balance PL</th>
+    <td mat-cell *matCellDef="let s">{{ s.balancePl }}</td>
+  </ng-container>
+
+  <!-- Header and Row -->
+  <tr mat-header-row *matHeaderRowDef="displayedSummaryColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedSummaryColumns"></tr>
+
+</mat-table>
+
+  <h2>Leave History</h2>
   <!-- Loading -->
   <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
-  <!-- Empty state -->
-  <div
-    *ngIf="!loading && (!leaves || leaves.length === 0)"
-    class="mat-elevation-z1"
-    style="padding:16px; border-radius:8px;"
-  >
+  <!-- Empty State -->
+  <div *ngIf="!loading && (!leaves || leaves.length === 0)" class="mat-elevation-z1" style="padding:16px; border-radius:8px;">
     No leaves yet.
   </div>
 
-  <!-- Table -->
+  <!-- Leave History Table (kept separate) -->
   <table
     *ngIf="!loading && leaves?.length"
     mat-table
@@ -52,55 +78,35 @@
     class="mat-elevation-z2 full-table"
     style="width:100%;"
   >
-    
-    <!-- Type -->
     <ng-container matColumnDef="type">
       <th mat-header-cell *matHeaderCellDef>Type</th>
       <td mat-cell *matCellDef="let r">{{ r.leaveType }}</td>
     </ng-container>
 
-    <!-- Dates -->
     <ng-container matColumnDef="dates">
       <th mat-header-cell *matHeaderCellDef>Dates</th>
-      <td mat-cell *matCellDef="let r">
-        {{ r.startDate | date }} → {{ r.endDate | date }}
-      </td>
+      <td mat-cell *matCellDef="let r">{{ r.startDate | date }} → {{ r.endDate | date }}</td>
     </ng-container>
 
-    <!-- Reason -->
     <ng-container matColumnDef="reason">
       <th mat-header-cell *matHeaderCellDef>Reason</th>
-      <td mat-cell *matCellDef="let r">
-        <span title="{{ r.reason }}">{{ r.reason }}</span>
-      </td>
+      <td mat-cell *matCellDef="let r">{{ r.reason }}</td>
     </ng-container>
 
-    <!-- Status -->
     <ng-container matColumnDef="status">
       <th mat-header-cell *matHeaderCellDef>Status</th>
       <td mat-cell *matCellDef="let r">
-        <mat-chip-set>
-          <mat-chip [disabled]="true">{{ r.status }}</mat-chip>
-        </mat-chip-set>
+        <mat-chip-set><mat-chip [disabled]="true">{{ r.status }}</mat-chip></mat-chip-set>
       </td>
     </ng-container>
 
-    <!-- Actions -->
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef>Actions</th>
       <td mat-cell *matCellDef="let r">
-        <button
-          mat-stroked-button
-          color="warn"
-          (click)="cancel(r.id)"
-          *ngIf="r.status === 'PENDING'"
-        >
-          Cancel
-        </button>
+        <button mat-stroked-button color="warn" (click)="cancel(r.id)" *ngIf="r.status === 'PENDING'">Cancel</button>
       </td>
     </ng-container>
 
-    <!-- Rows -->
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
   </table>
