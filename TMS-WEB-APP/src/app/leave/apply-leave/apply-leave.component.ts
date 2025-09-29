@@ -109,11 +109,18 @@ export class ApplyLeaveComponent implements OnInit {
 
     this.leave.apply(payload as any).subscribe({
       next: () => {
-        this.snack.open('Leave submitted successfully', 'OK', { duration: 2000 });
+        this.snack.open('Leave submitted successfully', 'OK', {
+          duration: 2000,
+          panelClass: ['success-snackbar']   // 👈 add custom class
+        });
+
+
         this.router.navigate(['/leave/history']); // ✅ go back to history after success
       },
       error: e => {
-        this.snack.open(e.error?.message || 'Submission failed', 'OK', { duration: 3500 });
+        this.snack.open('Submission failed', 'OK', {
+          duration: 3500,   // 👈 different class
+        });
       }
     });
   }
