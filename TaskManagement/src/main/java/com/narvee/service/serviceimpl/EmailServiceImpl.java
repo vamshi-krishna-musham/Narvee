@@ -1,10 +1,16 @@
 package com.narvee.service.serviceimpl;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,10 +24,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.narvee.dto.GetUsersDTO;
+import com.narvee.dto.ProjectDTO;
+import com.narvee.dto.ProjectResponseDto;
 import com.narvee.dto.TaskTrackerDTO;
+import com.narvee.dto.TmsUsersInfo;
 import com.narvee.dto.UpdateTask;
 import com.narvee.entity.TmsProject;
 import com.narvee.entity.TmsSubTask;
@@ -333,8 +343,7 @@ public class EmailServiceImpl {
 //		helper.setCc(ccmail);
 		helper.setFrom(narveemail, shortMessage);
 		String subject = "Task Comment Added: " + updateTask.getTicketid();
-		
-		
+
 		String body = "<html><body>" + "<div>Hi " + users + ",</div> <br>" + "<div>The Ticket  Id : <strong>"
 				+ updateTask.getTicketid() + "</strong> has a new comment:</div>" + "<div><strong>Comment: </strong> "
 				+ updateTask.getComments() + " <strong>Commented by: </strong> " + getUsersDTO.getFullname() + "</div>"
@@ -347,9 +356,21 @@ public class EmailServiceImpl {
 		logger.info("!!! inside class: EmailServiceImpl, !! method: End sendCommentEmail");
 	}
 
-	
+	// using now
+
 	@Async
-	public void sendCreateProjectEmail(TmsProject project, List<GetUsersDTO> userdetails, boolean projectUpdate)   //----------->  this is used for both Tms superate project and Ats TMS
+	public void sendCreateProjectEmail(TmsProject project, List<GetUsersDTO> userdetails, boolean projectUpdate) // ----------->
+																													// this
+																													// is
+																													// used
+																													// for
+																													// both
+																													// Tms
+																													// superate
+																													// project
+																													// and
+																													// Ats
+																													// TMS
 			throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: EmailServiceImpl, !! method: sendCreateProjectEmail");
 		System.err.println("userdetails :"+userdetails.toString());
@@ -898,6 +919,68 @@ public class EmailServiceImpl {
 		logger.info("!!! inside class: EmailServiceImpl, !! method: End sendCommentEmail");
 	}
 
+	@Async
 	
+	public void sendProjectDeadlineAlerts(TmsProject project, String assignUsernames, List<String> emails,
+			String emailType) throws MessagingException, UnsupportedEncodingException {
+		logger.info("!!! inside class: EmailServiceImpl, !! method: sendProjectDeadlineAlerts");
+		String subject;
+		String createdBy = projectRepository.findNameByUserId(project.getAddedBy());
+		String body;
+		String[] emailArray = emails.toArray(new String[emails.size()]);
+
+		if (!emailType.equals("expiredProjects")) {
+			// ========== Reminder 1 day before ==========
+			subject = "Reminder: Project " + project.getProjectid() + " target date is tomorrow";
+			body = buildHtmlBody("Reminder: Project Deadline Approaching", project, assignUsernames, createdBy,
+					"This is a friendly reminder that the project is due tomorrow.");
+
+		} else {
+			// ========== Exceeded (overdue) ==========
+			subject = "⚠ Project Overdue: " + project.getProjectid();
+			body = buildHtmlBody("Project Deadline Exceeded", project, assignUsernames, createdBy,
+					"The target date has passed and the project is still open. Please take action.");
+
+		}
+
+		// ----- Send Mail -----
+		MimeMessage message = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(message);
+		helper.setTo(emailArray);
+		helper.setFrom(narveemail, shortMessage);
+		helper.setSubject(subject);
+		helper.setText(body, true);
+		mailSender.send(message);
+
+		logger.info("Deadline alert mail sent for project: " + project.getProjectid());
+	}
+
+	private String buildHtmlBody(String header, TmsProject project, String assignedUsers, String createdby,
+			String extraMessage) {
+		return "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>" + header + "</title></head>"
+				+ "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin:0;padding:0;'>"
+				+ "<table width='100%' cellpadding='0' cellspacing='0' style='padding:30px 0;'>"
+				+ "<tr><td align='center'>"
+				+ "<table width='600' cellpadding='0' cellspacing='0' style='background-color:#ffffff;border-radius:6px;'>"
+				+ "<tr><td style='background-color:#0468b4;padding:20px;color:#ffffff;text-align:center;"
+				+ "border-top-left-radius:6px;border-top-right-radius:6px;'>"
+				+ "<h2 style='margin:0;'>Task Management</h2></td></tr>" + "<tr><td style='padding:30px;color:#333;'>"
+				+ "<p style='font-size:16px;'>Hi Team,</p>" + "<p style='font-size:14px;'>" + extraMessage + "</p>"
+				+ "<table cellpadding='6' cellspacing='0' style='font-size:14px;'>"
+				+ "<tr><td style='font-weight:bold;'>Project ID:</td><td>" + project.getProjectid() + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Project Name:</td><td>" + project.getProjectName() + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Description:</td><td>" + project.getDescription() + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Assigned Users:</td><td>" + assignedUsers + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Status:</td><td>" + project.getStatus() + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Created By:</td><td>" + createdby + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Start Date:</td><td>" + project.getStartDate() + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Target Date:</td><td>" + project.getTargetDate() + "</td></tr>"
+				+ "</table>"
+				+ "<p style='font-size:14px;margin-top:20px;'>Please log in to the portal for more details.</p>"
+				+ "</td></tr>" + "<tr><td style='background-color:#f0f0f0;padding:20px;text-align:center;color:#555;"
+				+ "border-bottom-left-radius:6px;border-bottom-right-radius:6px;'>"
+				+ "<p style='margin:0;font-size:13px;'>Best Regards,<br/>Task Management</p>"
+				+ "</td></tr></table></td></tr></table></body></html>";
+	}
 
 }

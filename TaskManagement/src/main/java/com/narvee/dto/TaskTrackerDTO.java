@@ -1,6 +1,7 @@
 package com.narvee.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -30,6 +31,8 @@ public interface TaskTrackerDTO {
 	
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	public LocalDate getCreateddate();
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	public LocalDate getUpdateddate();
 	
 	public LocalDate getTarget_date();
 	
@@ -44,5 +47,9 @@ public interface TaskTrackerDTO {
 	public String getPriority();
 	
 	public String getEmail();
+
+	public String getSubtasktokenid();
+
+	public Long getSubtaskmaxnum();
 
 }
