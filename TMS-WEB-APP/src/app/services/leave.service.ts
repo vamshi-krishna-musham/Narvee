@@ -42,7 +42,8 @@ export class LeaveService {
         leaveType: r.leaveCategory,
         reason: r.reason,
         status: r.status,
-        adminComment: r.adminComment   // ✅ map backend field
+        adminComment: r.adminComment ,
+        duration: r.duration  // ✅ map backend field
       })))
     );
   }
