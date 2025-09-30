@@ -91,10 +91,7 @@ export class ApplyLeaveComponent implements OnInit {
 
     const start = this.toDateOnly(this.form.value.startDate!);
     const end   = this.toDateOnly(this.form.value.endDate!);
-    const duration =
-      Math.floor(
-        (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
-      ) + 1; // +1 to include both start & end dates
+    const duration = this.durationDays;
 
     const payload = {
       userId: Number(localStorage.getItem('profileId')),
