@@ -29,8 +29,10 @@ export class LeaveHistoryComponent implements OnInit {
   balanceSl: number = 0;
   balanceCl: number = 0;
   balancePl: number = 0;
+  duration?: number; // <-- add this
   leaves: LeaveRequest[] = [];
   loading = false;
+
 
 
   summaryData: any[] = [];
@@ -76,7 +78,20 @@ export class LeaveHistoryComponent implements OnInit {
         this.totalEligible = this.totalEligible-this.totalLeavesConsumed
         this.CancelledLeaves = this.leaves.filter(l => l.status === 'CANCELED').length;
         this.pendingLeaves = this.leaves.filter(l => l.status === 'PENDING').length;
-        this.balanceSl = this.sickLeaves - this.leaves.filter(l => l.status === 'APPROVED' && l.leaveType === 'Sick').length;
+
+        const approvedSickLeaves = this.leaves.filter(
+          l => l.leaveType === 'Sick' && l.status === 'APPROVED'
+        );
+
+
+        const totalSickUsed = approvedSickLeaves.reduce(
+          (sum, l) => sum + ((l as any).duration || 0),
+          0
+        );
+
+
+        this.balanceSl = this.sickLeaves - totalSickUsed;
+
         this.balanceCl = this.casualLeaves - this.leaves.filter(l => l.status === 'APPROVED' && l.leaveType === 'Casual').length;
         this.balancePl = this.paidLeaves - this.leaves.filter(l => l.status === 'APPROVED' && l.leaveType === 'Paid').length;
 
