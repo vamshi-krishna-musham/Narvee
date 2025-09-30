@@ -280,8 +280,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			+ "		WHERE t.taskid = :taskId ", nativeQuery = true) 
 
 	public List<GetUsersDTO> getTmsAssignUsers(Long taskId);*/
-<<<<<<< HEAD
-=======
+
 	/*@Query(value =
 	        "SELECT " +
 	        "  t.taskid, " +
@@ -302,7 +301,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	        "WHERE t.taskid = :taskId",
 	        nativeQuery = true)
 	    public List<GetUsersDTO> getTmsAssignUsers(@Param("taskId") Long taskId);*/
->>>>>>> 910de319ccb1a5e52f53548d2a9b05137bcb676d
+
 	@Query(value =
 			  "SELECT u.user_id AS userid, " +
 			  "  CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), '')) AS fullname, " +
@@ -314,11 +313,9 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			  nativeQuery = true)
 			public List<GetUsersDTO> getTmsAssignUsers(@Param("taskId") Long taskId);
 
-<<<<<<< HEAD
-		/*@Query(value = " select concat(u.first_name,' ', COALESCE(u.middle_name, ''),' ',u.last_name) AS fullname ,u.email from tms_users u where u.user_id = :userid ", nativeQuery = true)
-=======
+
 	/*@Query(value = " select concat(u.first_name,' ', COALESCE(u.middle_name, ''),' ',u.last_name) AS fullname ,u.email from tms_users u where u.user_id = :userid ", nativeQuery = true)
->>>>>>> 910de319ccb1a5e52f53548d2a9b05137bcb676d
+
 
 	public GetUsersDTO gettmsUser(Long userid);
 	

@@ -187,7 +187,7 @@ public class ProjectServiceImpl implements ProjectService {
 		if (access.equalsIgnoreCase("SUPER_ADMIN")) { // changed for tms users Super Administrator to SUPER_ADMIN
 			if (keyword.equalsIgnoreCase("empty")) {
 				logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects, Empty");
-				return projectrepository.findAllProjects(pageable, keyword);
+				return projectrepository.findAllProjects(pageable);
 			} else {
 				logger.info("!!! inside class: ProjectServiceImpl , !! method: findAllProjects, Filter");
 				return projectrepository.findAllProjectWithFiltering(pageable, keyword);
@@ -442,7 +442,7 @@ public class ProjectServiceImpl implements ProjectService {
 	    String sf = (sortField == null) ? "" : sortField.trim().toLowerCase();
 
 	    switch (sf) {
-<<<<<<< HEAD
+
         case "projectid": sortField = "projectId"; break;
         case "projectname": sortField = "projectName"; break;
         case "status": sortField = "status"; break;
@@ -460,23 +460,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
 
-=======
-	        case "projectid": sortField = "projectId"; break;
-	        case "projectname": sortField = "projectName"; break;
-	        case "status": sortField = "status"; break;
-	        case "projectdescription": sortField = "projectdescription"; break;
-	        case "addedby": sortField = "addedByFullname"; break;   // ✅ changed
-	        case "updatedby": sortField = "updatedByFullname"; break; // ✅ changed
-	        case "startdate": sortField = "startDate"; break;
-	        case "duedate":
-	        case "targetdate":
-	            sortField = "targetDate"; break;
 
-	        case "updateddate": sortField = "updateddate"; break;
-	        case "department": sortField = "department"; break;
-	        default: sortField = "createdDate";
-	    }
->>>>>>> 910de319ccb1a5e52f53548d2a9b05137bcb676d
 
 	    // Build pageable with sorting
 	    Sort.Direction direction = "desc".equalsIgnoreCase(sortOrder) ? Sort.Direction.DESC : Sort.Direction.ASC;

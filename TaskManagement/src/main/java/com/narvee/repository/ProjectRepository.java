@@ -691,12 +691,17 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
     		Page<ProjectDTO> getAllProjectsByTmsUserFilter(Pageable pageable,
     		@Param("keyword") String keyword,
     		@Param("userid") Long userid);
+    		
     		@Query(value = "select bcc_mails AS bccMails ,cc_mails AS ccMails ,email_notification_type As notificationType ,is_enabled AS isEnabled ,subject from tms_email_configuration where admin_id = :adminId and email_notification_type = :notificationType",nativeQuery = true)
     		public EmailConfigResponseDto getEmailNotificationStatus(Long adminId, String notificationType);
+    		
     		@Query(value = "SELECT admin_id FROM tms_task ts join tms_project tp on ts.pid = tp.pid where ts.taskid = :TaskId",nativeQuery = true)
     		public Long getAdminId(Long TaskId);
+    		
     		@Query(value = " select Admin_id from tms_users where user_id = :userId",nativeQuery = true)
     		Long AdminId (@Param("userId") Long userId);
+
+			
 
 
 
