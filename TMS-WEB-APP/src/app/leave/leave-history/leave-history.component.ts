@@ -22,7 +22,6 @@ export class LeaveHistoryComponent implements OnInit {
   sickLeaves: number = 10;
   paidLeaves: number = 8;
   totalEligible: number = 30;
-  totalLeavesConsumed: number = 0;
   totalLeavesApproved: number = 0;
   CancelledLeaves: number = 0;
   pendingLeaves: number = 0;
@@ -65,17 +64,24 @@ export class LeaveHistoryComponent implements OnInit {
         this.sickLeaves = 10;
         this.paidLeaves = 8;
         this.totalEligible = 30;
-        this.totalLeavesConsumed = 0;
         this.totalLeavesApproved = 0;
         this.CancelledLeaves = 0;
         this.pendingLeaves = 0;
         this.balanceSl = 0;
         this.balanceCl = 0;
         this.balancePl = 0;
+        const approvedLeaves = this.leaves.filter(
+          l => l.status === 'APPROVED'
+        );
 
-        this.totalLeavesApproved = this.leaves.filter(l => l.status === 'APPROVED').length;
-        this.totalLeavesConsumed = this.totalLeavesApproved;
-        this.totalEligible = this.totalEligible-this.totalLeavesConsumed
+
+        const totalUsed = approvedLeaves.reduce(
+          (sum, l) => sum + ((l as any).duration || 0),
+          0
+        );
+        this.totalLeavesApproved = totalUsed;
+        this.totalEligible = this.totalEligible-totalUsed
+
         this.CancelledLeaves = this.leaves.filter(l => l.status === 'CANCELED').length;
         this.pendingLeaves = this.leaves.filter(l => l.status === 'PENDING').length;
 
@@ -92,8 +98,32 @@ export class LeaveHistoryComponent implements OnInit {
 
         this.balanceSl = this.sickLeaves - totalSickUsed;
 
-        this.balanceCl = this.casualLeaves - this.leaves.filter(l => l.status === 'APPROVED' && l.leaveType === 'Casual').length;
-        this.balancePl = this.paidLeaves - this.leaves.filter(l => l.status === 'APPROVED' && l.leaveType === 'Paid').length;
+        const approvedcasualLeaves = this.leaves.filter(
+          l => l.leaveType === 'Casual' && l.status === 'APPROVED'
+        );
+
+
+        const totalCasualUsed = approvedcasualLeaves.reduce(
+          (sum, l) => sum + ((l as any).duration || 0),
+          0
+        );
+
+
+        this.balanceCl = this.casualLeaves - totalCasualUsed;
+
+        const approvedPaidLeaves = this.leaves.filter(
+          l => l.leaveType === 'Paid' && l.status === 'APPROVED'
+        );
+
+
+        const totalPaidUsed = approvedPaidLeaves.reduce(
+          (sum, l) => sum + ((l as any).duration || 0),
+          0
+        );
+
+
+        this.balancePl = this.paidLeaves - totalPaidUsed;
+
 
         // Prepare summary data for the summary table
         
