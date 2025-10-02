@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { LeaveService } from '../../services/leave.service';
+import { LeaveService,LeaveRequest } from '../../services/leave.service';
 import { Router } from '@angular/router';
 
 @Component({

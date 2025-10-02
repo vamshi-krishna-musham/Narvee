@@ -45,7 +45,8 @@ export class LeaveApprovalsComponent implements OnInit {
 
   load(): void {
     this.loading = true;
-    this.leave.listPending().subscribe({
+    const managerId = Number(localStorage.getItem('profileId'));
+    this.leave.listPending(managerId).subscribe({
       next: (res) => { this.pending = res || []; this.loading = false; },
       error: () => { this.loading = false; this.snack.open('Failed to load pending leaves', 'OK', { duration: 3000 }); }
     });

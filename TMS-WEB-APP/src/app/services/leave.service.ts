@@ -55,8 +55,9 @@ export class LeaveService {
   }
 
   // ----- Admin / Super Admin APIs -----
-  listPending(): Observable<LeaveRequest[]> {
-    return this.http.get<any[]>(`${this.base}/task/leaves/pending`).pipe(
+  listPending(managerId: number): Observable<LeaveRequest[]> {
+
+    return this.http.get<any[]>(`${this.base}/task/leaves/pending/${managerId}`).pipe(
       map(res => res.map(r => ({
         id: r.id,
         userId: r.userId,
