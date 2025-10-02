@@ -17,7 +17,8 @@ export interface LeaveRequest {
   status?: LeaveStatus;
   adminComment?: string;    // <-- NEW field added
   createdAt?: string;       // ISO datetime
-  updatedAt?: string;       // ISO datetime
+  updatedAt?: string;
+  duration?:number;       
 }
 
 @Injectable({ providedIn: 'root' })
@@ -65,7 +66,8 @@ export class LeaveService {
         leaveType: r.leaveCategory,
         reason: r.reason,
         status: r.status,
-        adminComment: r.adminComment   // ✅ include this too
+        adminComment: r.adminComment,
+        duration: r.duration  // ✅ include this too
       })))
     );
   }
