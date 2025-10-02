@@ -33,9 +33,9 @@ public class TmsLeaveController {
         return service.all();
     }
 
-    @GetMapping("/pending")
-    public List<TmsLeave> pendingLeavesForManager() {
-        return service.findPending();
+    @GetMapping("/pending/{managerId}")
+    public List<TmsLeave> pendingLeavesForManager(@PathVariable Long managerId) {
+        return service.findPending(managerId);
     }
 
     @GetMapping("/{id}")
