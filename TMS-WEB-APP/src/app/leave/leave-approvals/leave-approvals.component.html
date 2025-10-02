@@ -2,8 +2,8 @@
 <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
 <!-- Empty state -->
-<div *ngIf="!loading && (!pending || pending.length === 0)" 
-     class="mat-elevation-z1" 
+<div *ngIf="!loading && (!pending || pending.length === 0)"
+     class="mat-elevation-z1"
      style="padding:16px;border-radius:8px;">
   No pending leave requests.
 </div>
@@ -71,3 +71,27 @@
     Back to History
   </button>
 </div>
+
+<!-- Approve dialog -->
+<ng-template #approveDialog>
+  <h2 mat-dialog-title>Approve Leave Request</h2>
+  <mat-dialog-content>
+    <p>Are you sure you want to approve this leave request?</p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button [mat-dialog-close]="false">Cancel</button>
+    <button mat-raised-button color="primary" [mat-dialog-close]="true">Yes</button>
+  </mat-dialog-actions>
+</ng-template>
+
+<!-- Deny dialog -->
+<ng-template #denyDialog>
+  <h2 mat-dialog-title>Deny Leave Request</h2>
+  <mat-dialog-content>
+    <p>Are you sure you want to deny this leave request?</p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button [mat-dialog-close]="false">Cancel</button>
+    <button mat-raised-button color="primary" [mat-dialog-close]="true">Yes</button>
+  </mat-dialog-actions>
+</ng-template>

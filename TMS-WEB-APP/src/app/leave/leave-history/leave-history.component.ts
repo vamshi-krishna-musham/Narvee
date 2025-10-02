@@ -16,18 +16,15 @@ export class LeaveHistoryComponent implements OnInit {
   'pending',
   'balanceSl',
   'balanceCl',
-  'balancePl'
 ];
-  casualLeaves: number = 12;
+  casualLeaves: number = 20;
   sickLeaves: number = 10;
-  paidLeaves: number = 8;
   totalEligible: number = 30;
   totalLeavesApproved: number = 0;
   CancelledLeaves: number = 0;
   pendingLeaves: number = 0;
   balanceSl: number = 0;
   balanceCl: number = 0;
-  balancePl: number = 0;
   duration?: number; // <-- add this
   leaves: LeaveRequest[] = [];
   loading = false;
@@ -35,8 +32,8 @@ export class LeaveHistoryComponent implements OnInit {
 
 
   summaryData: any[] = [];
- 
-  
+
+
 
   // role check flag
   isManager = localStorage.getItem('profileRole')?.toUpperCase() === 'SUPER ADMIN';
@@ -50,7 +47,7 @@ export class LeaveHistoryComponent implements OnInit {
     const profileId = Number(localStorage.getItem('profileId'));
     this.load(profileId);
  }
-  
+
   load(id: number): void {
     this.loading = true;
     this.leave.listMine(id).subscribe({
@@ -62,14 +59,12 @@ export class LeaveHistoryComponent implements OnInit {
         });
         this.casualLeaves = 12;
         this.sickLeaves = 10;
-        this.paidLeaves = 8;
         this.totalEligible = 30;
         this.totalLeavesApproved = 0;
         this.CancelledLeaves = 0;
         this.pendingLeaves = 0;
         this.balanceSl = 0;
         this.balanceCl = 0;
-        this.balancePl = 0;
         const approvedLeaves = this.leaves.filter(
           l => l.status === 'APPROVED'
         );
@@ -111,22 +106,10 @@ export class LeaveHistoryComponent implements OnInit {
 
         this.balanceCl = this.casualLeaves - totalCasualUsed;
 
-        const approvedPaidLeaves = this.leaves.filter(
-          l => l.leaveType === 'Paid' && l.status === 'APPROVED'
-        );
-
-
-        const totalPaidUsed = approvedPaidLeaves.reduce(
-          (sum, l) => sum + ((l as any).duration || 0),
-          0
-        );
-
-
-        this.balancePl = this.paidLeaves - totalPaidUsed;
-
+        
 
         // Prepare summary data for the summary table
-        
+
         this.summaryData = [
           {
             totalEligible: this.totalEligible,
@@ -135,7 +118,10 @@ export class LeaveHistoryComponent implements OnInit {
             pending: this.pendingLeaves,
             balanceSl: this.balanceSl,
             balanceCl: this.balanceCl,
-            balancePl: this.balancePl
+<<<<<<< HEAD
+
+=======
+>>>>>>> c1a25d44775760fbad4735302a3ed0c05be88636
             
           }
         ];
@@ -165,7 +151,8 @@ export class LeaveHistoryComponent implements OnInit {
     const profileId = Number(localStorage.getItem('profileId'));
     this.leave.cancel(id).subscribe({
       next: () => {
-        this.snack.open('Leave cancelled', 'OK', { duration: 2000 });
+        this.snack.open('Leave cancelled', 'OK', { duration: 2000, horizontalPosition: 'center', verticalPosition: 'bottom',
+        panelClass: ['custom-snack-failure'] });
         this.load(profileId);
       },
       error: () => this.snack.open('Cancel failed', 'OK', { duration: 3000 })
