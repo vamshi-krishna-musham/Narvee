@@ -46,7 +46,7 @@ public class TmsLeaveService {
 
 
     public List<TmsLeave> findPending(Long managerId) {
-        return repo.findByStatusAndUserIdNot("PENDING", managerId);
+    return repo.findByStatusAndUserIdNot("PENDING", managerId);
     }
 
     public TmsLeave approve(Long id, TmsLeave partial) {
@@ -84,8 +84,15 @@ public class TmsLeaveService {
     }).orElse(null); // return null if not found
 }
 
-    public List<TmsLeave> findByUser(Long userId) {
-        return repo.findByUserId(userId);
+    public TmsLeave addComment(Long id, String comment) {
+        TmsLeave leave = repo.findById(id).orElseThrow();
+        leave.setAdminComment(comment);
+        return repo.save(leave);
+    }
+
+
+    public List<TmsLeave> findByUserId(Long userId) {
+      return repo.findByUserId(userId);
     }
 
 }

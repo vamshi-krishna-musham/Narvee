@@ -73,15 +73,18 @@ export class LeaveService {
     );
   }
 
-  approve(id: number, adminComment?: string) {
+  approve(id: number) {
     const body: any = { status: 'APPROVED' };
-    if (adminComment) body.adminComment = adminComment;
     return this.http.patch(`${this.base}/task/leaves/${id}/approve`, body);
   }
 
-  deny(id: number, adminComment?: string) {
+  deny(id: number) {
     const body: any = { status: 'DENIED' };
-    if (adminComment) body.adminComment = adminComment;
+
     return this.http.patch(`${this.base}/task/leaves/${id}/deny`, body);
   }
+  addComment(id: number, comment: string): Observable<any> {
+  return this.http.post(`${this.base}/task/leaves/${id}/comment`, { comment });
+  }
+
 }

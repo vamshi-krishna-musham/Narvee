@@ -12,6 +12,8 @@ export class LeaveApprovalsComponent implements OnInit {
   // ⬇️ Templates for the two dialogs
   @ViewChild('approveDialog') approveDialogTpl!: TemplateRef<any>;
   @ViewChild('denyDialog') denyDialogTpl!: TemplateRef<any>;
+  @ViewChild('commentDialog') commentDialogTpl!: TemplateRef<any>;
+
 
   pending: LeaveRequest[] = [];
   loading = false;
@@ -99,6 +101,36 @@ export class LeaveApprovalsComponent implements OnInit {
       });
     });
   }
+addCommentbutton(id: number): void {
+  const ref = this.dialog.open(this.commentDialogTpl, {
+    width: '420px',
+    disableClose: true,
+    data: { comment: '' }
+  });
+
+  ref.afterClosed().subscribe(comment => {
+    if (!comment) return; // user cancelled or left empty
+
+    this.leave.addComment(id, comment).subscribe({
+      next: () => {
+        this.snack.open('Comment sent successfully', 'OK', {
+          duration: 2000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+          panelClass: ['custom-snack-success']
+        });
+     // refresh list
+      },
+      error: () => this.snack.open('Failed to send comment', 'OK', {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom',
+        panelClass: ['custom-snack-failure']
+      })
+    });
+  });
+}
+
 
   trackById(_: number, r: LeaveRequest) { return r.id; }
 

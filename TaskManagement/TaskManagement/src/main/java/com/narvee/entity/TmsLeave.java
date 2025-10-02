@@ -47,6 +47,7 @@ public class TmsLeave {
     public Long getDuration() {
     return duration;
     }
+
     public void setDuration(Long duration) {
         this.duration = duration;
     }
@@ -70,7 +71,7 @@ public class TmsLeave {
     public void setReason(String reason) {
         this.reason = reason;
     }
-    @Column(name="admin_comment", length=500)
+    @Column(name="adminComment", length=500)
     private String adminComment;
 
     public String getAdminComment() {
