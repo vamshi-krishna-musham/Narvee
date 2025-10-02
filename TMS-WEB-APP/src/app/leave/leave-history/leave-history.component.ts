@@ -118,10 +118,6 @@ export class LeaveHistoryComponent implements OnInit {
             pending: this.pendingLeaves,
             balanceSl: this.balanceSl,
             balanceCl: this.balanceCl,
-<<<<<<< HEAD
-
-=======
->>>>>>> c1a25d44775760fbad4735302a3ed0c05be88636
             
           }
         ];
