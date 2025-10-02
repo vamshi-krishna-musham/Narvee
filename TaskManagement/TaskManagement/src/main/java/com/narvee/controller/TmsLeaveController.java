@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -45,7 +46,7 @@ public class TmsLeaveController {
 
     @GetMapping("/user/{userId}")
     public List<TmsLeave> leavesByUser(@PathVariable Long userId) {
-        return service.findByUser(userId);
+        return service.findByUserId(userId);
     }
 
 
@@ -78,4 +79,19 @@ public class TmsLeaveController {
         return updated != null ? ResponseEntity.ok(updated)
                                : ResponseEntity.notFound().build();
     }
+        // ✅ new endpoint for manager comment
+    @PostMapping("/{id}/comment")
+    public ResponseEntity<TmsLeave> addManagerComment(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> payload) {
+
+        String comment = payload.get("comment");
+        if (comment == null || comment.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        TmsLeave updated = service.addComment(id, comment);
+        return ResponseEntity.ok(updated);
+    }
+            
 }
