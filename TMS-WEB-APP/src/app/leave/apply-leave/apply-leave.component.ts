@@ -31,6 +31,18 @@ export class ApplyLeaveComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    
+    this.form.get('leaveType')?.valueChanges.subscribe(type => {
+      const today= this.toDateOnly(new Date());
+      if (type === 'Casual') {
+        this.minDate = new Date(today.setDate(today.getDate() + 14));
+      }
+       else {
+        // default (today)
+        this.minDate = new Date();
+      }
+
+    });
     this.form.valueChanges.subscribe(() => this.computeDuration());
     setTimeout(() => this.computeDuration());
   }
