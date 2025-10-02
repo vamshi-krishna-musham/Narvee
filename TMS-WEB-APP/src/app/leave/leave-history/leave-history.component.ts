@@ -35,8 +35,8 @@ export class LeaveHistoryComponent implements OnInit {
 
 
   summaryData: any[] = [];
- 
-  
+
+
 
   // role check flag
   isManager = localStorage.getItem('profileRole')?.toUpperCase() === 'SUPER ADMIN';
@@ -50,7 +50,7 @@ export class LeaveHistoryComponent implements OnInit {
     const profileId = Number(localStorage.getItem('profileId'));
     this.load(profileId);
  }
-  
+
   load(id: number): void {
     this.loading = true;
     this.leave.listMine(id).subscribe({
@@ -126,7 +126,7 @@ export class LeaveHistoryComponent implements OnInit {
 
 
         // Prepare summary data for the summary table
-        
+
         this.summaryData = [
           {
             totalEligible: this.totalEligible,
@@ -136,7 +136,7 @@ export class LeaveHistoryComponent implements OnInit {
             balanceSl: this.balanceSl,
             balanceCl: this.balanceCl,
             balancePl: this.balancePl
-            
+
           }
         ];
 
