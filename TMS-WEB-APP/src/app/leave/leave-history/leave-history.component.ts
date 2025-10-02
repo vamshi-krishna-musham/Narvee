@@ -165,7 +165,8 @@ export class LeaveHistoryComponent implements OnInit {
     const profileId = Number(localStorage.getItem('profileId'));
     this.leave.cancel(id).subscribe({
       next: () => {
-        this.snack.open('Leave cancelled', 'OK', { duration: 2000 });
+        this.snack.open('Leave cancelled', 'OK', { duration: 2000, horizontalPosition: 'center', verticalPosition: 'bottom',
+        panelClass: ['custom-snack-failure'] });
         this.load(profileId);
       },
       error: () => this.snack.open('Cancel failed', 'OK', { duration: 3000 })
