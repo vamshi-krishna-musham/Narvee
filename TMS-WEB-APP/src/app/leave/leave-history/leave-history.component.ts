@@ -14,8 +14,7 @@ export class LeaveHistoryComponent implements OnInit {
   'approved',
   'cancelled',
   'pending',
-  'balanceSl',
-  'balanceCl',
+  'balanceSl'
 ];
   casualLeaves: number = 20;
   sickLeaves: number = 10;
