@@ -57,7 +57,7 @@ export class LeaveHistoryComponent implements OnInit {
           const bd = new Date(b.startDate).getTime();
           return bd - ad; // newest first
         });
-        this.casualLeaves = 12;
+        this.casualLeaves = 20;
         this.sickLeaves = 10;
         this.totalEligible = 30;
         this.totalLeavesApproved = 0;

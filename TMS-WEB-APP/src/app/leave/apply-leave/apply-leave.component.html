@@ -8,7 +8,7 @@
       <mat-label>Leave Type</mat-label>
       <mat-select formControlName="leaveType" required>
         <mat-option value="Sick">Sick</mat-option>
-        <mat-option value="Casual">Casual</mat-option>
+        <mat-option value="Casual">Casual or Vacation (Requires 2 weeks prior notice)</mat-option>
         <mat-option value="Emergency">Emergency</mat-option>
       </mat-select>
       <mat-error *ngIf="form.get('leaveType')?.hasError('required')">
