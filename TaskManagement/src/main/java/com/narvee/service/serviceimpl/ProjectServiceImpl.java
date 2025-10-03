@@ -251,6 +251,7 @@ public class ProjectServiceImpl implements ProjectService {
 			e.printStackTrace();
 		}
 		if (files != null && !files.isEmpty()) {
+			
 			List<TmsFileUpload> projectFiles = new ArrayList<>();
 
 			try {
@@ -503,6 +504,7 @@ public class ProjectServiceImpl implements ProjectService {
 	                proj.setAssignedUsers(assignedUserNames);
 
 	                // Additional mapping from entity
+	             
 	                if (project != null) {
 	                    Set<TmsAssignedUsers> assignedUsersWithNames = project.getAssignedto().stream()
 	                            .map(assignUser -> {
@@ -539,15 +541,10 @@ public class ProjectServiceImpl implements ProjectService {
 	            .filter(Objects::nonNull)
 	            .collect(Collectors.toList());
 
-	    // Manual pagination (for safety with filtered list)
-	    int start = Math.min((pageNo - 1) * pageSize, allProjects.size());
-	    int end = Math.min(start + pageSize, allProjects.size());
-	    List<ProjectResponseDto> pagedProjects = allProjects.subList(start, end);
+	   
 
-	    return new PageImpl<>(pagedProjects, pageable, allProjects.size());
-	}
+	    return new PageImpl<>(allProjects, page.getPageable(), page.getTotalElements());
 //added by pratiksha
-
-
-}
+	
+	}}
 
