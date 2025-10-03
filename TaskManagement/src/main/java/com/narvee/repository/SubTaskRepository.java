@@ -1,6 +1,7 @@
 package com.narvee.repository;
 
 import java.time.LocalDate;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -135,7 +136,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 			+ "			WHERE st.subtaskid = :subtaskid ", nativeQuery = true)
 	public List<GetUsersDTO> getSubtaskAssignUsersTms(Long subtaskid);*/
 	// Non-search listing (normalized fullname)
-	
+
 	@Query(value =
 	  "SELECT "
 	+ "  st.subtaskid AS subTaskId, "
@@ -295,6 +296,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 			public Page<TaskTrackerDTO> findSubTaskByTicketIdWithSearching(@Param("ticketId") String ticketId,
 			                                                               @Param("keyword") String keyword, Pageable pageable);
 
+
 	*/
 	@Query(
 			  value =
@@ -398,6 +400,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 			);
 
 	@Query(value = "select subtaskname from tms_sub_task where subtaskid = :subTaskId",nativeQuery = true)
+
 	public String getSubTaskName(Long subTaskId);
 
 
