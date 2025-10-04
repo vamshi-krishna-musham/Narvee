@@ -78,9 +78,8 @@ export class LeaveService {
     return this.http.patch(`${this.base}/task/leaves/${id}/approve`, body);
   }
 
-  deny(id: number) {
-    const body: any = { status: 'DENIED' };
-
+  deny(id: number, comment: string): Observable<any> {
+    const body: any = { status: 'DENIED', adminComment: comment };
     return this.http.patch(`${this.base}/task/leaves/${id}/deny`, body);
   }
   addComment(id: number, comment: string): Observable<any> {

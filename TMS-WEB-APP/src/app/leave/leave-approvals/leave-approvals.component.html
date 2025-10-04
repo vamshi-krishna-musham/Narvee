@@ -53,9 +53,6 @@
       <button mat-stroked-button color="primary" (click)="deny(r.id!)">
         Deny
       </button>
-      <button mat-stroked-button color="primary" (click)="addCommentbutton(r.id!)">
-        Add Comment
-      </button>
     </td>
   </ng-container>
 
@@ -83,23 +80,13 @@
   </mat-dialog-actions>
 </ng-template>
 
-<!-- Deny dialog -->
-<ng-template #denyDialog>
-  <h2 mat-dialog-title>Deny Leave Request</h2>
-  <mat-dialog-content>
-    <p>Are you sure you want to deny this leave request?</p>
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-stroked-button [mat-dialog-close]="false">Cancel</button>
-    <button mat-raised-button color="primary" [mat-dialog-close]="true">Yes</button>
-  </mat-dialog-actions>
-</ng-template>
 
-<ng-template #commentDialog let-data>
-  <h2 mat-dialog-title>Add Comment</h2>
+
+<ng-template #denyDialog let-data>
+  <h2 mat-dialog-title>Reason For Denial</h2>
   <mat-dialog-content>
     <mat-form-field appearance="outline" style="width: 100%;">
-      <textarea matInput [(ngModel)]="data.comment" rows="3" required placeholder="Type your message..."></textarea>
+      <textarea matInput [(ngModel)]="data.comment" rows="3" required placeholder="Type here..."></textarea>
       <mat-hint>Enter the reason or note for the employee</mat-hint>
     </mat-form-field>
   </mat-dialog-content>

@@ -75,23 +75,11 @@ public class TmsLeaveController {
     }
     @PatchMapping("/{id}/deny")
     public ResponseEntity<TmsLeave> patchLeaveDeny(@PathVariable Long id, @RequestBody TmsLeave partial) {
-        TmsLeave updated = service.deny(id, partial);
+        TmsLeave updated = service.approve(id, partial);
         return updated != null ? ResponseEntity.ok(updated)
                                : ResponseEntity.notFound().build();
     }
         // ✅ new endpoint for manager comment
-    @PostMapping("/{id}/comment")
-    public ResponseEntity<TmsLeave> addManagerComment(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> payload) {
 
-        String comment = payload.get("comment");
-        if (comment == null || comment.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        TmsLeave updated = service.addComment(id, comment);
-        return ResponseEntity.ok(updated);
-    }
             
 }

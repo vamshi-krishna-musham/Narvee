@@ -82,11 +82,12 @@ export class LeaveApprovalsComponent implements OnInit {
   deny(id: number): void {
     const ref = this.dialog.open(this.denyDialogTpl, {
       width: '420px',
-      disableClose: true
+      disableClose: true,
+      data: { comment: '' }
     });
-    ref.afterClosed().subscribe(confirmed => {
-      if (!confirmed) return;
-      this.leave.deny(id).subscribe({
+    ref.afterClosed().subscribe(comment => {
+      if (!comment) return;
+      this.leave.deny(id, comment).subscribe({
         next: () => {
           this.snack.open('Leave denied', 'OK', {
             duration: 2000, horizontalPosition: 'center', verticalPosition: 'bottom',
@@ -101,35 +102,6 @@ export class LeaveApprovalsComponent implements OnInit {
       });
     });
   }
-addCommentbutton(id: number): void {
-  const ref = this.dialog.open(this.commentDialogTpl, {
-    width: '420px',
-    disableClose: true,
-    data: { comment: '' }
-  });
-
-  ref.afterClosed().subscribe(comment => {
-    if (!comment) return; // user cancelled or left empty
-
-    this.leave.addComment(id, comment).subscribe({
-      next: () => {
-        this.snack.open('Comment sent successfully', 'OK', {
-          duration: 2000,
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom',
-          panelClass: ['custom-snack-success']
-        });
-     // refresh list
-      },
-      error: () => this.snack.open('Failed to send comment', 'OK', {
-        duration: 3000,
-        horizontalPosition: 'center',
-        verticalPosition: 'bottom',
-        panelClass: ['custom-snack-failure']
-      })
-    });
-  });
-}
 
 
   trackById(_: number, r: LeaveRequest) { return r.id; }
