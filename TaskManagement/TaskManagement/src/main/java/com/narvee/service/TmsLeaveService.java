@@ -84,11 +84,7 @@ public class TmsLeaveService {
     }).orElse(null); // return null if not found
 }
 
-    public TmsLeave addComment(Long id, String comment) {
-        TmsLeave leave = repo.findById(id).orElseThrow();
-        leave.setAdminComment(comment);
-        return repo.save(leave);
-    }
+
 
 
     public List<TmsLeave> findByUserId(Long userId) {
