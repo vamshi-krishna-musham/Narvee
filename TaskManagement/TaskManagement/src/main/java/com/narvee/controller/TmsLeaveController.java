@@ -75,7 +75,7 @@ public class TmsLeaveController {
     }
     @PatchMapping("/{id}/deny")
     public ResponseEntity<TmsLeave> patchLeaveDeny(@PathVariable Long id, @RequestBody TmsLeave partial) {
-        TmsLeave updated = service.approve(id, partial);
+        TmsLeave updated = service.deny(id, partial);
         return updated != null ? ResponseEntity.ok(updated)
                                : ResponseEntity.notFound().build();
     }
