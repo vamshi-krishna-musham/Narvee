@@ -107,6 +107,7 @@ export class ApplyLeaveComponent implements OnInit {
 
     const payload = {
       userId: Number(localStorage.getItem('profileId')),
+      userName: ((localStorage.getItem('firstName') || '') + ' ' + (localStorage.getItem('lastName') || '')) || 'Unknown',
       leaveCategory: this.form.value.leaveType,
       fromDate: this.toYMD(start),
       toDate: this.toYMD(end),
