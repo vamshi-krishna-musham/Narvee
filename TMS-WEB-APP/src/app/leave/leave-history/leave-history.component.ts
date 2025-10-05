@@ -57,7 +57,7 @@ export class LeaveHistoryComponent implements OnInit {
           return bd - ad; // newest first
         });
         this.casualLeaves = 20;
-        this.sickLeaves = 10;
+        this.sickLeaves = 0;
         this.totalEligible = 30;
         this.totalLeavesApproved = 0;
         this.CancelledLeaves = 0;
@@ -90,20 +90,7 @@ export class LeaveHistoryComponent implements OnInit {
         );
 
 
-        this.balanceSl = this.sickLeaves - totalSickUsed;
-
-        const approvedcasualLeaves = this.leaves.filter(
-          l => l.leaveType === 'Casual' && l.status === 'APPROVED'
-        );
-
-
-        const totalCasualUsed = approvedcasualLeaves.reduce(
-          (sum, l) => sum + ((l as any).duration || 0),
-          0
-        );
-
-
-        this.balanceCl = this.casualLeaves - totalCasualUsed;
+        this.balanceSl = totalSickUsed;
 
         
 
@@ -115,9 +102,7 @@ export class LeaveHistoryComponent implements OnInit {
             approved: this.totalLeavesApproved,
             cancelled: this.CancelledLeaves,
             pending: this.pendingLeaves,
-            balanceSl: this.balanceSl,
-            balanceCl: this.balanceCl,
-            
+            balanceSl: this.balanceSl,            
           }
         ];
 
