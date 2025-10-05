@@ -60,7 +60,6 @@ export class LeaveService {
     return this.http.get<any[]>(`${this.base}/task/leaves/pending/${managerId}`).pipe(
       map(res => res.map(r => ({
         id: r.id,
-        userId: r.userId,
         userName: r.userName,
         startDate: r.fromDate,
         endDate: r.toDate,

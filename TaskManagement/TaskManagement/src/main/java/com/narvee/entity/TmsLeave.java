@@ -20,6 +20,9 @@ public class TmsLeave {
     @Column(name="user_id", nullable=false)
     private Long userId;
 
+    @Column(name="user_name", nullable=false, length=100)
+    private String userName;
+
     @Column(name="from_date", nullable=false)
     private LocalDate fromDate;
 
