@@ -664,7 +664,9 @@ default:
 	    Integer pageNo = requestresponsedto.getPageNumber() == null ? 1 : requestresponsedto.getPageNumber();
 	    Integer pageSize = requestresponsedto.getPageSize() == null ? 10 : requestresponsedto.getPageSize();
 	    String projectid = requestresponsedto.getProjectid();
-	    String keyword = requestresponsedto.getKeyword();
+	    String keyword = (requestresponsedto.getKeyword() == null || requestresponsedto.getKeyword().trim().isEmpty())
+	            ? "empty"
+	            : requestresponsedto.getKeyword().trim();
 	    String ticketId = requestresponsedto.getTicketId();
 
 	    // map sort fields (same as your mapping)
@@ -695,10 +697,11 @@ default:
 	    case "priority":
 	        sortfield = "priority";
 	        break;
+	    case"updatedby":
+	    case "fullname": sortfield = "fullname"; break;
+        case "addedby": 
+        case "addedbyfullname": sortfield = "addedbyfullname"; break;
 
-	    case "updatedby":
-	        sortfield = "updatedby";
-	        break;
 
 	    case "duration":
 	        sortfield = "duration";
@@ -719,7 +722,7 @@ default:
 
 
 
-	    Sort.Direction sortDirection = Sort.Direction.ASC;
+	   /* Sort.Direction sortDirection = Sort.Direction.ASC;
 	    if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
 	        sortDirection = Sort.Direction.DESC;
 	    }
@@ -732,7 +735,15 @@ default:
 	        if (keyword.isEmpty()) keyword = "empty";
 	    } else {
 	        keyword = "empty";
-	    }
+	    }*/   Sort.Direction direction = "desc".equalsIgnoreCase(sortorder) ? Sort.Direction.DESC : Sort.Direction.ASC;
+	    Sort sort = ("addedbyfullname".equalsIgnoreCase(sortfield))
+	            ? Sort.by(direction, "u2.first_name", "u2.middle_name", "u2.last_name")
+	            : ("fullname".equalsIgnoreCase(sortfield))
+	                ? Sort.by(direction, "u1.first_name", "u1.middle_name", "u1.last_name")
+	                : Sort.by(direction, sortfield);
+
+	    Pageable pageable = PageRequest.of(Math.max(0, pageNo - 1), pageSize, sort);
+
 
 	    Page<TaskTrackerDTO> res;
 	    if ("empty".equalsIgnoreCase(keyword)) {
