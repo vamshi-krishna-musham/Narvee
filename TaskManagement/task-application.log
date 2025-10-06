@@ -2596,3 +2596,4 @@ org.springframework.beans.factory.BeanCreationNotAllowedException: Error creatin
 2025-10-06 18:32:35,070 INFO  ConfigClusterResolver:43 -[] Resolving eureka endpoints via configuration
 2025-10-06 18:37:35,079 INFO  ConfigClusterResolver:43 -[] Resolving eureka endpoints via configuration
 2025-10-06 18:42:35,092 INFO  ConfigClusterResolver:43 -[] Resolving eureka endpoints via configuration
+2025-10-06 18:47:35,110 INFO  ConfigClusterResolver:43 -[] Resolving eureka endpoints via configuration
