@@ -2,16 +2,14 @@
       <button mat-raised-button color="primary" *ngIf="isManager" (click)="openManageLeaves()" style="float:right;">
         Manage Leaves
       </button>
-<div class="leave-container">
+
   <!-- Header -->
   <div class="header-row">
     <h2>Leave Summary</h2>
-    <div>
-    </div>
   </div>
-
+<div class="summary-class mat-elevation-z2 ">
   <!-- Summary Table (always visible) -->
-<mat-table [dataSource]="summaryData" class="mat-elevation-z2 summary-table">
+<mat-table [dataSource]="summaryData" class="summary-table">
 
   <!-- Total Eligile -->
   <ng-container matColumnDef="totalConsumed"><!--let the name be totalConsumed for the total Eligible-->
@@ -49,26 +47,32 @@
   <!-- Header and Row -->
   <tr mat-header-row *matHeaderRowDef="displayedSummaryColumns"></tr>
   <tr mat-row *matRowDef="let row; columns: displayedSummaryColumns"></tr>
-
 </mat-table>
+
+</div>
+
+<div class="leave-history">
 
   <h2>Leave History</h2>
   <!-- Loading -->
   <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
   <!-- Empty State -->
-  <div *ngIf="!loading && (!leaves || leaves.length === 0)" class="mat-elevation-z1" style="padding:16px; border-radius:8px;">
+  <div *ngIf="!loading && (!leaves || leaves.length === 0)" class="empty-state mat-elevation-z1">
     No leaves yet.
   </div>
-
+  <div class="table-wrapper" *ngIf="!loading && leaves?.length">
   <!-- Leave History Table (kept separate) -->
   <table
-    *ngIf="!loading && leaves?.length"
     mat-table
-    [dataSource]="leaves"
+    [dataSource]="dataSource"
     class="mat-elevation-z2 full-table"
-    style="width:100%;"
   >
+
+    <ng-container matColumnDef="userId">
+      <th mat-header-cell *matHeaderCellDef>UserId</th>
+      <td mat-cell *matCellDef="let r">{{ r.userId }}</td>
+    </ng-container>  
     <ng-container matColumnDef="type">
       <th mat-header-cell *matHeaderCellDef>Type</th>
       <td mat-cell *matCellDef="let r">{{ r.leaveType }}</td>
@@ -90,6 +94,10 @@
         <mat-chip-set><mat-chip [disabled]="true">{{ r.status }}</mat-chip></mat-chip-set>
       </td>
     </ng-container>
+    <ng-container matColumnDef="Admin Comment">
+      <th mat-header-cell *matHeaderCellDef>Admin Comment</th>
+      <td mat-cell *matCellDef="let r">{{ r.adminComment || '-' }}</td>
+    </ng-container>
 
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef>Actions</th>
@@ -101,4 +109,8 @@
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
   </table>
+  </div>
+  <mat-paginator [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>
 </div>
+
+
