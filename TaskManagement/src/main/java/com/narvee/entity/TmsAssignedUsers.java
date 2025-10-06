@@ -24,13 +24,11 @@ public class TmsAssignedUsers {
 	private Long tmsUserId;
 	private boolean completed ;
 	private String userstatus = "open";
-	
 	@Lob
 	private byte[] UserProfile;
 	private String email;
 	@Transient
 	private String fullname;
-	
 	@Transient
 	private String pseudoname;
 	

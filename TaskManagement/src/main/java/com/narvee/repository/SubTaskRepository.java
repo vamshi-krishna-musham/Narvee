@@ -18,6 +18,7 @@ import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.SubTaskUserDTO;
 import com.narvee.dto.TaskTrackerDTO;
 import com.narvee.entity.TmsSubTask;
+import com.narvee.entity.TmsTask;
 
 public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 
@@ -61,8 +62,8 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	@Query(value = "select tt.taskid , st.subtaskid , tt.status,tt.createddate , tt.description ,tt.updatedby from tms_ticket_tracker tt , tms_sub_task st  WHERE tt.subtaskid= st.subtaskid and st.subtaskid=:subtaskid order by tt.createddate desc", nativeQuery = true)
 	public List<TaskTrackerDTO> ticketTrackerBySubTaskId(Long subtaskid);
 
-	@Query(value = "SELECT st.subtaskid, st.status,u.fullname, u.pseudoname, st.subtaskname, st.targetdate, t.ticketid, u.email FROM tms_sub_task st JOIN tms_assigned_users au ON st.subtaskid = au.subtaskid\r\n"
-			+ "JOIN users u ON au.userid = u.userid JOIN tms_task t ON st.taskid = t.taskid WHERE date(st.targetdate) < :currentDate AND st.status!='to do' AND st.status!='Completed'  ", nativeQuery = true)
+	@Query(value = "SELECT st.subtaskid, st.status,u.fullname, u.pseudoname, st.subtaskname, st.target_date, t.ticketid, u.email FROM tms_sub_task st JOIN tms_assigned_users au ON st.subtaskid = au.subtaskid\r\n"
+			+ "JOIN users u ON au.userid = u.userid JOIN tms_task t ON st.taskid = t.taskid WHERE date(st.target_date) < :currentDate AND st.status!='to do' AND st.status!='Completed'  ", nativeQuery = true)
 	public List<TaskTrackerDTO> getExceededTargetDateSubTasks(LocalDate currentDate);
 	
 	
@@ -176,12 +177,15 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	@Query(value = "select subtaskname from tms_sub_task where subtaskid = :subTaskId",nativeQuery = true)
 
 	public String getSubTaskName(Long subTaskId);
-
-
-
-
 	
-	@Query(value = "select max(subtaskmaxnum) as max from tms_sub_task", nativeQuery = true)
-	public Long subtaskmaxnum();
+	@Query(value = "SELECT * FROM tms_sub_task", nativeQuery = true)
+	public List<TaskTrackerDTO>getAll( );
+	
+	@Query(value = "SELECT CONCAT(u.first_name, ' ', u.last_name) FROM tms_users u WHERE u.user_id = :userId", nativeQuery = true)
+    String findNameByUserId(@Param("userId") String string);
+	
+	@Query(value = "SELECT  p.subtaskid, p.subtaskname, p.subtaskdescription, p.addedby, p.status, p.start_date, p.target_date, p.createddate, p.updateddate, p.duration, p.priority, p.last_status_updateddate,\r\n"
+			+ "	p.updatedby, p.taskid, p.createddate FROM tms_sub_task p", nativeQuery = true)
+	public List<TmsSubTask>  getAllSubTaskDeatils();
 }
 

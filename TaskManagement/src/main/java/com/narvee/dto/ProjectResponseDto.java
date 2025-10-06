@@ -16,9 +16,12 @@ import lombok.NoArgsConstructor;
 public class ProjectResponseDto {
 	 private ProjectDTO projePage;
 	
-	 private Set<TmsAssignedUsers> assignUsers;
-	//Set<GetUsersDTO> assignUsers;
-	 private List<String> assignedUsers; //added by pratiksha 
-	 private List<TmsFileUpload> files;
-
+	Set<TmsAssignedUsers> assignUsers;
+	
+	List<GetUsersDTO> assigednUsers;
+	
+	private List<String> assignedUsers;
+	
+	List<TmsFileUpload> files;
+	
 }

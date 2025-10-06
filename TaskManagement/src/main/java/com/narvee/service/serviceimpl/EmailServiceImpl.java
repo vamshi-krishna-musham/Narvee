@@ -50,7 +50,7 @@ public class EmailServiceImpl {
 
 	@Autowired
 	private TaskRepository taskRepository;
-	
+
 	@Autowired
 	private ProjectRepository projectRepository;
 
@@ -71,7 +71,7 @@ public class EmailServiceImpl {
 
 	@Value("${ccmail}")
 	private String[] ccmail;
-	
+
 //----------------TaskAssigningEmail   ---------------------For ATS  ----------------------
 	public void TaskAssigningEmail(TmsTask task, List<GetUsersDTO> userdetails)
 			throws MessagingException, UnsupportedEncodingException {
@@ -920,7 +920,6 @@ public class EmailServiceImpl {
 	}
 
 	@Async
-	
 	public void sendProjectDeadlineAlerts(TmsProject project, String assignUsernames, List<String> emails,
 			String emailType) throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: EmailServiceImpl, !! method: sendProjectDeadlineAlerts");
@@ -982,5 +981,218 @@ public class EmailServiceImpl {
 				+ "<p style='margin:0;font-size:13px;'>Best Regards,<br/>Task Management</p>"
 				+ "</td></tr></table></td></tr></table></body></html>";
 	}
+	
+//	@Async
+//	public void sendSubtaskDeadlineAlerts(
+//	        String string,
+//	        TaskTrackerDTO subTask,
+//	        StringBuilder assignUsernames,
+//	        List<String> emails,
+//	        String emailType
+//	) throws MessagingException, UnsupportedEncodingException {
+//
+//	    logger.info("!!! inside EmailServiceImpl: sendSubtaskDeadlineAlerts");
+//
+//	    // Who created the parent project (for “Created By” info)
+//	    String createdBy = subTaskRepository.findNameByUserId(subTask.getSubtaskname());
+//
+//	    String subject;
+//	    String body;
+//	    String[] emailArray = emails.toArray(new String[0]);
+//
+//	    if (!"expiredSubtasks".equals(emailType)) {
+//	        // ---------- Reminder 1 day before ----------
+//	        subject = "Reminder: Sub-Task '" + subTask.getSubtaskname() + "' target date is tomorrow";
+//	        body = buildSubtaskHtmlBody(
+//	                "Reminder: Sub-Task Deadline Approaching",
+//	                string,
+//	                subTask,
+//	                assignUsernames,
+//	                createdBy,
+//	                "This is a friendly reminder that the sub-task is due tomorrow."
+//	        );
+//	    } else {
+//	        // ---------- Overdue ----------
+//	        subject = "⚠ Sub-Task Overdue: " + subTask.getSubtaskname();
+//	        body = buildSubtaskHtmlBody(
+//	                "Sub-Task Deadline Exceeded",
+//	                string,
+//	                subTask,
+//	                assignUsernames,
+//	                createdBy,
+//	                "The target date has passed and the sub-task is still open. Please take action."
+//	        );
+//	    }
+//
+//	    MimeMessage message = mailSender.createMimeMessage();
+//	    MimeMessageHelper helper = new MimeMessageHelper(message);
+//	    helper.setTo(emailArray);
+//	    helper.setFrom(narveemail, shortMessage);
+//	    helper.setSubject(subject);
+//	    helper.setText(body, true);
+//	    mailSender.send(message);
+//
+//	    logger.info("Deadline alert mail sent for sub-task: " + subTask.getSubtaskname());
+//	}
+//
+//	private String buildSubtaskHtmlBody(
+//	        String header,
+//	        String string,
+//	        TaskTrackerDTO subTask,
+//	        StringBuilder assignUsernames,
+//	        String createdBy,
+//	        String extraMessage
+//	) {
+//	    return "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>" + header + "</title></head>"
+//	        + "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin:0;padding:0;'>"
+//	        + "<table width='100%' cellpadding='0' cellspacing='0' style='padding:30px 0;'>"
+//	        + "<tr><td align='center'>"
+//	        + "<table width='600' cellpadding='0' cellspacing='0' style='background-color:#ffffff;border-radius:6px;'>"
+//	        + "<tr><td style='background-color:#0468b4;padding:20px;color:#ffffff;text-align:center;"
+//	        + "border-top-left-radius:6px;border-top-right-radius:6px;'>"
+//	        + "<h2 style='margin:0;'>Task Management</h2></td></tr>"
+//	        + "<tr><td style='padding:30px;color:#333;'>"
+//	        + "<p style='font-size:16px;'>Hi Team,</p>"
+//	        + "<p style='font-size:14px;'>" + extraMessage + "</p>"
+//	        + "<table cellpadding='6' cellspacing='0' style='font-size:14px;'>"
+//	        + "<tr><td style='font-weight:bold;'>Project ID:</td><td>" + subTask.getTaskName() + "</td></tr>"
+//	        + "<tr><td style='font-weight:bold;'>Project Name:</td><td>" + subTask.getTaskName() + "</td></tr>"
+//	        + "<tr><td style='font-weight:bold;'>Sub-Task:</td><td>" + subTask.getSubtaskname() + "</td></tr>"
+//	        + "<tr><td style='font-weight:bold;'>Status:</td><td>" + subTask.getStatus() + "</td></tr>"
+//	        + "<tr><td style='font-weight:bold;'>Assigned Users:</td><td>" + assignUsernames + "</td></tr>"
+//	        + "<tr><td style='font-weight:bold;'>Created By:</td><td>" + createdBy + "</td></tr>"
+//	        + "<tr><td style='font-weight:bold;'>Target Date:</td><td>" + subTask.getTarget_date() + "</td></tr>"
+//	        + "</table>"
+//	        + "<p style='font-size:14px;margin-top:20px;'>Please log in to the portal for more details.</p>"
+//	        + "</td></tr>"
+//	        + "<tr><td style='background-color:#f0f0f0;padding:20px;text-align:center;color:#555;"
+//	        + "border-bottom-left-radius:6px;border-bottom-right-radius:6px;'>"
+//	        + "<p style='margin:0;font-size:13px;'>Best Regards,<br/>Task Management</p>"
+//	        + "</td></tr></table></td></tr></table></body></html>";
+//	}
+	
+	@Async
+	public void sendTaskDeadlineAlerts(TmsTask task, String assignUsernames, List<String> emails,
+			String emailType) throws MessagingException, UnsupportedEncodingException {
+		logger.info("!!! inside class: EmailServiceImpl, !! method: sendTaskDeadlineAlerts");
+		String subject;
+		String createdBy = taskRepository.findNameByUserId(task.getAddedby());
+		String body;
+		String[] emailArray = emails.toArray(new String[emails.size()]);
 
+		if (!emailType.equals("expiredTask")) {
+			// ========== Reminder 1 day before ==========
+			subject = "Reminder: Task " + task.getTaskid() + " target date is tomorrow";
+			body = buildHtmlBody("Reminder: Project Deadline Approaching", task, assignUsernames, createdBy,
+					"This is a friendly reminder that the task is due tomorrow.");
+
+		} else {
+			// ========== Exceeded (overdue) ==========
+			subject = "⚠ Task Overdue: " + task.getTaskid();
+			body = buildHtmlBody("Task Deadline Exceeded", task, assignUsernames, createdBy,
+					"The target date has passed and the Task is still open. Please take action.");
+		}
+
+		// ----- Send Mail -----
+		MimeMessage message = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(message);
+		helper.setTo(emailArray);
+		helper.setFrom(narveemail, shortMessage);
+		helper.setSubject(subject);
+		helper.setText(body, true);
+		mailSender.send(message);
+		logger.info("Deadline alert mail sent for task: " + task.getTaskid());
+		System.err.println("task :"+ taskRepository.findNameByUserId(task.getAddedby()));
+	}
+
+	private String buildHtmlBody(String header, TmsTask task, String assignedUsers, String createdby,
+			String extraMessage) {
+		return "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>" + header + "</title></head>"
+				+ "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin:0;padding:0;'>"
+				+ "<table width='100%' cellpadding='0' cellspacing='0' style='padding:30px 0;'>"
+				+ "<tr><td align='center'>"
+				+ "<table width='600' cellpadding='0' cellspacing='0' style='background-color:#ffffff;border-radius:6px;'>"
+				+ "<tr><td style='background-color:#0468b4;padding:20px;color:#ffffff;text-align:center;"
+				+ "border-top-left-radius:6px;border-top-right-radius:6px;'>"
+				+ "<h2 style='margin:0;'>Task Management</h2></td></tr>" + "<tr><td style='padding:30px;color:#333;'>"
+				+ "<p style='font-size:16px;'>Hi Team,</p>" + "<p style='font-size:14px;'>" + extraMessage + "</p>"
+				+ "<table cellpadding='6' cellspacing='0' style='font-size:14px;'>"
+				+ "<tr><td style='font-weight:bold;'>Task ID:</td><td>" + task.getTaskid() + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Task Name:</td><td>" + task.getTaskname() + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Description:</td><td>" + task.getDescription() + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Assigned Users:</td><td>" + assignedUsers + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Status:</td><td>" + task.getStatus() + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Created By:</td><td>" + createdby + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Start Date:</td><td>" + task.getStartDate() + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Target Date:</td><td>" + task.getTargetDate() + "</td></tr>"
+				+ "</table>"
+				+ "<p style='font-size:14px;margin-top:20px;'>Please log in to the portal for more details.</p>"
+				+ "</td></tr>" + "<tr><td style='background-color:#f0f0f0;padding:20px;text-align:center;color:#555;"
+				+ "border-bottom-left-radius:6px;border-bottom-right-radius:6px;'>"
+				+ "<p style='margin:0;font-size:13px;'>Best Regards,<br/>Task Management</p>"
+				+ "</td></tr></table></td></tr></table></body></html>";
+	}
+	
+	@Async
+	public void sendSubTaskDeadlineAlerts(TmsSubTask  subtask, String assignUsernames, List<String> emails,
+			String emailType) throws MessagingException, UnsupportedEncodingException {
+		logger.info("!!! inside class: EmailServiceImpl, !! method: sendTaskDeadlineAlerts");
+		String subject;
+		String createdBy = taskRepository.findNameByUserId(subtask.getAddedby());
+		String body;
+		String[] emailArray = emails.toArray(new String[emails.size()]);
+
+		if (!emailType.equals("expiredSubTask")) {
+			// ========== Reminder 1 day before ==========
+			subject = "Reminder: SubTask " + subtask.getSubTaskId() + " target date is tomorrow";
+			body = buildHtmlBody("Reminder: SubTask Deadline Approaching", subtask, assignUsernames, createdBy,
+					"This is a friendly reminder that the Subtask is due tomorrow.");
+
+		} else {
+			// ========== Exceeded (overdue) ==========
+			subject = "⚠ SubTask Overdue: " + subtask.getSubTaskId();
+			body = buildHtmlBody("SubTask Deadline Exceeded", subtask, assignUsernames, createdBy,
+					"The target date has passed and the SubTask is still open. Please take action.");
+		}
+
+		// ----- Send Mail -----
+		MimeMessage message = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(message);
+		helper.setTo(emailArray);
+		helper.setFrom(narveemail, shortMessage);
+		helper.setSubject(subject);
+		helper.setText(body, true);
+		mailSender.send(message);
+		logger.info("Deadline alert mail sent for task: " + subtask.getSubTaskId());
+		System.err.println("task :"+ taskRepository.findNameByUserId(subtask.getAddedby()));
+	}
+
+	private String buildHtmlBody(String header, TmsSubTask subtask, String assignedUsers, String createdby,
+			String extraMessage) {
+		return "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>" + header + "</title></head>"
+				+ "<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin:0;padding:0;'>"
+				+ "<table width='100%' cellpadding='0' cellspacing='0' style='padding:30px 0;'>"
+				+ "<tr><td align='center'>"
+				+ "<table width='600' cellpadding='0' cellspacing='0' style='background-color:#ffffff;border-radius:6px;'>"
+				+ "<tr><td style='background-color:#0468b4;padding:20px;color:#ffffff;text-align:center;"
+				+ "border-top-left-radius:6px;border-top-right-radius:6px;'>"
+				+ "<h2 style='margin:0;'>Task Management</h2></td></tr>" + "<tr><td style='padding:30px;color:#333;'>"
+				+ "<p style='font-size:16px;'>Hi Team,</p>" + "<p style='font-size:14px;'>" + extraMessage + "</p>"
+				+ "<table cellpadding='6' cellspacing='0' style='font-size:14px;'>"
+				+ "<tr><td style='font-weight:bold;'>SubTask ID:</td><td>" + subtask.getSubTaskId() + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>SubTask Name:</td><td>" + subtask.getSubTaskName() + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Description:</td><td>" + subtask.getSubTaskDescription() + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Assigned Users:</td><td>" + assignedUsers + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Status:</td><td>" + subtask.getStatus() + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Created By:</td><td>" + createdby + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Start Date:</td><td>" + subtask.getStartDate() + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>Target Date:</td><td>" + subtask.getTargetDate() + "</td></tr>"
+				+ "</table>"
+				+ "<p style='font-size:14px;margin-top:20px;'>Please log in to the portal for more details.</p>"
+				+ "</td></tr>" + "<tr><td style='background-color:#f0f0f0;padding:20px;text-align:center;color:#555;"
+				+ "border-bottom-left-radius:6px;border-bottom-right-radius:6px;'>"
+				+ "<p style='margin:0;font-size:13px;'>Best Regards,<br/>Task Management</p>"
+				+ "</td></tr></table></td></tr></table></body></html>";
+	}
+	
 }

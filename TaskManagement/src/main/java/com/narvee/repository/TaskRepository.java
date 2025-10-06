@@ -3,6 +3,7 @@ package com.narvee.repository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -15,6 +16,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.narvee.dto.GetUsersDTO;
+import com.narvee.dto.ProjectDTO;
 import com.narvee.dto.TaskAssignDTO;
 import com.narvee.dto.TaskTrackerDTO;
 import com.narvee.entity.TmsTask;
@@ -28,6 +30,9 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 
 	@Query(value = "select * from tms_ticket_tracker where taskid= :taskid order by createddate desc", nativeQuery = true)
 	public List<TaskTrackerDTO> ticketTracker(Long taskid);
+	
+	@Query(value = "SELECT * FROM git_ms.tms_task", nativeQuery = true)
+	public List<TaskTrackerDTO>getAll( );
 
 	@Modifying
 	@Query(value = "update  tms_assigned_users set completed= :completed where userid= :userid and assignid= :assignid", nativeQuery = true)
@@ -191,10 +196,10 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 	@Query(value = "SELECT u.userid ,u.pseudoname,u.fullname FROM users u , tms_project p , tms_assigned_users au WHERE  au.pid=p.pid AND  u.userid=au.userid AND p.projectid =:projectId", nativeQuery = true)
 	public List<GetUsersDTO> getProjectUsers(String projectId);
 
-	@Query(value = "SELECT t.taskid, t.status,u.fullname, u.pseudoname, t.taskname, t.targetdate, t.ticketid, u.email FROM tms_task t\r\n"
+	@Query(value = "SELECT t.taskid, t.status,u.fullname, u.pseudoname, t.taskname, t.target_date, t.ticketid, u.email FROM tms_task t\r\n"
 			+ "	join tms_task_users tu on tu.taskid=t.taskid\r\n"
 			+ "	join tms_assigned_users au on au.assignid =tu.assignedto\r\n" + "	join users u on au.userid=u.userid\r\n"
-			+ "	WHERE date(t.targetdate) < :currentDate AND t.status!='to do' AND t.status!='Completed'", nativeQuery = true)
+			+ "	WHERE date(t.target_date) < :currentDate AND t.status!='to do' AND t.status!='Completed'", nativeQuery = true)
 	public List<TaskTrackerDTO> getExceededTargetDateSubTasks(LocalDate currentDate);
 	
 	
@@ -446,4 +451,21 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 
 	
 	
+	List<TmsTask> findByTargetDate(LocalDate targetDate);
+	
+	List<TmsTask> findByTargetDateBeforeAndStatusNot(LocalDate date, String status);
+	
+	@Query(value = "SELECT CONCAT(u.first_name, ' ', u.last_name) AS fullName, u.email \r\n"
+			+ "                   FROM tms_users u \r\n"
+			+ "                   WHERE u.user_id = :userId", nativeQuery = true)
+	List<Object[]> findFullNameByUserId(@Param("userId") Long userId);
+
+    @Query(value = "SELECT CONCAT(u.first_name, ' ', u.last_name) AS fullName " +
+            "FROM tms_users u " +
+            "WHERE u.user_id = :userId", nativeQuery = true)
+String findNameByUserId(@Param("userId") Long userId);
+	
+    @Query(value = "SELECT  p.pid, p.taskname, p.description, p.addedby, p.status, p.start_date, p.target_date, p.createddate, p.updateddate, p.duration, p.priority, p.department, p.ticketid,p.maxnum, p.last_status_updateddate, p.updatedby, p.taskid, p.createddate, p.department FROM tms_task p ", nativeQuery = true)
+	public List<TmsTask>  getAllTaskDeatils();
+    
 }
