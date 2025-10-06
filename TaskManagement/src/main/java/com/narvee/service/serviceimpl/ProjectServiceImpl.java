@@ -473,9 +473,9 @@ public class ProjectServiceImpl implements ProjectService {
 	            ? ""
 	            : keyword.trim(); 
 	    
-	    // Pick repository method
+	    // Pick repository  
 	    Page<ProjectDTO> page;
-	    if ("SUPER ADMIN".equalsIgnoreCase(access) || "ADMIN".equalsIgnoreCase(access) || "PROJECT MANAGER".equalsIgnoreCase(access)) {
+	    if ("SUPER ADMIN".equalsIgnoreCase(access) || "ADMIN".equalsIgnoreCase(access) || "PROJECT MANAGER".equalsIgnoreCase(access)||"OBSERVER".equalsIgnoreCase(access)) {
 	        Long adminId = "SUPER ADMIN".equalsIgnoreCase(access) ? userId : projectrepository.AdminId(userId);
 
 
@@ -548,6 +548,8 @@ public class ProjectServiceImpl implements ProjectService {
 	                            name.replaceAll("\\s+", " ").trim().toLowerCase().contains(normalizedKeyword));
 	                }
 
+	                
+	                
 	                return matchesKeyword ? proj : null;
 	            })
 	           
