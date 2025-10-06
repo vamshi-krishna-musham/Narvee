@@ -76,14 +76,27 @@ public class SubTaskController {
 
 	@PutMapping("/update")
 	public ResponseEntity<RestAPIResponse> updateSubTask(@RequestBody TmsSubTask subtask) {
-		logger.info("!!! inside class: SubTaskController , !! method: updateproject");
-		Boolean flag = subtaskservice.updateSubTask(subtask);
-		if (flag == true) {
-			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Updated successfully"),
-					HttpStatus.OK);
-		} else
-			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("fail", "SubTask not found"), HttpStatus.OK);
+	    logger.info("!!! inside class: SubTaskController , !! method: updateSubTask");
+
+	    Boolean flag = subtaskservice.updateSubTask(subtask);
+
+	    if (flag) {
+	        String message = "Updated successfully";
+	        if (subtask.getTargetDate() == null) {
+	            message = "Updated successfully, but due date is missing!";
+	        }
+	        return new ResponseEntity<>(
+	                new RestAPIResponse("success", message),
+	                HttpStatus.OK
+	        );
+	    } else {
+	        return new ResponseEntity<>(
+	                new RestAPIResponse("fail", "SubTask not found"),
+	                HttpStatus.OK
+	        );
+	    }
 	}
+
 
 	@PostMapping("/getSubTaskUser")
 	public ResponseEntity<RestAPIResponse> getSubTaskUser(@RequestBody RequestDTO requestresponsedto) {

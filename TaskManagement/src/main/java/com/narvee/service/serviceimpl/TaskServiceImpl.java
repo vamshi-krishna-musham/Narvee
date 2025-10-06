@@ -68,14 +68,12 @@ public class TaskServiceImpl implements TaskService {
 
 	@Autowired
 	private TmsEmailServiceImpl tmsEmailService;
-	
+
 	@Autowired
 	private ProjectRepository projectRepository;
 
 	@Autowired
 	private fileUploadRepository fileUploadRepository;
-	
-
 
 	@Override
 	public TmsTask createTask(TmsTask task, String token) {
@@ -259,7 +257,7 @@ public class TaskServiceImpl implements TaskService {
 			taskRepo.updateTaskStatus(taskid, status, updatedby, indiaDateTime);
 			TmsTask taskInfo = taskRepo.findById(taskid).get();
 			emailService.sendStatusUpdateEmail(taskInfo);
-            
+
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
@@ -455,10 +453,10 @@ public class TaskServiceImpl implements TaskService {
 				.collect(Collectors.toList());
 
 		List<GetUsersDTO> user = taskRepo.getTaskAssinedTmsUsersAndCreatedBy(task.getAddedby(), usersids);
-		try {	
-		   Long adminId = 	projectRepository.getAdminId(task.getTaskid());
-				EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "TASK_CREATE");
-				if( dto != null) {
+		try {
+			Long adminId = projectRepository.getAdminId(task.getTaskid());
+			EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "TASK_CREATE");
+			if (dto != null) {
 				System.err.println("is enable  " + dto.getIsEnabled());
 				if (Boolean.TRUE.equals(dto.getIsEnabled())) {
 					String subject = dto.getSubject();
@@ -467,9 +465,9 @@ public class TaskServiceImpl implements TaskService {
 
 					List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
 							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
-					tmsEmailService.TaskAssigningEmailForTMS(task, user, true,subject,ccList,bccList);
-				 }	
+					tmsEmailService.TaskAssigningEmailForTMS(task, user, true, subject, bccList, ccList);
 				}
+			}
 		} catch (UnsupportedEncodingException | MessagingException e) {
 			e.printStackTrace();
 		}
@@ -503,20 +501,21 @@ public class TaskServiceImpl implements TaskService {
 			task.setTrack(listTicketTracker);
 			taskRepo.save(task);
 			try {
-				
-				Long adminId = 	projectRepository.getAdminId(task.getTaskid());
-				EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "TASK_COMMENT");
-				if(dto != null) {
-				if (Boolean.TRUE.equals(dto.getIsEnabled())) {
-					String subject = dto.getSubject();
-					List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
-							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
 
-					List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
-							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
-					tmsEmailService.sendTmsCommentEmail(updateTask, true,subject,ccList,bccList);
+				Long adminId = projectRepository.getAdminId(task.getTaskid());
+				EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "TASK_COMMENT");
+				if (dto != null) {
+					if (Boolean.TRUE.equals(dto.getIsEnabled())) {
+						String subject = dto.getSubject();
+						List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
+								.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+
+						List<String> bccList = Arrays
+								.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(",")).map(String::trim)
+								.filter(str -> !str.isEmpty()).collect(Collectors.toList());
+						tmsEmailService.sendTmsCommentEmail(updateTask, true, subject, bccList, ccList);
+					}
 				}
-			}
 			} catch (MessagingException | UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
@@ -532,12 +531,12 @@ public class TaskServiceImpl implements TaskService {
 		TmsTask update = taskRepo.findById(task.getTaskid()).get();
 
 		if ("closed".equalsIgnoreCase(task.getStatus())) {
-		    long incompleteTasks = taskRepo.countByProjectIdAndStatusNot(task.getTaskid(), "closed");
-		    if (incompleteTasks > 0 ) {
-		        throw new RuntimeException("Cannot mark Task as Closed. Some subtasks are still not closed.");
-		    }
-		}	
-		
+			long incompleteTasks = taskRepo.countByProjectIdAndStatusNot(task.getTaskid(), "closed");
+			if (incompleteTasks > 0) {
+				throw new RuntimeException("Cannot mark Task as Closed. Some subtasks are still not closed.");
+			}
+		}
+
 		if (task.getStatus() != null && !update.getStatus().equalsIgnoreCase(task.getStatus())) {
 			update.setLastStatusUpdateddate(LocalDateTime.now());
 		}
@@ -550,8 +549,6 @@ public class TaskServiceImpl implements TaskService {
 		update.setUpdatedby(task.getUpdatedby());
 		update.setStatus(task.getStatus());
 		update.setDuration(task.getDuration());
-		
-		
 
 		// Path path = Paths.get(UPLOAD_DIR + getOriginalFilename);
 		if (files != null && !files.isEmpty()) {
@@ -595,9 +592,9 @@ public class TaskServiceImpl implements TaskService {
 
 		List<GetUsersDTO> user = taskRepo.getTaskAssinedTmsUsersAndCreatedBy(task.getAddedby(), usersids);
 		try {
-			Long adminId = 	projectRepository.getAdminId(task.getTaskid());
-				EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "TASK_UPDATE");
-				if(dto !=null) {
+			Long adminId = projectRepository.getAdminId(task.getTaskid());
+			EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "TASK_UPDATE");
+			if (dto != null) {
 				if (Boolean.TRUE.equals(dto.getIsEnabled())) {
 					String subject = dto.getSubject();
 					List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
@@ -605,8 +602,8 @@ public class TaskServiceImpl implements TaskService {
 
 					List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
 							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
-					tmsEmailService.TaskAssigningEmailForTMS(update, user, false,subject,ccList,bccList);
-				}		
+					tmsEmailService.TaskAssigningEmailForTMS(update, user, false, subject, bccList, ccList);
+				}
 			}
 		} catch (UnsupportedEncodingException | MessagingException e) {
 			e.printStackTrace();
@@ -681,7 +678,7 @@ public class TaskServiceImpl implements TaskService {
 				TasksResponseDTO result = new TasksResponseDTO(order);
 
 				List<GetUsersDTO> assignUsers = taskRepo.getTmsAssignUsers(order.getTaskid());
-   
+
 				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
 						.collect(Collectors.toList());
 				result.setAssignUsers(filteredAssignUsers);
@@ -862,44 +859,42 @@ public class TaskServiceImpl implements TaskService {
 
 		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
 		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
-	
+
 		try {
 			if ("closed".equalsIgnoreCase(status)) {
-			    long incompleteTasks = taskRepo.countByProjectIdAndStatusNot(taskid, "closed");
-			    if (incompleteTasks > 0 ) {
-			        throw new RuntimeException("Cannot mark Task as Closed. Some subtasks are still not closed.");
-			    }
-			  //  taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);	
-			}	
-			 taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);	
-			//taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);	
-			TmsTask taskInfo = taskRepo.findById(taskid).get();
-	
-			Long adminId =	projectRepository.getAdminId(taskid);
-			EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "TASK_STATUS");
-			if(dto != null) {
-			if (Boolean.TRUE.equals(dto.getIsEnabled())) {
-				String subject = dto.getSubject();
-				List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
-						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
-
-				List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
-						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
-				tmsEmailService.sendStatusUpdateEmail(taskInfo,subject,ccList,bccList);
+				long incompleteTasks = taskRepo.countByProjectIdAndStatusNot(taskid, "closed");
+				if (incompleteTasks > 0) {
+					throw new RuntimeException("Cannot mark Task as Closed. Some subtasks are still not closed.");
+				}
+				// taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);
 			}
-		}
+			taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);
+			// taskRepo.updateTmsTaskStatus(taskid, status, updatedby, indiaDateTime);
+			TmsTask taskInfo = taskRepo.findById(taskid).get();
+
+			Long adminId = projectRepository.getAdminId(taskid);
+			EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "TASK_STATUS");
+			if (dto != null) {
+				if (Boolean.TRUE.equals(dto.getIsEnabled())) {
+					String subject = dto.getSubject();
+					List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
+							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+
+					List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
+							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+					tmsEmailService.sendStatusUpdateEmail(taskInfo, subject, bccList, ccList);
+				}
+			}
 			return true;
 
 		} catch (RuntimeException e) {
-	        logger.error("Validation error while updating task status: {}", e.getMessage());
-	        throw e; 
+			logger.error("Validation error while updating task status: {}", e.getMessage());
+			throw e;
 
-	    } catch (Exception e) {
-	        logger.error("Unexpected error while updating task status", e);
-	        throw new RuntimeException("Failed to update task status due to an unexpected error.");
-	    }
-
-		
+		} catch (Exception e) {
+			logger.error("Unexpected error while updating task status", e);
+			throw new RuntimeException("Failed to update task status due to an unexpected error.");
+		}
 
 	}
 

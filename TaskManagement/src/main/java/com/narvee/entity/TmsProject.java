@@ -14,12 +14,16 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.narvee.commons.AuditModel;
+import com.narvee.dto.GetUsersDTO;
+import com.narvee.dto.TmsUsersInfo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -77,5 +81,12 @@ public class TmsProject extends AuditModel {
 	 @JsonManagedReference(value = "project-file")
      @ToString.Exclude
 	    private List<TmsFileUpload> files = new ArrayList<>();
+
+	public List<GetUsersDTO> getAssignedUsers() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
 	
 }

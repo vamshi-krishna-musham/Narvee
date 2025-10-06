@@ -1,6 +1,6 @@
 package com.narvee.service.serviceimpl;
 
-import java.io.File;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
@@ -60,25 +60,22 @@ public class SubTaskServiceImpl implements SubTaskService {
 
 	@Autowired
 	private EmailServiceImpl emailService;
-	
+
 	@Autowired
 	private TmsEmailServiceImpl tmsEmailService;
 
 	@Autowired
 	private TaskRepository repository;
-	
+
 	@Autowired
 	private ProjectRepository projectRepository;
 
-	
 	@Autowired
-    private fileUploadRepository fileUploadRepository;
-	
-	
+	private fileUploadRepository fileUploadRepository;
+
 	@Value("${AppFilesDir}")
-    private String UPLOAD_DIR;
-	
-	
+	private String UPLOAD_DIR;
+
 	@Override
 	public TmsSubTask createSubTask(TmsSubTask subtask) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: createSubTask");
@@ -128,6 +125,12 @@ public class SubTaskServiceImpl implements SubTaskService {
 			subtask.setStatus(updatesubtask.getStatus());
 			subtask.setTargetDate(updatesubtask.getTargetDate());
 			subtask.setAssignedto(updatesubtask.getAssignedto());
+
+			if (updatesubtask.getTargetDate() == null) {
+				logger.warn("⚠️ Warning: SubTask [{}] updated without a due date!", updatesubtask.getSubTaskId());
+			} else {
+				subtask.setTargetDate(updatesubtask.getTargetDate());
+			}
 
 			subtaskrepository.save(subtask);
 			return true;
@@ -208,7 +211,6 @@ public class SubTaskServiceImpl implements SubTaskService {
 		}
 	}
 
-	
 	@Override
 	public SubTaskResponse findBySubTaskTicketId(String ticketId) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: findBySubTaskTicketId");
@@ -218,13 +220,13 @@ public class SubTaskServiceImpl implements SubTaskService {
 			order.setTaskId(order.getTask().getTaskid());
 			for (TmsAssignedUsers assignUsers : order.getAssignedto()) {
 				GetUsersDTO user = repository.gettmsUser(assignUsers.getTmsUserId());
-				
+
 				assignUsers.setFullname(user.getFullname());
-			//	assignUsers.setPseudoname(user.getPseudoname());
+				// assignUsers.setPseudoname(user.getPseudoname());
 			}
 		}
 		Long taskId = subtaskrepository.findTaskId(ticketId);
-	//	response.setSubtasks(subTasksList);
+		// response.setSubtasks(subTasksList);
 		response.setTaskId(taskId);
 
 		return response;
@@ -272,7 +274,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 	@Override
 	public boolean updateSubTaskTrack(UpdateTask updateTask) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskTrack");
-		
+
 		TmsSubTask subTask = subtaskrepository.findById(updateTask.getSubTaskId()).get();
 		List<TmsTicketTracker> listTicketTracker = subTask.getTrack();
 		TmsTicketTracker ticketTracker = new TmsTicketTracker();
@@ -285,8 +287,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 			listTicketTracker.add(ticketTracker);
 			subTask.setTrack(listTicketTracker);
 			subtaskrepository.save(subTask);
-			
-			
+
 			try {
 				emailService.sendCommentEmail(updateTask);
 			} catch (MessagingException | UnsupportedEncodingException e) {
@@ -299,11 +300,9 @@ public class SubTaskServiceImpl implements SubTaskService {
 
 	}
 
-	
-	
-	//----------------------------all methods replicated for tms by keerthi ----------------------------------
-	
-	
+	// ----------------------------all methods replicated for tms by keerthi
+	// ----------------------------------
+
 	@Override
 	public TmsSubTask createTmsSubTask(TmsSubTask subtask, List<MultipartFile> files) {
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: createSubTask--tms");
@@ -311,144 +310,54 @@ public class SubTaskServiceImpl implements SubTaskService {
 		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
 				.collect(Collectors.toList());
 		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(subtask.getAddedby(), usersids);
-		
+
 		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
 		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
 		subtask.setLastStatusUpdateddate(indiaDateTime);
-		
+
 		TmsSubTask subtasks = subtaskrepository.save(subtask);
- 
-		  if (files != null && !files.isEmpty()) {
-		        List<TmsFileUpload> taskFiles = new ArrayList<>();
-		        
 
-		        for (MultipartFile file : files) {
-		            try {
-		                String originalFileName = file.getOriginalFilename();
-		                
-		                if (file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isEmpty()) {
-			                continue;
-			            }
-		                String nameWithoutExt = originalFileName;
-		                String ext = "";
+		if (files != null && !files.isEmpty()) {
+			List<TmsFileUpload> taskFiles = new ArrayList<>();
 
-						int dotIndex = originalFileName.lastIndexOf('.');
-						if (dotIndex != -1) {
-							nameWithoutExt = originalFileName.substring(0, dotIndex);
-							ext = originalFileName.substring(dotIndex);
-						}
-		                String newFileName = nameWithoutExt + " SUB-TASK-" + subtasks.getSubTaskId() +  ext;
-		                Path path = Paths.get(UPLOAD_DIR + newFileName);
-		                Files.createDirectories(path.getParent());
-		                Files.write(path, file.getBytes());
+			for (MultipartFile file : files) {
+				try {
+					String originalFileName = file.getOriginalFilename();
 
-		                TmsFileUpload taskFile = new TmsFileUpload();
-		                taskFile.setFileName(newFileName);
-		                taskFile.setFilePath(path.toAbsolutePath().toString());
-		                taskFile.setFileType(file.getContentType());
-		                taskFile.setSubtask(subtasks);
+					if (file.isEmpty() || file.getOriginalFilename() == null || file.getOriginalFilename().isEmpty()) {
+						continue;
+					}
+					String nameWithoutExt = originalFileName;
+					String ext = "";
 
-		                taskFiles.add(taskFile);
-		            } catch (IOException e) {
-		                logger.error("Failed to save file: " + file.getOriginalFilename(), e);
-		            }
-		        }
-		        subtasks.getFiles().addAll(taskFiles);
-		        fileUploadRepository.saveAll(taskFiles);
-		    }
+					int dotIndex = originalFileName.lastIndexOf('.');
+					if (dotIndex != -1) {
+						nameWithoutExt = originalFileName.substring(0, dotIndex);
+						ext = originalFileName.substring(dotIndex);
+					}
+					String newFileName = nameWithoutExt + " SUB-TASK-" + subtasks.getSubTaskId() + ext;
+					Path path = Paths.get(UPLOAD_DIR + newFileName);
+					Files.createDirectories(path.getParent());
+					Files.write(path, file.getBytes());
+
+					TmsFileUpload taskFile = new TmsFileUpload();
+					taskFile.setFileName(newFileName);
+					taskFile.setFilePath(path.toAbsolutePath().toString());
+					taskFile.setFileType(file.getContentType());
+					taskFile.setSubtask(subtasks);
+
+					taskFiles.add(taskFile);
+				} catch (IOException e) {
+					logger.error("Failed to save file: " + file.getOriginalFilename(), e);
+				}
+			}
+			subtasks.getFiles().addAll(taskFiles);
+			fileUploadRepository.saveAll(taskFiles);
+		}
 		try {
-			Long adminId =	projectRepository.getAdminId(subtask.getTaskId());
+			Long adminId = projectRepository.getAdminId(subtask.getTaskId());
 			EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "SUBTASK_CREATE");
-			if(dto != null) {
-			System.err.println("is enable  " + dto.getIsEnabled());
-			if (Boolean.TRUE.equals(dto.getIsEnabled())) {
-				String subject = dto.getSubject();
-				List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
-						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
-
-				List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
-						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
-			tmsEmailService.sendCreateSubTaskEmail(subtasks, user,true,subject,ccList,bccList);
-			}
-		}
-		} catch (UnsupportedEncodingException | MessagingException e) {
-			e.printStackTrace();
-		}
-		return subtaskrepository.save(subtasks);
-	}
-
-	@Override
-	public TmsSubTask updateTmsSubTask(TmsSubTask updatesubtask,List<MultipartFile> files) {
-		logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateTmsSubTask --Tms");
-		Optional<TmsSubTask> optional = subtaskrepository.findById(updatesubtask.getSubTaskId());
-		 if (!optional.isPresent()) {
-		        throw new RuntimeException("Subtask not found with ID: " + updatesubtask.getSubTaskId());
-		    }
-
-		    TmsSubTask subtask = optional.get();
-
-		    subtask.setSubTaskName(updatesubtask.getSubTaskName());
-		    subtask.setSubTaskDescription(updatesubtask.getSubTaskDescription());
-		    subtask.setAddedby(updatesubtask.getAddedby());
-		    subtask.setUpdatedBy(updatesubtask.getUpdatedBy());
-		    subtask.setStatus(updatesubtask.getStatus());
-		    subtask.setPriority(updatesubtask.getPriority());
-		    subtask.setTargetDate(updatesubtask.getTargetDate());
-		    subtask.setStartDate(updatesubtask.getStartDate());
-		    subtask.setAssignedto(updatesubtask.getAssignedto());
-		    subtask.setSubTaskDescription(updatesubtask.getSubTaskDescription());
-		    subtask.setStartDate(updatesubtask.getStartDate());
-		    subtask.setDuration(updatesubtask.getDuration());;
-
-			if (files != null && !files.isEmpty()) {
-			    List<TmsFileUpload> uploadedFiles = files.stream().filter(file -> file != null && !file.isEmpty()).map(file -> {
-			        String ext = Optional.ofNullable(file.getOriginalFilename())
-			                             .filter(f -> f.contains("."))
-			                             .map(f -> f.substring(f.lastIndexOf(".")))
-			                             .orElse("");
-			        String baseName = file.getOriginalFilename().replace(ext, "");
-			        String fileName = baseName + "-" + subtask.getSubTaskId() + ext;
-			        String fullPath = UPLOAD_DIR + fileName;
-
-			        try {
-			            Files.write(Paths.get(fullPath), file.getBytes());
-			        } catch (IOException e) {
-			            throw new RuntimeException("Failed to save file: " + fileName, e);
-			        }
-			        
-			      
-		            TmsFileUpload existing = fileUploadRepository
-		                .findByFileNameAndSubtask(fileName, updatesubtask);
-		            if (existing != null) {
-		                
-		                existing.setFileType(file.getContentType());
-		                existing.setFilePath(fullPath);
-		                return existing;
-		            } else {
-		                
-		                TmsFileUpload f = new TmsFileUpload();
-		                f.setFileName(fileName);
-		                f.setFilePath(fullPath);
-		                f.setFileType(file.getContentType());
-		                f.setSubtask(updatesubtask);
-		                return f;
-		            }
-			    }).collect(Collectors.toList());
-
-			    subtask.getFiles().addAll(uploadedFiles);
-			    
-			}
-		
-			Set<TmsAssignedUsers> addedByToAssignedUsers = subtask.getAssignedto();
-			List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
-					.collect(Collectors.toList());
-			List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(subtask.getAddedby(), usersids);
-			TmsSubTask subtasks = subtaskrepository.save(subtask);
-	 
-			try {
-			Long adminId =	projectRepository.getAdminId(subtask.getTaskId());
-				EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "SUBTASK_UPDATE");
-				if(dto != null) {
+			if (dto != null) {
 				System.err.println("is enable  " + dto.getIsEnabled());
 				if (Boolean.TRUE.equals(dto.getIsEnabled())) {
 					String subject = dto.getSubject();
@@ -457,22 +366,107 @@ public class SubTaskServiceImpl implements SubTaskService {
 
 					List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
 							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
-				tmsEmailService.sendCreateSubTaskEmail(subtasks, user,false,subject,ccList,bccList);
-				}
+					tmsEmailService.sendCreateSubTaskEmail(subtasks, user, true, subject, bccList, ccList);
+				} // (project, user, true, subject, bccList,ccList);
 			}
-			} catch (UnsupportedEncodingException | MessagingException e) {
-				e.printStackTrace();
-			}
-			
-		
-			return subtasks ;
+		} catch (UnsupportedEncodingException | MessagingException e) {
+			e.printStackTrace();
 		}
-		
-	
+		return subtaskrepository.save(subtasks);
+	}
+
+	@Override
+	public TmsSubTask updateTmsSubTask(TmsSubTask updatesubtask, List<MultipartFile> files) {
+		logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateTmsSubTask --Tms");
+		Optional<TmsSubTask> optional = subtaskrepository.findById(updatesubtask.getSubTaskId());
+		if (!optional.isPresent()) {
+			throw new RuntimeException("Subtask not found with ID: " + updatesubtask.getSubTaskId());
+		}
+
+		TmsSubTask subtask = optional.get();
+
+		subtask.setSubTaskName(updatesubtask.getSubTaskName());
+		subtask.setSubTaskDescription(updatesubtask.getSubTaskDescription());
+		subtask.setAddedby(updatesubtask.getAddedby());
+		subtask.setUpdatedBy(updatesubtask.getUpdatedBy());
+		subtask.setStatus(updatesubtask.getStatus());
+		subtask.setPriority(updatesubtask.getPriority());
+		subtask.setTargetDate(updatesubtask.getTargetDate());
+		subtask.setStartDate(updatesubtask.getStartDate());
+		subtask.setAssignedto(updatesubtask.getAssignedto());
+		subtask.setSubTaskDescription(updatesubtask.getSubTaskDescription());
+		subtask.setStartDate(updatesubtask.getStartDate());
+		subtask.setDuration(updatesubtask.getDuration());
+		;
+
+		if (files != null && !files.isEmpty()) {
+
+			List<TmsFileUpload> uploadedFiles = files.stream().filter(file -> file != null && !file.isEmpty())
+					.map(file -> {
+						String ext = Optional.ofNullable(file.getOriginalFilename()).filter(f -> f.contains("."))
+								.map(f -> f.substring(f.lastIndexOf("."))).orElse("");
+						String baseName = file.getOriginalFilename().replace(ext, "");
+						String fileName = baseName + "-" + subtask.getSubTaskId() + ext;
+						String fullPath = UPLOAD_DIR + fileName;
+
+						try {
+							Files.write(Paths.get(fullPath), file.getBytes());
+						} catch (IOException e) {
+							throw new RuntimeException("Failed to save file: " + fileName, e);
+						}
+
+						TmsFileUpload existing = fileUploadRepository.findByFileNameAndSubtask(fileName, updatesubtask);
+						if (existing != null) {
+
+							existing.setFileType(file.getContentType());
+							existing.setFilePath(fullPath);
+							return existing;
+						} else {
+
+							TmsFileUpload f = new TmsFileUpload();
+							f.setFileName(fileName);
+							f.setFilePath(fullPath);
+							f.setFileType(file.getContentType());
+							f.setSubtask(updatesubtask);
+							return f;
+						}
+					}).collect(Collectors.toList());
+
+			subtask.getFiles().addAll(uploadedFiles);
+
+		}
+
+		Set<TmsAssignedUsers> addedByToAssignedUsers = subtask.getAssignedto();
+		List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
+				.collect(Collectors.toList());
+		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(subtask.getAddedby(), usersids);
+		TmsSubTask subtasks = subtaskrepository.save(subtask);
+
+		try {
+			Long adminId = projectRepository.getAdminId(subtask.getTaskId());
+			EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "SUBTASK_UPDATE");
+			if (dto != null) {
+				System.err.println("is enable  " + dto.getIsEnabled());
+				if (Boolean.TRUE.equals(dto.getIsEnabled())) {
+					String subject = dto.getSubject();
+					List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
+							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+
+					List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
+							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+					tmsEmailService.sendCreateSubTaskEmail(subtasks, user, false, subject, bccList, ccList);
+				} // ccList,
+			}
+		} catch (UnsupportedEncodingException | MessagingException e) {
+			e.printStackTrace();
+		}
+
+		return subtasks;
+	}
 
 	@Override
 	public Page<TmsSubTask> getAllSubTasksTms(RequestDTO requestresponsedto) {
-		
+
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: getAllSubTasksTms--tms");
 		String sortorder = requestresponsedto.getSortOrder();
 		String sortfield = requestresponsedto.getSortField();
@@ -520,28 +514,28 @@ public class SubTaskServiceImpl implements SubTaskService {
 
 	@Override
 	public TmsSubTask findBySubTaskIdTms(Long subtaskid) {
-	
+
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: findBySubTaskIdTms--tms");
 		TmsSubTask subtask = subtaskrepository.findById(subtaskid).get();
 		for (TmsAssignedUsers aUser : subtask.getAssignedto()) {
 			GetUsersDTO user = repository.gettmsUser(aUser.getTmsUserId());
 			aUser.setFullname(user.getFullname());
-		//	aUser.setPseudoname(user.getPseudoname());
+			// aUser.setPseudoname(user.getPseudoname());
 		}
-		
+
 		if (subtask.getFiles() != null) {
-	        for (TmsFileUpload file : subtask.getFiles()) {
-	            file.getFileName(); // trigger loading
-	            file.getFilePath();
-	            file.getFileType();
-	        }
+			for (TmsFileUpload file : subtask.getFiles()) {
+				file.getFileName(); // trigger loading
+				file.getFilePath();
+				file.getFileType();
+			}
 		}
 		return subtask;
 	}
 
 	@Override
 	public boolean updateSubTaskStatusTms(Long subTaskId, String staus, Long updatedby) {
-		
+
 		logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskStatusTms");
 		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
 		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
@@ -549,20 +543,20 @@ public class SubTaskServiceImpl implements SubTaskService {
 		try {
 			subtaskrepository.updateTaskStatus(subTaskId, staus, updatedby, indiaDateTime);
 			TmsSubTask subtasks = subtaskrepository.findById(subTaskId).get();
-			
-			Long adminId =	projectRepository.getAdminId(subTaskId);
-			EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "SUBTASK_STATUS");
-			if(dto != null) {
-			if (Boolean.TRUE.equals(dto.getIsEnabled())) {
-				String subject = dto.getSubject();
-				List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
-						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
 
-				List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
-						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
-			tmsEmailService.sendSubtaskStatusUpdateEmailTms(subtasks,subject,ccList,bccList);
+			Long adminId = projectRepository.getAdminId(subTaskId);
+			EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "SUBTASK_STATUS");
+			if (dto != null) {
+				if (Boolean.TRUE.equals(dto.getIsEnabled())) {
+					String subject = dto.getSubject();
+					List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
+							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+
+					List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
+							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+					tmsEmailService.sendSubtaskStatusUpdateEmailTms(subtasks, subject, bccList, ccList);
+				}
 			}
-		}
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		} catch (MessagingException e) {
@@ -571,8 +565,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 
 		return true;
 	}
-	
-	
+
 	@Override
 	public SubTaskResponse findTmsSubTaskByTicketId(RequestDTO requestresponsedto) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: findTmsTaskByProjectid-tms");
@@ -583,7 +576,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 		String projectid = requestresponsedto.getProjectid();
 		String keyword = requestresponsedto.getKeyword();
 		String ticketId = requestresponsedto.getTicketId();
-		
+
 		if (sortfield.equalsIgnoreCase("subTaskId"))
 			sortfield = "subTaskId";
 		else if (sortfield.equalsIgnoreCase("subTaskName"))
@@ -602,7 +595,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 			sortfield = "duration";
 		else
 			sortfield = "updateddate";
-		
+
 		Sort.Direction sortDirection = Sort.Direction.ASC;
 		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
 			sortDirection = Sort.Direction.DESC;
@@ -612,8 +605,8 @@ public class SubTaskServiceImpl implements SubTaskService {
 
 		if (keyword.equalsIgnoreCase("empty")) {
 
-			Page<TaskTrackerDTO> res = subtaskrepository.findSubTaskByTicketid(ticketId,pageable);
-			
+			Page<TaskTrackerDTO> res = subtaskrepository.findSubTaskByTicketid(ticketId, pageable);
+
 			logger.info("!!! inside class: TaskServiceImpl , !! method: findSubTaskByTicketid");
 			List<SubTaskResponseDTO> tasksList = new ArrayList<>();
 
@@ -625,23 +618,24 @@ public class SubTaskServiceImpl implements SubTaskService {
 				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
 						.collect(Collectors.toList());
 				result.setAssignUsers(filteredAssignUsers);
-				
-				  List<TmsFileUpload> fileEntities = fileUploadRepository.getFilesBySubTaskId(order.getSubtaskid()); // Implement this
-				    List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
-				        FileUploadDto dto = new FileUploadDto();
-				        dto.setId(file.getId());
-				        dto.setFileName(file.getFileName());
-				        dto.setFilePath(file.getFilePath());
-				        dto.setFileType(file.getFileType());
-				        return dto;
-				    }).collect(Collectors.toList());
-				    result.setFiles(fileDtos);
-				    
+
+				List<TmsFileUpload> fileEntities = fileUploadRepository.getFilesBySubTaskId(order.getSubtaskid()); // Implement
+																													// this
+				List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
+					FileUploadDto dto = new FileUploadDto();
+					dto.setId(file.getId());
+					dto.setFileName(file.getFileName());
+					dto.setFilePath(file.getFilePath());
+					dto.setFileType(file.getFileType());
+					return dto;
+				}).collect(Collectors.toList());
+				result.setFiles(fileDtos);
+
 				tasksList.add(result);
 
 			}
-			Page<SubTaskResponseDTO> tasksPage = new PageImpl<>(tasksList, pageable, res.getTotalElements()); 
-			
+			Page<SubTaskResponseDTO> tasksPage = new PageImpl<>(tasksList, pageable, res.getTotalElements());
+
 			Long TicketId = repository.findTicketId(ticketId);
 			SubTaskResponse taskResp = new SubTaskResponse();
 			taskResp.setSubtasks(tasksPage);
@@ -650,7 +644,8 @@ public class SubTaskServiceImpl implements SubTaskService {
 			return taskResp;
 		} else {
 			logger.info("!!! inside class: TaskServiceImpl , !! method: findTaskByProjectIdWithSearching , Filter-tms");
-			Page<TaskTrackerDTO> res = subtaskrepository.findSubTaskByTicketIdWithSearching(ticketId, keyword,pageable);
+			Page<TaskTrackerDTO> res = subtaskrepository.findSubTaskByTicketIdWithSearching(ticketId, keyword,
+					pageable);
 			List<SubTaskResponseDTO> tasksList = new ArrayList<>();
 
 			for (TaskTrackerDTO order : res) {
@@ -659,18 +654,19 @@ public class SubTaskServiceImpl implements SubTaskService {
 				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
 						.collect(Collectors.toList());
 				result.setAssignUsers(filteredAssignUsers);
-				
-				  List<TmsFileUpload> fileEntities = fileUploadRepository.getFilesBySubTaskId(order.getSubtaskid()); // Implement this
-				    List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
-				        FileUploadDto dto = new FileUploadDto();
-				        dto.setId(file.getId());
-				        dto.setFileName(file.getFileName());
-				        dto.setFilePath(file.getFilePath());
-				        dto.setFileType(file.getFileType());
-				        return dto;
-				    }).collect(Collectors.toList());
-				    result.setFiles(fileDtos);
-				    
+
+				List<TmsFileUpload> fileEntities = fileUploadRepository.getFilesBySubTaskId(order.getSubtaskid()); // Implement
+																													// this
+				List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
+					FileUploadDto dto = new FileUploadDto();
+					dto.setId(file.getId());
+					dto.setFileName(file.getFileName());
+					dto.setFilePath(file.getFilePath());
+					dto.setFileType(file.getFileType());
+					return dto;
+				}).collect(Collectors.toList());
+				result.setFiles(fileDtos);
+
 				tasksList.add(result);
 			}
 			Page<SubTaskResponseDTO> tasksPage = new PageImpl<>(tasksList, pageable, res.getTotalElements());
@@ -684,36 +680,36 @@ public class SubTaskServiceImpl implements SubTaskService {
 
 	@Override
 	public boolean updateTmsSubTaskTrack(UpdateTask updateTask) {
-logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskTrack");
-		
+		logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskTrack");
+
 		TmsSubTask subTask = subtaskrepository.findById(updateTask.getSubTaskId()).get();
 		List<TmsTicketTracker> listTicketTracker = subTask.getTrack();
 		TmsTicketTracker ticketTracker = new TmsTicketTracker();
 
 		if (subTask != null) {
-			//subTask.setStatus(updateTask.getStatus());
+			// subTask.setStatus(updateTask.getStatus());
 			ticketTracker.setStatus(updateTask.getStatus());
 			ticketTracker.setComments(updateTask.getComments());
 			ticketTracker.setUpdatedby(updateTask.getUpdatedby());
 			listTicketTracker.add(ticketTracker);
 			subTask.setTrack(listTicketTracker);
 			subtaskrepository.save(subTask);
-			
-			
-			try {
-				Long adminId =	projectRepository.getAdminId(updateTask.getTaskid());
-				EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "SUBTASK_COMMENT");
-				if(dto != null) {
-				if (Boolean.TRUE.equals(dto.getIsEnabled())) {
-					String subject = dto.getSubject();
-					List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
-							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
 
-					List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
-							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
-					tmsEmailService.sendTmsCommentEmail(updateTask,false,subject,ccList,bccList);
+			try {
+				Long adminId = projectRepository.getAdminId(updateTask.getTaskid());
+				EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "SUBTASK_COMMENT");
+				if (dto != null) {
+					if (Boolean.TRUE.equals(dto.getIsEnabled())) {
+						String subject = dto.getSubject();
+						List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
+								.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+
+						List<String> bccList = Arrays
+								.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(",")).map(String::trim)
+								.filter(str -> !str.isEmpty()).collect(Collectors.toList());
+						tmsEmailService.sendTmsCommentEmail(updateTask, false, subject,  bccList,ccList);
+					}
 				}
-			}
 			} catch (MessagingException | UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
@@ -735,7 +731,7 @@ logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskTrac
 			GetUsersDTO user = repository.gettmsUser(taskTrackerDTO.getUpdatedby());
 			if (taskTrackerDTO.getUpdatedby() != null) {
 				track.setFullname(user.getFullname());
-			//	track.setPseudoname(user.getPseudoname());
+				// track.setPseudoname(user.getPseudoname());
 			}
 			tasksList.add(track);
 		}

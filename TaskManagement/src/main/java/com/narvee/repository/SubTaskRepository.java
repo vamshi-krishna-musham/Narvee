@@ -143,7 +143,7 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	@Query(value = "SELECT CONCAT(u.first_name, ' ', u.last_name) FROM tms_users u WHERE u.user_id = :userId", nativeQuery = true)
     String findNameByUserId(@Param("userId") String string);
 	
-	@Query(value = "SELECT  p.subtaskid, p.subtaskname, p.subtaskdescription, p.addedby, p.status, p.start_date, p.target_date, p.createddate, p.updateddate, p.duration, p.priority, p.last_status_updateddate,\r\n"
+	@Query(value = "SELECT  p.subtasktoken_id, p.subtaskname, p.subtaskdescription, p.addedby, p.status, p.start_date, p.target_date, p.createddate, p.updateddate, p.duration, p.priority, p.last_status_updateddate,\r\n"
 			+ "	p.updatedby, p.taskid, p.createddate FROM tms_sub_task p", nativeQuery = true)
 	public List<TmsSubTask>  getAllSubTaskDeatils();
 }
