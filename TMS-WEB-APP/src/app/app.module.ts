@@ -29,6 +29,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule } from '@angular/material/table';
 import { MatRippleModule } from '@angular/material/core';
+import { MatPaginatorModule } from '@angular/material/paginator';
+
 
 
 // CDK
@@ -88,6 +90,7 @@ import { NgxMatIntlTelInputComponent } from 'ngx-mat-intl-tel-input';
     RouterModule,
     MatIconModule,
     MatDialogModule,
+    MatPaginatorModule,
     // Angular Material
     MatButtonModule,
     MatCardModule,

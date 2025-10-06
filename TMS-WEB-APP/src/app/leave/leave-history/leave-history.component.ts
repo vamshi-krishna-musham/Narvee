@@ -1,14 +1,20 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LeaveService, LeaveRequest } from '../../services/leave.service';
 import { Router } from '@angular/router';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
+import { ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-leave-history',
-  templateUrl: './leave-history.component.html'
+  templateUrl: './leave-history.component.html',
+  encapsulation: ViewEncapsulation.None
+
 })
+
 export class LeaveHistoryComponent implements OnInit {
-  displayedColumns = ['type', 'dates', 'reason', 'status', 'actions'];
+  displayedColumns = ['userId','type', 'dates', 'reason', 'status','Admin Comment', 'actions'];
   displayedSummaryColumns =[
   'totalConsumed',
   'approved',
@@ -16,6 +22,8 @@ export class LeaveHistoryComponent implements OnInit {
   'pending',
   'balanceSl'
 ];
+  dataSource = new MatTableDataSource<LeaveRequest>([]);
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
   casualLeaves: number = 20;
   sickLeaves: number = 10;
   totalEligible: number = 30;
@@ -27,7 +35,7 @@ export class LeaveHistoryComponent implements OnInit {
   duration?: number; // <-- add this
   leaves: LeaveRequest[] = [];
   loading = false;
-
+  
 
 
   summaryData: any[] = [];
@@ -45,6 +53,7 @@ export class LeaveHistoryComponent implements OnInit {
   ngOnInit(): void {
     const profileId = Number(localStorage.getItem('profileId'));
     this.load(profileId);
+
  }
 
   load(id: number): void {
@@ -56,6 +65,8 @@ export class LeaveHistoryComponent implements OnInit {
           const bd = new Date(b.startDate).getTime();
           return bd - ad; // newest first
         });
+        this.dataSource = new MatTableDataSource<LeaveRequest>(this.leaves);
+        this.dataSource.paginator = this.paginator;
         this.casualLeaves = 20;
         this.sickLeaves = 0;
         this.totalEligible = 30;
