@@ -28,7 +28,7 @@ public interface TaskTrackerDTO {
 	public String getSubtaskname();
 	
 	public String getDescription();
-	
+	 public String getAddedbyfullname();//for addedby
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	public LocalDate getCreateddate();
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")

@@ -14,6 +14,7 @@ public class SubTaskResponseDTO {
 	private Long pid;
 	private String status;
 	private String fullname;
+	private String addedbyfullname;
 	private String ticketid;
 	private String taskName;
 	private String subtasktokenid;
@@ -40,6 +41,7 @@ public class SubTaskResponseDTO {
 		this.taskid = dto.getTaskid();
 		this.status = dto.getStatus();
 		this.fullname = dto.getFullname();
+		this.addedbyfullname = dto.getAddedbyfullname();
 		this.ticketid = dto.getTicketid();
 		this.taskName = dto.getTaskName();
 		this.startDate = dto.getStart_date();
