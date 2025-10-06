@@ -18,8 +18,11 @@ public class ProjectResponseDto {
 	ProjectDTO projePage;
 	
 	Set<TmsAssignedUsers> assignUsers;
-	//Set<GetUsersDTO> assignUsers;
+	
+	List<GetUsersDTO> assigednUsers;
+	
+	private List<String> assignedUsers;
 	
 	List<TmsFileUpload> files;
-
+	
 }

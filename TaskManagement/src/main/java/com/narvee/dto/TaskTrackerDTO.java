@@ -1,6 +1,7 @@
 package com.narvee.dto;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -44,5 +45,8 @@ public interface TaskTrackerDTO {
 	public String getPriority();
 	
 	public String getEmail();
+	
+	   ProjectDTO project();               // parent project info
+	    List<UserDTO> assignedUsers(); 
 
 }

@@ -25,6 +25,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.narvee.commons.AuditModel;
+import com.narvee.dto.TmsUsersInfo;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -99,5 +101,10 @@ public class TmsTask extends AuditModel {
 	
 	
 	private LocalDateTime lastStatusUpdateddate;
+
+
+	public List<TmsUsersInfo> getAssignedUsers() {
+		return null;
+	}
 
 }
