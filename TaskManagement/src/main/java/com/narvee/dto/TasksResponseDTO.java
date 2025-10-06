@@ -1,6 +1,7 @@
 package com.narvee.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.Data;
@@ -19,8 +20,9 @@ public class TasksResponseDTO {
 	    private String ticketid;
 	    private String taskName;
 	    private String description;
-	  private LocalDate startdate;
+	    private LocalDate startdate;
 	    private LocalDate createddate;
+	    private LocalDate updateddate;
 	    private LocalDate targetdate;
 	    private String taskdescription;
 	    private String pseudoname;
@@ -46,6 +48,7 @@ public class TasksResponseDTO {
 	        this.duration = dto.getDuration();
 	        this.priority = dto.getPriority();
 	        this.pid=dto.getPid();
+	        this.updateddate=dto.getUpdateddate();
 	    }
 
 }

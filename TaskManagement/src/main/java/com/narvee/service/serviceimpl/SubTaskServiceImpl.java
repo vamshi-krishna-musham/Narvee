@@ -42,6 +42,7 @@ import com.narvee.dto.TasksResponseDTO;
 import com.narvee.dto.UpdateTask;
 import com.narvee.entity.TmsAssignedUsers;
 import com.narvee.entity.TmsFileUpload;
+import com.narvee.entity.TmsProject;
 import com.narvee.entity.TmsSubTask;
 import com.narvee.entity.TmsTicketTracker;
 import com.narvee.repository.ProjectRepository;
@@ -72,6 +73,14 @@ public class SubTaskServiceImpl implements SubTaskService {
 
 	@Autowired
 	private fileUploadRepository fileUploadRepository;
+
+
+   
+	
+	
+	private static final int DIGIT_PADDING = 6;
+
+	
 
 	@Value("${AppFilesDir}")
 	private String UPLOAD_DIR;
@@ -313,7 +322,18 @@ public class SubTaskServiceImpl implements SubTaskService {
 
 		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
 		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
-		subtask.setLastStatusUpdateddate(indiaDateTime);
+
+		subtask.setUpdateddate(indiaDateTime);
+		
+		Long subtaskmaxnum = subtaskrepository.subtaskmaxnum();
+		if (subtaskmaxnum == null) {
+			subtaskmaxnum = 0L;
+		}
+		String valueWithPadding = String.format("%0" + DIGIT_PADDING + "d", subtaskmaxnum + 1);
+		String value = "SUBTASK-" + valueWithPadding;
+		subtask.setSubtasktokenid(value);
+		subtask.setSubtaskmaxnum(subtaskmaxnum + 1);
+
 
 		TmsSubTask subtasks = subtaskrepository.save(subtask);
 
@@ -357,7 +377,109 @@ public class SubTaskServiceImpl implements SubTaskService {
 		try {
 			Long adminId = projectRepository.getAdminId(subtask.getTaskId());
 			EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "SUBTASK_CREATE");
-			if (dto != null) {
+
+			if(dto != null) {
+			System.err.println("is enable  " + dto.getIsEnabled());
+			if (Boolean.TRUE.equals(dto.getIsEnabled())) {
+				String subject = dto.getSubject();
+				List<String> ccList = Arrays.stream(Optional.ofNullable(dto.getCcMails()).orElse("").split(","))
+						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+
+				List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
+						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
+			tmsEmailService.sendCreateSubTaskEmail(subtasks, user,true,subject,ccList,bccList);
+			}
+		}
+		} catch (UnsupportedEncodingException | MessagingException e) {
+			e.printStackTrace();
+		}
+		return subtaskrepository.save(subtasks);
+	}
+
+	@Override
+	public TmsSubTask updateTmsSubTask(TmsSubTask updatesubtask,List<MultipartFile> files) {
+		logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateTmsSubTask --Tms");
+		Optional<TmsSubTask> optional = subtaskrepository.findById(updatesubtask.getSubTaskId());
+		 if (!optional.isPresent()) {
+		        throw new RuntimeException("Subtask not found with ID: " + updatesubtask.getSubTaskId());
+		    }
+
+		    TmsSubTask subtask = optional.get();
+
+		    subtask.setSubTaskName(updatesubtask.getSubTaskName());
+		    subtask.setSubTaskDescription(updatesubtask.getSubTaskDescription());
+		    subtask.setAddedby(updatesubtask.getAddedby());
+		    subtask.setUpdatedBy(updatesubtask.getUpdatedBy());
+		    subtask.setStatus(updatesubtask.getStatus());
+		    subtask.setPriority(updatesubtask.getPriority());
+		    subtask.setTargetDate(updatesubtask.getTargetDate());
+		    subtask.setStartDate(updatesubtask.getStartDate());
+		    subtask.setAssignedto(updatesubtask.getAssignedto());
+		    subtask.setSubTaskDescription(updatesubtask.getSubTaskDescription());
+		    subtask.setStartDate(updatesubtask.getStartDate());
+		    subtask.setDuration(updatesubtask.getDuration());;
+
+			if (files != null && !files.isEmpty()) {
+			    List<TmsFileUpload> uploadedFiles = files.stream().filter(file -> file != null && !file.isEmpty()).map(file -> {
+			        String ext = Optional.ofNullable(file.getOriginalFilename())
+			                             .filter(f -> f.contains("."))
+			                             .map(f -> f.substring(f.lastIndexOf(".")))
+			                             .orElse("");
+			        String baseName = file.getOriginalFilename().replace(ext, "");
+			        String fileName = baseName + "-" + subtask.getSubTaskId() + ext;
+			        String fullPath = UPLOAD_DIR + fileName;
+
+			        try {
+			            Files.write(Paths.get(fullPath), file.getBytes());
+			        } catch (IOException e) {
+			            throw new RuntimeException("Failed to save file: " + fileName, e);
+			        }
+			        
+			      
+		            TmsFileUpload existing = fileUploadRepository
+		                .findByFileNameAndSubtask(fileName, updatesubtask);
+		            if (existing != null) {
+		                
+		                existing.setFileType(file.getContentType());
+		                existing.setFilePath(fullPath);
+		                return existing;
+		            } else {
+		                
+		                TmsFileUpload f = new TmsFileUpload();
+		                f.setFileName(fileName);
+		                f.setFilePath(fullPath);
+		                f.setFileType(file.getContentType());
+		                f.setSubtask(updatesubtask);
+		                return f;
+		            }
+			    }).collect(Collectors.toList());
+
+			    subtask.getFiles().addAll(uploadedFiles);
+			    
+			}
+		
+			Set<TmsAssignedUsers> addedByToAssignedUsers = subtask.getAssignedto();
+			List<Long> usersids = addedByToAssignedUsers.stream().map(TmsAssignedUsers::getTmsUserId)
+					.collect(Collectors.toList());
+			List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(subtask.getAddedby(), usersids);
+			// 5️⃣ 🔑 Generate subtask token if not present
+		    if (subtask.getSubtasktokenid() == null || subtask.getSubtasktokenid().trim().isEmpty()) {
+		        Long maxnum = subtaskrepository.subtaskmaxnum();
+		        if (maxnum == null) maxnum = 0L;
+		        String valueWithPadding = String.format("%0" + DIGIT_PADDING + "d", maxnum + 1);
+		        String value = "SUBTASK-" + valueWithPadding;
+		        subtask.setSubtasktokenid(value);
+		        subtask.setSubtaskmaxnum(maxnum + 1);
+		    }
+
+		    // 6️⃣ Save subtask
+		    TmsSubTask subtasks = subtaskrepository.save(subtask);
+	 
+			try {
+			Long adminId =	projectRepository.getAdminId(subtask.getTaskId());
+				EmailConfigResponseDto dto = projectRepository.getEmailNotificationStatus(adminId, "SUBTASK_UPDATE");
+				if(dto != null) {
+
 				System.err.println("is enable  " + dto.getIsEnabled());
 				if (Boolean.TRUE.equals(dto.getIsEnabled())) {
 					String subject = dto.getSubject();
@@ -474,20 +596,79 @@ public class SubTaskServiceImpl implements SubTaskService {
 		Integer pageSize = requestresponsedto.getPageSize();
 		String keyword = requestresponsedto.getKeyword();
 
-		if (sortfield.equalsIgnoreCase("subTaskId"))
-			sortfield = "subTaskId";
+		/*if (sortfield.equalsIgnoreCase("subTaskId"))
+		    sortfield = "subtaskId";
 		else if (sortfield.equalsIgnoreCase("subTaskName"))
-			sortfield = "subTaskName";
+		    sortfield = "subTaskName";
 		else if (sortfield.equalsIgnoreCase("subTaskDescription"))
-			sortfield = "subTaskDescription";
+		    sortfield = "subTaskDescription";
 		else if (sortfield.equalsIgnoreCase("status"))
-			sortfield = "status";
-		else if (sortfield.equalsIgnoreCase("targetDate"))
-			sortfield = "targetDate";
+		    sortfield = "st.status";
+		else if (sortfield.equalsIgnoreCase("targetDate") || sortfield.equalsIgnoreCase("DueDate"))
+		    sortfield = "st.target_date";
 		else if (sortfield.equalsIgnoreCase("startDate"))
-			sortfield = "startDate";
+		    sortfield = "st.start_date";
+		else if (sortfield.equalsIgnoreCase("priority"))
+		    sortfield = "st.priority";
+		else if (sortfield.equalsIgnoreCase("updatedBy"))
+		    sortfield = "st.updatedby";
+		else if (sortfield.equalsIgnoreCase("duration"))
+		    sortfield = "st.duration";
+		else if (sortfield.equalsIgnoreCase("subtasktokenid"))
+		    sortfield = "st.subtasktoken_id";
+		else if (sortfield.equalsIgnoreCase("taskid") || sortfield.equalsIgnoreCase("taskId"))
+		    sortfield = "st.taskid"sss
 		else
-			sortfield = "updateddate";
+		    sortfield = "st.updateddate";
+*/switch (sortfield.toLowerCase()) {
+case "subtaskid":
+    sortfield = "subtaskId";
+    break;
+
+case "subtaskname":
+    sortfield = "subtaskName";
+    break;
+
+case "subtaskdescription":
+    sortfield = "subTaskDescription";
+    break;
+
+case "status":
+    sortfield = "status";
+    break;
+
+
+case "DueDate":case "targetdate": sortfield = "target_date"; break;
+
+case "startdate":
+    sortfield = "start_date";
+    break;
+
+case "priority":
+    sortfield = "priority";
+    break;
+
+case "updatedby":
+    sortfield = "updatedby";
+    break;
+
+case "duration":
+    sortfield = "duration";
+    break;
+
+case "subtasktokenid":
+    sortfield = "subtasktokenid";
+    break;
+
+case "taskid":
+    sortfield = "taskId";
+    break;
+
+default:
+    sortfield = "updatedate";  // ✅ fallback to a valid column
+    break;
+}
+
 
 		Sort.Direction sortDirection = Sort.Direction.ASC;
 		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
@@ -566,6 +747,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 		return true;
 	}
 
+
 	@Override
 	public SubTaskResponse findTmsSubTaskByTicketId(RequestDTO requestresponsedto) {
 		logger.info("!!! inside class: TaskServiceImpl , !! method: findTmsTaskByProjectid-tms");
@@ -603,17 +785,42 @@ public class SubTaskServiceImpl implements SubTaskService {
 		Sort sort = Sort.by(sortDirection, sortfield);
 		Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
 
-		if (keyword.equalsIgnoreCase("empty")) {
+	
+	@Override
+	public SubTaskResponse findTmsSubTaskByTicketId(RequestDTO requestresponsedto) {
+	    logger.info("!!! inside class: SubTaskServiceImpl , !! method: findTmsSubTaskByTicketId-tms");
+
+
+	    String sortfield = requestresponsedto.getSortField() == null ? "updateddate" : requestresponsedto.getSortField();
+	    String sortorder = requestresponsedto.getSortOrder();
+	    Integer pageNo = requestresponsedto.getPageNumber() == null ? 1 : requestresponsedto.getPageNumber();
+	    Integer pageSize = requestresponsedto.getPageSize() == null ? 10 : requestresponsedto.getPageSize();
+	    String projectid = requestresponsedto.getProjectid();
+	    String keyword = (requestresponsedto.getKeyword() == null || requestresponsedto.getKeyword().trim().isEmpty())
+	            ? "empty"
+	            : requestresponsedto.getKeyword().trim();
+	    String ticketId = requestresponsedto.getTicketId();
+
 
 			Page<TaskTrackerDTO> res = subtaskrepository.findSubTaskByTicketid(ticketId, pageable);
 
 			logger.info("!!! inside class: TaskServiceImpl , !! method: findSubTaskByTicketid");
 			List<SubTaskResponseDTO> tasksList = new ArrayList<>();
 
-			for (TaskTrackerDTO order : res) {
-				SubTaskResponseDTO result = new SubTaskResponseDTO(order);
+	    // map sort fields (same as your mapping)
+	    switch (sortfield.toLowerCase()) {
+	    case "subtaskid":
+	        sortfield = "subtaskid";
+	        break;
 
-				List<GetUsersDTO> assignUsers = subtaskrepository.getSubtaskAssignUsersTms(order.getSubtaskid());
+
+	    case "subtaskname":
+	        sortfield = "subtaskname";
+	        break;
+
+	    case "subtaskdescription":
+	        sortfield = "subtaskdescription";
+	        break;
 
 				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
 						.collect(Collectors.toList());
@@ -676,7 +883,9 @@ public class SubTaskServiceImpl implements SubTaskService {
 			taskResp.setTaskId(TicketId);
 			return taskResp;
 		}
+
 	}
+
 
 	@Override
 	public boolean updateTmsSubTaskTrack(UpdateTask updateTask) {
@@ -722,7 +931,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 
 	@Override
 	public List<TasksResponseDTO> ticketTrackerByTmsSubTaskId(Long subtaskid) {
-		logger.info("!!! inside class: SubTaskServiceImpl , !! method: updateSubTaskStatus");
+		logger.info("!!! inside class: SubTaskServiceImpl , !! method: ticketTrackerByTmsSubTaskId");
 		List<TaskTrackerDTO> tracker = subtaskrepository.ticketTrackerBySubTaskId(subtaskid);
 		List<TasksResponseDTO> tasksList = new ArrayList<>();
 

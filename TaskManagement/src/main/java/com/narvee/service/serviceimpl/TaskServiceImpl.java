@@ -370,6 +370,7 @@ public class TaskServiceImpl implements TaskService {
 		update.setDescription(task.getDescription());
 		update.setAssignedto(task.getAssignedto());
 		update.setUpdatedby(task.getUpdatedby());
+	
 		return taskRepo.save(update);
 	}
 
@@ -408,7 +409,7 @@ public class TaskServiceImpl implements TaskService {
 //		addedByToAssignedUsers.addAll(assignedUsers);
 		ZoneId indiaZoneId = ZoneId.of("Asia/Kolkata");
 		LocalDateTime indiaDateTime = LocalDateTime.now(indiaZoneId);
-		task.setLastStatusUpdateddate(indiaDateTime);
+		task.setUpdateddate(indiaDateTime);
 		TmsTask savedtask = taskRepo.save(task);
 
 		if (files != null && !files.isEmpty()) {
@@ -499,6 +500,10 @@ public class TaskServiceImpl implements TaskService {
 			ticketTracker.setUpdatedby(updateTask.getUpdatedby());
 			listTicketTracker.add(ticketTracker);
 			task.setTrack(listTicketTracker);
+			
+			//added by vaishnavi
+			 task.setUpdateddate(LocalDateTime.now(ZoneId.of("Asia/Kolkata")));
+			
 			taskRepo.save(task);
 			try {
 
@@ -549,6 +554,13 @@ public class TaskServiceImpl implements TaskService {
 		update.setUpdatedby(task.getUpdatedby());
 		update.setStatus(task.getStatus());
 		update.setDuration(task.getDuration());
+
+
+		task.setCreateddate(LocalDateTime.now());
+		update.setUpdateddate(LocalDateTime.now(ZoneId.of("Asia/Kolkata"))); 
+
+
+
 
 		// Path path = Paths.get(UPLOAD_DIR + getOriginalFilename);
 		if (files != null && !files.isEmpty()) {
@@ -639,43 +651,36 @@ public class TaskServiceImpl implements TaskService {
 
 	@Override
 	public TaskResponse findTmsTaskByProjectid(RequestDTO requestresponsedto) {
-		logger.info("!!! inside class: TaskServiceImpl , !! method: findTmsTaskByProjectid-tms");
-		String sortfield = requestresponsedto.getSortField();
-		String sortorder = requestresponsedto.getSortOrder();
-		Integer pageNo = requestresponsedto.getPageNumber();
-		Integer pageSize = requestresponsedto.getPageSize();
-		String projectid = requestresponsedto.getProjectid();
-		String keyword = requestresponsedto.getKeyword();
-		if (sortfield.equalsIgnoreCase("ticketid"))
-			sortfield = "ticketid";
-		else if (sortfield.equalsIgnoreCase("TaskName"))
-			sortfield = "taskname";
-		else if (sortfield.equalsIgnoreCase("TaskDescription"))
-			sortfield = "description";
-		else if (sortfield.equalsIgnoreCase("DueDate"))
-			sortfield = "target_date";
-		else if (sortfield.equalsIgnoreCase("StartDate"))
-			sortfield = "start_date";
-		else if (sortfield.equalsIgnoreCase("status"))
-			sortfield = "status";
-		else if (sortfield.equalsIgnoreCase("Priority"))
-			sortfield = "priority";
-		Sort.Direction sortDirection = Sort.Direction.ASC;
+	    logger.info("!!! inside class: TaskServiceImpl , !! method: findTmsTaskByProjectid-tms");
 
-		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
-			sortDirection = Sort.Direction.DESC;
-		}
-		Sort sort = Sort.by(sortDirection, sortfield);
-		Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
+	    // defensive defaults
+	    String sortfield = requestresponsedto.getSortField() == null ? "ticketid"
+	            : requestresponsedto.getSortField();
+	    String sortorder = requestresponsedto.getSortOrder();
+	    Integer pageNo = requestresponsedto.getPageNumber() == null ? 1 : requestresponsedto.getPageNumber();
+	    Integer pageSize = requestresponsedto.getPageSize() == null ? 10 : requestresponsedto.getPageSize();
+	    String projectid = requestresponsedto.getProjectid();
+	    String keyword = requestresponsedto.getKeyword();
 
-		if (keyword.equalsIgnoreCase("empty")) {
-			logger.info("!!! inside class: TaskServiceImpl , !! method: findTaskByProjectid -- tms with empty ");
-			Page<TaskTrackerDTO> res = taskRepo.findTaskByTmsProjectid(projectid, pageable);
+	    // map friendly names -> DB column names (keep this mapping as you already had)
+	    switch (sortfield.toLowerCase()) {
+        case "ticketid": sortfield = "ticketid"; break;
+        case "taskname": sortfield = "taskname"; break;
+        case "taskdescription": sortfield = "description"; break;
+        case "duedate": sortfield = "target_date"; break;
+        case "startdate": sortfield = "start_date"; break;
+        case "status": sortfield = "status"; break;
+        case "priority": sortfield = "priority"; break;
+        case"updatedby":
+	    case "fullname": sortfield = "fullname"; break;
+        case "addedby": 
+        case "addedbyfullname": sortfield = "addedbyfullname"; break;
 
-			List<TasksResponseDTO> tasksList = new ArrayList<>();
 
-			for (TaskTrackerDTO order : res) {
-				TasksResponseDTO result = new TasksResponseDTO(order);
+        default: break; // leave as-is
+    }
+	    // else leave whatever column was passed (or default above)
+
 
 				List<GetUsersDTO> assignUsers = taskRepo.getTmsAssignUsers(order.getTaskid());
 
@@ -683,64 +688,82 @@ public class TaskServiceImpl implements TaskService {
 						.collect(Collectors.toList());
 				result.setAssignUsers(filteredAssignUsers);
 
-				List<TmsFileUpload> fileEntities = fileUploadRepository.getTaskFiles(order.getTaskid());
-				// Implement this
-				List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
-					FileUploadDto dto = new FileUploadDto();
-					dto.setId(file.getId());
-					dto.setFileName(file.getFileName());
-					dto.setFilePath(file.getFilePath());
-					dto.setFileType(file.getFileType());
-					return dto;
-				}).collect(Collectors.toList());
-				result.setFiles(fileDtos);
+	    Sort.Direction direction = Sort.Direction.ASC;
+	    if ("desc".equalsIgnoreCase(sortorder)) {
+	        direction = Sort.Direction.DESC;
+	    }
 
-				tasksList.add(result);
 
-			}
-			Page<TasksResponseDTO> tasksPage = new PageImpl<>(tasksList, pageable, res.getTotalElements());
-			Long pid = taskRepo.findPid(projectid);
-			TaskResponse taskResp = new TaskResponse();
-			taskResp.setTasks(tasksPage);
-			taskResp.setPid(pid);
+	    // Custom sorting for full names (addedby / updatedby)
+	    Sort sort;
+	    if ("addedbyfullname".equalsIgnoreCase(sortfield)) {
+	        sort = Sort.by(direction, "addedbyfullname");
+	    } else if ("updatedbyfullname".equalsIgnoreCase(sortfield)) {
+	        sort = Sort.by(direction, "fullname"); // alias of updatedbyfullname
+	    } else {
+	        sort = Sort.by(direction, sortfield);
+	    }
 
-			return taskResp;
-		} else {
-			logger.info("!!! inside class: TaskServiceImpl , !! method: findTaskByProjectIdWithSearching , Filter-tms");
-			Page<TaskTrackerDTO> res = taskRepo.findTaskByTmsProjectIdWithSearching(projectid, keyword, pageable);
-			List<TasksResponseDTO> tasksList = new ArrayList<>();
-			for (TaskTrackerDTO order : res) {
-				TasksResponseDTO result = new TasksResponseDTO(order);
-				List<GetUsersDTO> assignUsers = taskRepo.getTmsAssignUsers(order.getTaskid());
-				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
-						.collect(Collectors.toList());
-				result.setAssignUsers(filteredAssignUsers);
+	    Pageable pageable = PageRequest.of(Math.max(0, pageNo - 1), pageSize, sort);
 
-				List<TmsFileUpload> fileEntities = fileUploadRepository.getTaskFiles(order.getTaskid()); // Implement
-																											// this
-				List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
-					FileUploadDto dto = new FileUploadDto();
-					dto.setId(file.getId());
-					dto.setFileName(file.getFileName());
-					dto.setFilePath(file.getFilePath());
-					dto.setFileType(file.getFileType());
-					return dto;
-				}).collect(Collectors.toList());
+	    // Normalize keyword input
+	    if (keyword != null) {
+	        keyword = keyword.trim();
+	        if (keyword.isEmpty()) {
+	            keyword = "empty"; // keep existing contract if frontend expects 'empty'
+	        }
+	    } else {
+	        keyword = "empty";
+	    }
 
-				result.setFiles(fileDtos);
+	    Page<TaskTrackerDTO> res;
+	    List<TasksResponseDTO> tasksList = new ArrayList<>();
 
-				tasksList.add(result);
+	    if ("empty".equalsIgnoreCase(keyword)) {
+	        logger.info("!!! findTaskByTmsProjectid -- tms with empty ");
+	        res = taskRepo.findTaskByTmsProjectid(projectid, pageable);
+	    } else {
+	        logger.info("!!! findTaskByProjectIdWithSearching , Filter-tms");
+	        res = taskRepo.findTaskByTmsProjectIdWithSearching(projectid, keyword, pageable);
+	    }
 
-			}
-			Page<TasksResponseDTO> tasksPage = new PageImpl<>(tasksList, pageable, res.getTotalElements());
+	    for (TaskTrackerDTO order : res) {
+	        TasksResponseDTO result = new TasksResponseDTO(order);
 
-			Long pid = taskRepo.findPid(projectid);
-			TaskResponse taskResp = new TaskResponse();
-			taskResp.setTasks(tasksPage);
-			taskResp.setPid(pid);
-			return taskResp;
-		}
-	}
+	        // fetch assigned users / creator (your repo method should return rows
+	        // where creator and assigned users both populate 'fullname' + 'email')
+	        List<GetUsersDTO> assignUsers = taskRepo.getTmsAssignUsers(order.getTaskid());
+
+	        // Filter: keep only those with non-empty fullname
+	        List<GetUsersDTO> filteredAssignUsers = assignUsers.stream()
+	                .filter(user -> user.getFullname() != null && !user.getFullname().trim().isEmpty())
+	                .collect(Collectors.toList());
+	        result.setAssignUsers(filteredAssignUsers);
+
+	        // files
+	        List<TmsFileUpload> fileEntities = fileUploadRepository.getTaskFiles(order.getTaskid());
+	        List<FileUploadDto> fileDtos = fileEntities.stream().map(file -> {
+	            FileUploadDto dto = new FileUploadDto();
+	            dto.setId(file.getId());
+	            dto.setFileName(file.getFileName());
+	            dto.setFilePath(file.getFilePath());
+	            dto.setFileType(file.getFileType());
+	            return dto;
+	        }).collect(Collectors.toList());
+	        result.setFiles(fileDtos);
+
+	        tasksList.add(result);
+	    }
+
+	    Page<TasksResponseDTO> tasksPage = new PageImpl<>(tasksList, pageable, res.getTotalElements());
+	    Long pid = taskRepo.findPid(projectid);
+	    TaskResponse taskResp = new TaskResponse();
+	    taskResp.setTasks(tasksPage);
+	    taskResp.setPid(pid);
+
+	    return taskResp;
+	}// added by pratiksha
+
 
 	@Override
 	public Page<TaskTrackerDTO> getTmsTaskByProjectid(RequestDTO requestresponsedto) {
@@ -762,6 +785,9 @@ public class TaskServiceImpl implements TaskService {
 			sortfield = "targetdate";
 		else if (sortfield.equalsIgnoreCase("status"))
 			sortfield = "status";
+		//added by vaishnavi
+		else if (sortfield.equalsIgnoreCase("updateddate"))
+			sortfield = "updateddate";
 		Sort.Direction sortDirection = Sort.Direction.ASC;
 
 		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
@@ -862,6 +888,7 @@ public class TaskServiceImpl implements TaskService {
 
 		try {
 			if ("closed".equalsIgnoreCase(status)) {
+
 				long incompleteTasks = taskRepo.countByProjectIdAndStatusNot(taskid, "closed");
 				if (incompleteTasks > 0) {
 					throw new RuntimeException("Cannot mark Task as Closed. Some subtasks are still not closed.");
@@ -884,6 +911,7 @@ public class TaskServiceImpl implements TaskService {
 							.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
 					tmsEmailService.sendStatusUpdateEmail(taskInfo, subject, bccList, ccList);
 				}
+
 			}
 			return true;
 
@@ -897,5 +925,6 @@ public class TaskServiceImpl implements TaskService {
 		}
 
 	}
+	
 
 }

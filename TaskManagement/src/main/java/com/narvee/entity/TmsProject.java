@@ -2,6 +2,7 @@ package com.narvee.entity;
 
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -49,7 +50,7 @@ public class TmsProject extends AuditModel {
 	private String projectid;
 	@Column(name = "projectname")
 	private String projectName;
-	@Column(name ="addedby" )
+	@Column(name ="addedby" )s
 	private Long addedBy;
 	private Long adminId;
 	@Column(name ="updatedby")
@@ -82,11 +83,13 @@ public class TmsProject extends AuditModel {
      @ToString.Exclude
 	    private List<TmsFileUpload> files = new ArrayList<>();
 
+
 	public List<GetUsersDTO> getAssignedUsers() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	
+
 	
 }

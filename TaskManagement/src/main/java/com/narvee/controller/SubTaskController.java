@@ -66,7 +66,7 @@ public class SubTaskController {
 	}
 
 	@DeleteMapping("/deleteSubTask/{subtaskid}")
-	public ResponseEntity<RestAPIResponse> deleteSubTaskById(@PathVariable Long subtaskid) {
+	public ResponseEntity<RestAPIResponse> deleteSubTaskById(@PathVariable Long  subtaskid) {
 		logger.info("!!! inside class: SubTaskController , !! method: deleteSubTaskById");
 		subtaskservice.deleteSubTask(subtaskid);
 		return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Deleted successfully"),

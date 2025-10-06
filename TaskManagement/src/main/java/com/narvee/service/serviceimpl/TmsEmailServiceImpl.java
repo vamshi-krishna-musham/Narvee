@@ -69,7 +69,9 @@ public class TmsEmailServiceImpl {
 			String Emailsubject, List<String> bccMails, List<String> CcMails)
 			throws MessagingException, UnsupportedEncodingException {
 		logger.info("!!! inside class: EmailServiceImpl, !! method: sendCreateProjectEmail");
+
 		System.err.println("Emailsubject  " + Emailsubject + " bccMails " + bccMails + " CcMails" + CcMails);
+
 
 		StringBuilder assignedUsers = new StringBuilder();
 		StringBuilder createdby = new StringBuilder();

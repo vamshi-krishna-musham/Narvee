@@ -5,15 +5,15 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.mail.MessagingException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.narvee.dto.EmailConfigResponseDto;
 import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.ProjectDTO;
@@ -176,6 +175,8 @@ public class ProjectServiceImpl implements ProjectService {
 		else
 			sortfield = "updateddate";
 
+
+		
 		Sort.Direction sortDirection = Sort.Direction.ASC;
 		if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
 			sortDirection = Sort.Direction.DESC;
@@ -207,8 +208,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 	}
 
-	// --------------------------------------- all methods replicated foor tms users
-	// Added By keerthi ----------------------
+
 	@Override
 	public TmsProject saveTmsproject(TmsProject project, List<MultipartFile> files) {
 		logger.info("!!! inside class: ProjectServiceImpl , !! method: saveTmsproject");
@@ -230,6 +230,7 @@ public class ProjectServiceImpl implements ProjectService {
 		List<GetUsersDTO> user = repository.getTaskAssinedTmsUsersAndCreatedBy(project.getAddedBy(), usersids);
 		try {
 			
+			
 			EmailConfigResponseDto dto = projectrepository.getEmailNotificationStatus(project.getAdminId(), "PROJECT_CREATE");
 			if(dto != null) {
 			System.err.println("is enable  " + dto.getIsEnabled());
@@ -250,6 +251,7 @@ public class ProjectServiceImpl implements ProjectService {
 			e.printStackTrace();
 		}
 		if (files != null && !files.isEmpty()) {
+			
 			List<TmsFileUpload> projectFiles = new ArrayList<>();
 
 			try {
@@ -335,9 +337,15 @@ public class ProjectServiceImpl implements ProjectService {
 		    if (incompleteTasks > 0 ) {
 		        throw new RuntimeException("Cannot mark project as completed. Some tasks are still not closed.");
 		    }
+
+		   
 		}	
+		//added by vaishnavi
 		project.setProjectName(updateproject.getProjectName());
-		project.setAddedBy(updateproject.getAddedBy());
+		if (updateproject.getAddedBy() != null && 
+			    !updateproject.getAddedBy().equals(project.getAddedBy())) {
+			    logger.warn("Attempt to change addedBy ignored. Original creator retained: " + project.getAddedBy());
+			}
 		project.setAdminId(updateproject.getAdminId());
 		project.setUpdatedBy(updateproject.getUpdatedBy());
 		project.setDescription(updateproject.getDescription());
@@ -411,12 +419,12 @@ public class ProjectServiceImpl implements ProjectService {
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		}
-		return tmsProject;
+		return tmsProject;}
 
-	}
-
+	
 	@Override
 	public Page<ProjectResponseDto> findTmsAllProjects(RequestDTO requestresponsedto) {
+
 	    logger.info("!!! inside class: ProjectServiceImpl , !! method: findTmsAllProjects");
 
 	    String sortorder = requestresponsedto.getSortOrder();
@@ -600,3 +608,4 @@ public class ProjectServiceImpl implements ProjectService {
 
 
 }
+
