@@ -74,11 +74,30 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
 	public Page<ProjectDTO> getAllProjectsByTmsUser(Long userid,Pageable pageable );  // --- query for get all projects for tms users --- 
 	
 	
-	@Query(value = "SELECT  p.pid , p.projectname , p.projectdescription ,  DATE(p.start_date) AS startDate , DATE(p.target_date) AS targetDate,p.addedby , p.status , p.updatedby , p.projectid , p.createddate , p.department FROM tms_project p  , tms_assigned_users au where au.pid= p.pid AND"
-			+ " au.tms_user_id=:userid AND (p.projectname LIKE CONCAT('%', :keyword, '%') OR p.projectid LIKE CONCAT('%', :keyword, '%') or  p.status LIKE CONCAT('%', :keyword, '%')   OR DATE_FORMAT(p.start_date, '%Y-%m-%d') LIKE CONCAT('%', :keyword, '%') OR  DATE_FORMAT(p.target_date, '%Y-%m-%d') LIKE CONCAT('%', :keyword, '%'))", nativeQuery = true)
-	public Page<ProjectDTO> getAllProjectsByTmsUserFilter(Pageable pageable, @Param("keyword") String keyword , Long userid); // --- QUERY FOR GET ALL PROJECT BY USER ID FOR TMS USERS ADDED BY KEERTHI
+//	@Query(value = "SELECT  p.pid , p.projectname , p.projectdescription ,  DATE(p.start_date) AS startDate , DATE(p.target_date) AS targetDate,p.addedby , p.status , p.updatedby , p.projectid , p.createddate , p.department FROM tms_project p  , tms_assigned_users au where au.pid= p.pid AND"
+//			+ " au.tms_user_id=:userid AND (p.projectname LIKE CONCAT('%', :keyword, '%') OR p.projectid LIKE CONCAT('%', :keyword, '%') or  p.status LIKE CONCAT('%', :keyword, '%')   OR DATE_FORMAT(p.start_date, '%Y-%m-%d') LIKE CONCAT('%', :keyword, '%') OR  DATE_FORMAT(p.target_date, '%Y-%m-%d') LIKE CONCAT('%', :keyword, '%'))", nativeQuery = true)
+//	public Page<ProjectDTO> getAllProjectsByTmsUserFilter(Pageable pageable, @Param("keyword") String keyword , Long userid); // --- QUERY FOR GET ALL PROJECT BY USER ID FOR TMS USERS ADDED BY KEERTHI
 
 	
+	@Query(value = "SELECT p.pid, p.projectname, p.projectdescription, DATE(p.start_date) AS startDate, "
+            + "DATE(p.target_date) AS targetDate, p.addedby, p.status, p.updatedby, "
+            + "p.projectid, p.createddate, p.department "
+            + "FROM tms_project p "
+            + "JOIN tms_assigned_users au ON au.pid = p.pid "
+            + "JOIN tms_users u ON u.user_id = au.tms_user_id "
+            + "WHERE au.tms_user_id = :userid "
+            + "AND ( "
+            + "LOWER(p.projectname) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+            + "OR LOWER(p.projectid) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+            + "OR LOWER(p.status) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+            + "OR DATE_FORMAT(p.start_date, '%Y-%m-%d') LIKE CONCAT('%', :keyword, '%') "
+            + "OR DATE_FORMAT(p.target_date, '%Y-%m-%d') LIKE CONCAT('%', :keyword, '%') "
+            + "OR LOWER(CONCAT(u.first_name,' ', COALESCE(u.middle_name, ''),' ',u.last_name)) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+            + ")", 
+       nativeQuery = true)
+public Page<ProjectDTO> getAllProjectsByTmsUserFilter(Pageable pageable, @Param("keyword") String keyword , Long userid);
+
+
 	@Query(value = "select bcc_mails AS bccMails ,cc_mails AS ccMails ,email_notification_type As notificationType ,is_enabled AS isEnabled ,subject from tms_email_configuration where admin_id = :adminId and email_notification_type = :notificationType",nativeQuery = true)
    public EmailConfigResponseDto  getEmailNotificationStatus(Long adminId, String notificationType);
 	
