@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +87,7 @@ public class ProjectController {
 					HttpStatus.OK);
 		}
 	}
-
+	
 	@PutMapping("/update")
 	public ResponseEntity<RestAPIResponse> updateProject(@RequestBody TmsProject project) {
 		logger.info("!!! inside class: ProjectController , !! method: updateProject");
@@ -153,10 +154,19 @@ public class ProjectController {
 		
 		@PostMapping("/findAllProjects-tms")
 		public ResponseEntity<RestAPIResponse> getAllProjectsTms(@RequestBody RequestDTO requestresponsedto) {
-			logger.info("!!! inside class: ProjectController , !! method: getAllProjectsTms , !! for Tms Users ");
-			return new ResponseEntity<RestAPIResponse>(new RestAPIResponse("success", "Fetched all projects successfully",
-					projectservice.findTmsAllProjects(requestresponsedto)), HttpStatus.OK);
+		    logger.info("!!! inside ProjectController -> getAllProjectsTms for TMS Users with keyword: {}",
+		            requestresponsedto.getKeyword());
+
+		    return new ResponseEntity<>(
+		            new RestAPIResponse(
+		                    "success",
+		                    "Fetched all projects successfully (with assigned user search)",
+		                    projectservice.findTmsAllProjects(requestresponsedto)
+		            ),
+		            HttpStatus.OK
+		    );
 		}
+
 		
 		
 		
