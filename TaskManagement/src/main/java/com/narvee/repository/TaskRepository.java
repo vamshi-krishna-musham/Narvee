@@ -90,7 +90,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 
 	@Query(value = "select u.userid ,u.pseudoname,u.fullname   FROM users u where u.status ='Active' AND u.department=:department ", nativeQuery = true)
 	public List<GetUsersDTO> findDepartmentWiseUsers(String department);
-//added vais
+
 	
 	@Modifying
 	@Transactional
@@ -243,6 +243,8 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			@Param("status") String status, @Param("keyword") String keyword);
 	
 		@Query(value =
+	@Query(value =
+
 			  "SELECT u.user_id AS userid, " +
 			  "  CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), '')) AS fullname, " +
 			  "  u.email AS email " +
@@ -254,6 +256,16 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
 			public List<GetUsersDTO> getTmsAssignUsers(@Param("taskId") Long taskId);
 
 		
+		/*@Query(value = " select concat(u.first_name,' ', COALESCE(u.middle_name, ''),' ',u.last_name) AS fullname ,u.email from tms_users u where u.user_id = :userid ", nativeQuery = true)
+
+	public GetUsersDTO gettmsUser(Long userid);
+	
+	@Query(value = "select ad.full_name as createdby, t.ticketid, u.full_name, t.createddate, t.targetdate,au.userstatus as  status from tms_task t\r\n"
+			+ "   join tms_users ad on t.addedby = ad.user_id join tms_task_users tu on t.taskid = tu.taskid  join tms_assigned_users au  on au.assignid=tu.assignedto\r\n"
+			+ "   join tms_users u on u.user_id= au.tms_user_id  and t.taskid = :taskid", nativeQuery = true)
+	public List<TaskAssignDTO> taskTmsAssignInfo(Long taskid);*/
+	
+
 	@Query(value = "SELECT CONCAT_WS(' ', NULLIF(TRIM(u.first_name), ''), NULLIF(TRIM(u.middle_name), ''), NULLIF(TRIM(u.last_name), '')) AS fullname, u.email AS email " +
             "FROM tms_users u WHERE u.user_id = :userid", nativeQuery = true)
     public GetUsersDTO gettmsUser(@Param("userid") Long userid);
