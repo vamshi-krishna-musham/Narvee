@@ -14,8 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProjectResponseDto {
-
-	ProjectDTO projePage;
+	 private ProjectDTO projePage;
 	
 	Set<TmsAssignedUsers> assignUsers;
 	
