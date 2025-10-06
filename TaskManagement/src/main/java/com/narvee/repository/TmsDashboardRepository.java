@@ -1814,7 +1814,9 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	                JOIN tms_project p ON t.pid = p.pid
 	        	                LEFT JOIN tms_users u1 ON t.updatedby = u1.user_id
 	        	                LEFT JOIN tms_users u2 ON t.addedby = u2.user_id
-	        	                WHERE (:projectid IS NULL OR p.projectid = :projectid)
+	        	                where
+	        	                 (:projectid IS NOT NULL OR (:intervalType IS NOT NULL AND :intervalType <> ''))
+                              AND (:projectid IS NULL OR p.projectid = :projectid)
 	        	                 AND (
                                         :intervalType IS NULL OR :intervalType = '' 
 	        	                    OR    (:intervalType = 'DAILY'   AND DATE(t.start_date) = CURDATE())
@@ -1861,7 +1863,9 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	                JOIN tms_project p ON t.pid = p.pid
 	        	                LEFT JOIN tms_users u1 ON t.updatedby = u1.user_id
 	        	                LEFT JOIN tms_users u2 ON t.addedby = u2.user_id
-	        	                WHERE p.projectid = :projectid
+	        	                where
+	        	                 (:projectid IS NOT NULL OR (:intervalType IS NOT NULL AND :intervalType <> ''))
+	        	                  AND (:projectid IS NULL OR p.projectid = :projectid)
 	        	                  AND (
 	        	                        t.ticketid LIKE CONCAT('%', :keyword, '%')
 	        	                     OR DATE_FORMAT(t.start_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')
@@ -1877,9 +1881,9 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	                        ) LIKE CONCAT('%', :keyword, '%')
 	        	                  )
 	        	                  AND (
-	        	                        (:intervalType = 'DAILY'   AND DATE(t.start_date) = CURDATE())
+	        	                        (:intervalType = 'daily'   AND DATE(t.start_date) = CURDATE())
 	        	                     OR (:intervalType = 'WEEKLY'  AND YEARWEEK(t.start_date, 1) = YEARWEEK(CURDATE(), 1))
-	        	                     OR (:intervalType = 'MONTHLY' AND YEAR(t.start_date) = YEAR(CURDATE()) 
+	        	                     OR (:intervalType = 'monthly' AND YEAR(t.start_date) = YEAR(CURDATE()) 
 	        	                                                    AND MONTH(t.start_date) = MONTH(CURDATE()))
 	        	                     OR (:intervalType = 'YEARLY'  AND YEAR(t.start_date) = YEAR(CURDATE()))
 	        	                  )

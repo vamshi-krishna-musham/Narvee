@@ -140,7 +140,7 @@ public class TmsDashboardController {
     }
 	
 	
-	@GetMapping("/getAllTaskByPidAndTime")
+	@PostMapping("/getAllTaskByPidAndTime")
     public ResponseEntity<RestAPIResponse> getAllTaskByPidAndTime(@RequestBody RequestDTO requestResponseDTO) {
 		logger.info("!!! inside class: TmsDashboardController , !! method: getDailyDropDown"); 
 		TaskResponse response = dashboardService.getAllTaskByPidAndTimeIntervel(requestResponseDTO);
