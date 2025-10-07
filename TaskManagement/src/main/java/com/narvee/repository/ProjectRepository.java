@@ -55,6 +55,9 @@ public interface ProjectRepository extends JpaRepository<TmsProject, Long> {
 
 
 	
+	@Query(value = "SELECT  p.pid , p.projectname , p.projectdescription , p.addedby , p.status , p.updatedby , p.projectid  , p.createddate , p.department FROM tms_project p ", nativeQuery = true)
+	public Page<ProjectDTO> findAllProjects(Pageable pageable, @Param("keyword") String keyword);
+	
 	
 	@Query(value = "SELECT  p.pid, p.projectname, p.projectdescription , p.addedby , p.status ,"
 			+ " p.updatedby , p.projectid , p.createddate , p.department  FROM tms_project p where p.pid= :pid ", nativeQuery = true)
@@ -131,7 +134,17 @@ public Page<ProjectDTO> getAllProjectsByTmsUserFilter(Pageable pageable, @Param(
 
 			
 
-
+    		@Query(value = "SELECT  p.pid , p.projectname , p.projectdescription , DATE(p.start_date) AS startDate , DATE(p.target_date) AS targetDate ,p.addedby ,  concat(tu.first_name,' ',tu.middle_name,' ',tu.last_name) AS addedByFullname, p.status , p.updatedby , p.projectid  , p.createddate "
+    				+ "  FROM tms_project p   LEFT JOIN  tms_assigned_users au ON au.pid = p.pid join tms_users tu on p.addedby = tu.user_id WHERE "
+    				+ "   p.admin_id = :addedby OR p.addedby = :addedby  OR au.tms_user_id = :addedby  GROUP BY   p.pid", nativeQuery = true)
+    		public Page<ProjectDTO> findAllTmsProjects(Pageable pageable, Long addedby);
+    		
+    		@Query(value = "SELECT p.pid ,p.projectname , p.projectdescription , DATE(p.start_date) AS startDate , DATE(p.target_date) AS targetDate, p.addedby , concat(tu.first_name,' ',tu.middle_name,' ',tu.last_name) AS addedByFullname , p.status , p.updatedby , p.projectid , p.createddate , p.department "
+    				+ "FROM tms_project  p   LEFT JOIN  tms_assigned_users au ON au.pid = p.pid join tms_users tu on p.addedby = tu.user_id WHERE   ( p.admin_id = :addedby OR p.addedby = :addedby  OR au.tms_user_id = :addedby)  "
+    				+ "  AND  (p.projectname LIKE CONCAT('%', :keyword, '%') OR concat(tu.first_name,' ',tu.middle_name,' ',tu.last_name) LIKE CONCAT('%', :keyword, '%')  OR  p.projectid LIKE CONCAT('%', :keyword, '%')  OR   p.status LIKE CONCAT('%', :keyword, '%') OR   "
+    				+ "  DATE_FORMAT(p.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')"
+    				+ "OR DATE_FORMAT(p.start_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%') ) group by p.pid", nativeQuery = true)
+    		public Page<ProjectDTO> findAllTmsProjectWithFiltering(Pageable pageable, @Param("keyword") String keyword,  @Param("addedby") Long addedby);
 
 
 }

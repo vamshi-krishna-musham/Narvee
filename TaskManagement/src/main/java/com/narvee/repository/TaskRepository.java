@@ -465,7 +465,7 @@ public interface TaskRepository extends JpaRepository<TmsTask, Long> {
             "WHERE u.user_id = :userId", nativeQuery = true)
 String findNameByUserId(@Param("userId") Long userId);
 	
-    @Query(value = "SELECT  p.pid, p.taskname, p.description, p.addedby, p.status, p.start_date, p.target_date, p.createddate, p.updateddate, p.duration, p.priority, p.department, p.ticketid,p.maxnum, p.last_status_updateddate, p.updatedby, p.taskid, p.createddate, p.department FROM tms_task p ", nativeQuery = true)
+    @Query(value = "SELECT  p.pid, p.taskname, p.description, p.addedby, p.status, p.start_date, p.target_date, p.createddate, p.updateddate, p.duration, p.priority, p.department,p.taskid, p.ticketid,p.maxnum, p.last_status_updateddate, p.updatedby,  p.createddate, p.department FROM tms_task p ", nativeQuery = true)
 	public List<TmsTask>  getAllTaskDeatils();
     
 }

@@ -1787,7 +1787,9 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	        	List<TmsTaskCountData> getTeamMemberTaskStats(@Param("userId") Long userId, @Param("projectId") Long projectId,@Param("interval") String interval);
 
 
+
 	        	        @Query(value = "SELECT  \r\n"
+
 	        	        		+ "	        	                    t.taskid,\r\n"
 	        	        		+ "	        	                    DATE(t.createddate) AS createddate,\r\n"
 	        	        		+ "	        	                    DATE(t.updateddate) AS updateddate,\r\n"
@@ -1814,9 +1816,7 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	        		+ "	        	                JOIN tms_project p ON t.pid = p.pid\r\n"
 	        	        		+ "	        	                LEFT JOIN tms_users u1 ON t.updatedby = u1.user_id\r\n"
 	        	        		+ "	        	                LEFT JOIN tms_users u2 ON t.addedby = u2.user_id\r\n"
-	        	        		+ "	        	                where\r\n"
-	        	        		+ "	        	                 (:projectid IS NOT NULL OR (:intervalType IS NOT NULL AND :intervalType <> ''))\r\n"
-	        	        		+ "                              AND (:projectid IS NULL OR p.projectid = :projectid)\r\n"
+	        	        		+ "	        	                WHERE (:projectid IS NULL OR p.projectid = :projectid)\r\n"
 	        	        		+ "	        	                 AND (\r\n"
 	        	        		+ "                                        :intervalType IS NULL OR :intervalType = '' \r\n"
 	        	        		+ "	        	                    OR    (:intervalType = 'DAILY'   AND DATE(t.start_date) = CURDATE())\r\n"
@@ -1863,9 +1863,7 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	        		+ "	        	                JOIN tms_project p ON t.pid = p.pid\r\n"
 	        	        		+ "	        	                LEFT JOIN tms_users u1 ON t.updatedby = u1.user_id\r\n"
 	        	        		+ "	        	                LEFT JOIN tms_users u2 ON t.addedby = u2.user_id\r\n"
-	        	        		+ "	        	                where\r\n"
-	        	        		+ "	        	                 (:projectid IS NOT NULL OR (:intervalType IS NOT NULL AND :intervalType <> ''))\r\n"
-	        	        		+ "	        	                  AND (:projectid IS NULL OR p.projectid = :projectid)\r\n"
+	        	        		+ "	        	                WHERE p.projectid = :projectid\r\n"
 	        	        		+ "	        	                  AND (\r\n"
 	        	        		+ "	        	                        t.ticketid LIKE CONCAT('%', :keyword, '%')\r\n"
 	        	        		+ "	        	                     OR DATE_FORMAT(t.start_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')\r\n"
@@ -1881,13 +1879,12 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	        		+ "	        	                        ) LIKE CONCAT('%', :keyword, '%')\r\n"
 	        	        		+ "	        	                  )\r\n"
 	        	        		+ "	        	                  AND (\r\n"
-	        	        		+ "	        	                        (:intervalType = 'daily'   AND DATE(t.start_date) = CURDATE())\r\n"
+	        	        		+ "	        	                        (:intervalType = 'DAILY'   AND DATE(t.start_date) = CURDATE())\r\n"
 	        	        		+ "	        	                     OR (:intervalType = 'WEEKLY'  AND YEARWEEK(t.start_date, 1) = YEARWEEK(CURDATE(), 1))\r\n"
-	        	        		+ "	        	                     OR (:intervalType = 'monthly' AND YEAR(t.start_date) = YEAR(CURDATE()) \r\n"
+	        	        		+ "	        	                     OR (:intervalType = 'MONTHLY' AND YEAR(t.start_date) = YEAR(CURDATE()) \r\n"
 	        	        		+ "	        	                                                    AND MONTH(t.start_date) = MONTH(CURDATE()))\r\n"
 	        	        		+ "	        	                     OR (:intervalType = 'YEARLY'  AND YEAR(t.start_date) = YEAR(CURDATE()))\r\n"
 	        	        		+ "	        	                  )",
-
 	        	                nativeQuery = true)
 	        	            Page<TaskTrackerDTO> findTaskListByTmsProjectIdWithSearching(
 	        	            		 Pageable pageble,
