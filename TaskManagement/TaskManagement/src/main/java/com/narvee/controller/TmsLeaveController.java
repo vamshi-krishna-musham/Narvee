@@ -28,6 +28,10 @@ public class TmsLeaveController {
     public TmsLeave apply(@RequestBody TmsLeave leave) {
         return service.apply(leave);
     }
+    @PutMapping("/update/{id}")
+    public TmsLeave update(@PathVariable Long id, @RequestBody TmsLeave leave) {
+        return service.update(id, leave);
+    }
 
     @GetMapping
     public List<TmsLeave> all() {

@@ -19,6 +19,7 @@ import { LeaveHomeComponent } from './leave/leave-home/leave-home.component';
 import { ApplyLeaveComponent } from './leave/apply-leave/apply-leave.component';
 import { LeaveHistoryComponent } from './leave/leave-history/leave-history.component';
 import { LeaveApprovalsComponent } from './leave/leave-approvals/leave-approvals.component';
+import { UpdateLeaveComponent } from './leave/update-leave/update-leave.component';
 const routes: Routes = [
   {path:'',redirectTo:'/register-login',pathMatch:'full'},
   {path:'register-login',component:RegisterManagmentComponent},
@@ -42,6 +43,7 @@ const routes: Routes = [
       {path:'leave/apply',component: ApplyLeaveComponent , canActivate: [AuthGuard], },
       {path:'leave/history',component: LeaveHistoryComponent , canActivate: [AuthGuard], },
       { path: 'leave/approvals', component: LeaveApprovalsComponent },
+      { path: 'leave/update/:id', component: UpdateLeaveComponent },
        {
     path: '**',
     redirectTo: 'register-login'

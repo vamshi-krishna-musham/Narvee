@@ -54,6 +54,7 @@ import { ApplyLeaveComponent } from './leave/apply-leave/apply-leave.component';
 import { LeaveHistoryComponent } from './leave/leave-history/leave-history.component';
 import { LeaveApprovalsComponent } from './leave/leave-approvals/leave-approvals.component';
 import { LeaveNavComponent } from './leave/leave-nav/leave-nav.component';
+import { UpdateLeaveComponent } from './leave/update-leave/update-leave.component';
 //import { ApplyLeaveComponent } from './leave/apply-leave/apply-leave.component';
 
 // Interceptor
@@ -77,6 +78,7 @@ import { NgxMatIntlTelInputComponent } from 'ngx-mat-intl-tel-input';
     LeaveHistoryComponent,
     LeaveApprovalsComponent,
     LeaveNavComponent,
+    UpdateLeaveComponent,
     
     //ApplyLeaveDialogComponent,
   ],

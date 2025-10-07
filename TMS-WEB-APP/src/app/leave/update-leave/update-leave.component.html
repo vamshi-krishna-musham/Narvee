@@ -1,0 +1,58 @@
+<div class="apply-leave-container mat-elevation-z2">
+  <h2>Update Leave</h2>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="leave-form">
+
+    <!-- Leave Type -->
+    <mat-form-field appearance="fill">
+      <mat-label>Leave Type</mat-label>
+      <mat-select formControlName="leaveType" required>
+        <mat-option value="Sick">Sick</mat-option>
+        <mat-option value="Casual">Casual or Vacation (Requires 2 weeks prior notice)</mat-option>
+        <mat-option value="Emergency">Emergency</mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.get('leaveType')?.hasError('required')">
+        Leave type is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Dates + Duration -->
+    <div class="dates-row">
+      <!-- Start Date -->
+      <mat-form-field appearance="fill">
+        <mat-label>Start Date</mat-label>
+        <input matInput [matDatepicker]="p1" formControlName="startDate" />
+        <mat-datepicker-toggle matSuffix [for]="p1"></mat-datepicker-toggle>
+        <mat-datepicker #p1></mat-datepicker>
+      </mat-form-field>
+
+      <!-- End Date -->
+      <mat-form-field appearance="fill">
+        <mat-label>End Date</mat-label>
+        <input matInput [matDatepicker]="p2" formControlName="endDate" />
+        <mat-datepicker-toggle matSuffix [for]="p2"></mat-datepicker-toggle>
+        <mat-datepicker #p2></mat-datepicker>
+      </mat-form-field>
+
+      <!-- Duration -->
+      <mat-form-field appearance="fill">
+        <mat-label>Duration (days)</mat-label>
+        <input matInput formControlName="duration" />
+      </mat-form-field>
+    </div>
+
+    <!-- Reason -->
+    <mat-form-field appearance="fill" class="reason-field">
+      <mat-label>Reason</mat-label>
+      <textarea matInput rows="4" formControlName="reason" maxlength="500"></textarea>
+      <mat-hint align="end">{{ (form.get('reason')?.value?.length || 0) }}/500</mat-hint>
+    </mat-form-field>
+    <!-- Actions -->
+    <div class="actions">
+      <button mat-stroked-button color="warn" type="button" (click)="cancel()">Cancel</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="!datesChanged() || form.invalid">
+        Update
+      </button>
+    </div>
+  </form>
+</div>
