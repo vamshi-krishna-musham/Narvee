@@ -28,10 +28,16 @@ export class LeaveService {
   constructor(private http: HttpClient) {}
 
   // ----- Member APIs -----
-  apply(body: any) {
-    return this.http.post(`${this.base}/task/leaves`, body);
+  apply(body: any): Observable<LeaveRequest[]>{
+    return this.http.post<LeaveRequest[]>(`${this.base}/task/leaves`, body);
   }
+getById(id: number) {
+  return this.http.get<LeaveRequest>(`${this.base}/task/leaves/${id}`);
+}
 
+  update(id: number, body: any) {
+    return this.http.put(`${this.base}/task/leaves/update/${id}`, body);
+  }
   listMine(id: number): Observable<LeaveRequest[]> {
     return this.http.get<any[]>(`${this.base}/task/leaves/user/${id}`).pipe(
       map(res => res.map(r => ({

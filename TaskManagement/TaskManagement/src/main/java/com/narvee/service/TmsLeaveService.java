@@ -5,6 +5,7 @@ import com.narvee.repository.TmsLeaveRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -16,6 +17,35 @@ public class TmsLeaveService {
     public TmsLeave apply(TmsLeave leave) {
         return repo.save(leave);
     }
+    public TmsLeave update(Long id, TmsLeave partial) {
+        return repo.findById(id).map(existing -> {
+            if (partial.getLeaveCategory() != null) {
+                existing.setLeaveCategory(partial.getLeaveCategory());
+            }
+            if (partial.getReason() != null) {
+                existing.setReason(partial.getReason());
+            }
+            if (partial.getStatus() != null) {
+                existing.setStatus(partial.getStatus());
+            }
+            if (partial.getAdminComment() != null) {
+                existing.setAdminComment(partial.getAdminComment());
+            }
+            if (partial.getDuration() != null) {
+                existing.setDuration(partial.getDuration());
+            }
+            if (partial.getFromDate() != null) {
+                existing.setFromDate(partial.getFromDate());
+            }
+            if (partial.getToDate() != null) {
+                existing.setToDate(partial.getToDate());
+            }
+
+            existing.setUpdatedAt(java.time.LocalDateTime.now());
+            return repo.save(existing);
+        }).orElse(null);
+    }
+
 
     public List<TmsLeave> all() {
         return repo.findAll();

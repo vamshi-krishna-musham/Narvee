@@ -150,6 +150,10 @@ export class LeaveHistoryComponent implements OnInit {
     });
   }
 
+  update(id: number): void {
+    this.router.navigate(['/leave/update', id]);
+  }
+
   // Navigate to full-page Apply Leave
   openApplyLeave(): void {
     this.router.navigate(['/leave/apply']);
@@ -159,6 +163,7 @@ export class LeaveHistoryComponent implements OnInit {
   openManageLeaves(): void {
     this.router.navigate(['/leave/approvals']);
   }
+
 
   private toDateOnly(d: string | Date): Date {
     const date = typeof d === 'string' ? new Date(d) : d;
