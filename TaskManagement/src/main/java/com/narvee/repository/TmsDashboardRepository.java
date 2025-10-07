@@ -1786,44 +1786,42 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	        	    nativeQuery = true)
 	        	        	List<TmsTaskCountData> getTeamMemberTaskStats(@Param("userId") Long userId, @Param("projectId") Long projectId,@Param("interval") String interval);
 
-	        	        @Query(value = """
-	        	                SELECT  
-	        	                    t.taskid,
-	        	                    DATE(t.createddate) AS createddate,
-	        	                    DATE(t.updateddate) AS updateddate,
-	        	                    t.addedby,
-	        	                    t.department,
-	        	                    t.description,
-	        	                    t.maxnum,
-	        	                    t.status,
-	        	                    t.target_date,
-	        	                    t.ticketid,
-	        	                    t.updatedby,
-	        	                    t.taskname,
-	        	                    p.projectid,
-	        	                    p.pid,
-	        	                    t.duration,
-	        	                    t.priority,
-	        	                    t.start_date,
-	        	                    CONCAT(
-	        	                        COALESCE(u1.first_name, u2.first_name), ' ',
-	        	                        COALESCE(u1.middle_name, u2.middle_name, ''), ' ',
-	        	                        COALESCE(u1.last_name, u2.last_name)
-	        	                    ) AS fullname
-	        	                FROM tms_task t
-	        	                JOIN tms_project p ON t.pid = p.pid
-	        	                LEFT JOIN tms_users u1 ON t.updatedby = u1.user_id
-	        	                LEFT JOIN tms_users u2 ON t.addedby = u2.user_id
-	        	                WHERE (:projectid IS NULL OR p.projectid = :projectid)
-	        	                 AND (
-                                        :intervalType IS NULL OR :intervalType = '' 
-	        	                    OR    (:intervalType = 'DAILY'   AND DATE(t.start_date) = CURDATE())
-	        	                     OR (:intervalType = 'WEEKLY'  AND YEARWEEK(t.start_date, 1) = YEARWEEK(CURDATE(), 1))
-	        	                     OR (:intervalType = 'MONTHLY' AND YEAR(t.start_date) = YEAR(CURDATE()) 
-	        	                                                    AND MONTH(t.start_date) = MONTH(CURDATE()))
-	        	                     OR (:intervalType = 'YEARLY'  AND YEAR(t.start_date) = YEAR(CURDATE()))
-	        	                  )
-	        	                """,
+	        	        @Query(value = " SELECT  \r\n"
+	        	        		+ "	        	                    t.taskid,\r\n"
+	        	        		+ "	        	                    DATE(t.createddate) AS createddate,\r\n"
+	        	        		+ "	        	                    DATE(t.updateddate) AS updateddate,\r\n"
+	        	        		+ "	        	                    t.addedby,\r\n"
+	        	        		+ "	        	                    t.department,\r\n"
+	        	        		+ "	        	                    t.description,\r\n"
+	        	        		+ "	        	                    t.maxnum,\r\n"
+	        	        		+ "	        	                    t.status,\r\n"
+	        	        		+ "	        	                    t.target_date,\r\n"
+	        	        		+ "	        	                    t.ticketid,\r\n"
+	        	        		+ "	        	                    t.updatedby,\r\n"
+	        	        		+ "	        	                    t.taskname,\r\n"
+	        	        		+ "	        	                    p.projectid,\r\n"
+	        	        		+ "	        	                    p.pid,\r\n"
+	        	        		+ "	        	                    t.duration,\r\n"
+	        	        		+ "	        	                    t.priority,\r\n"
+	        	        		+ "	        	                    t.start_date,\r\n"
+	        	        		+ "	        	                    CONCAT(\r\n"
+	        	        		+ "	        	                        COALESCE(u1.first_name, u2.first_name), ' ',\r\n"
+	        	        		+ "	        	                        COALESCE(u1.middle_name, u2.middle_name, ''), ' ',\r\n"
+	        	        		+ "	        	                        COALESCE(u1.last_name, u2.last_name)\r\n"
+	        	        		+ "	        	                    ) AS fullname\r\n"
+	        	        		+ "	        	                FROM tms_task t\r\n"
+	        	        		+ "	        	                JOIN tms_project p ON t.pid = p.pid\r\n"
+	        	        		+ "	        	                LEFT JOIN tms_users u1 ON t.updatedby = u1.user_id\r\n"
+	        	        		+ "	        	                LEFT JOIN tms_users u2 ON t.addedby = u2.user_id\r\n"
+	        	        		+ "	        	                WHERE (:projectid IS NULL OR p.projectid = :projectid)\r\n"
+	        	        		+ "	        	                 AND (\r\n"
+	        	        		+ "                                        :intervalType IS NULL OR :intervalType = '' \r\n"
+	        	        		+ "	        	                    OR    (:intervalType = 'DAILY'   AND DATE(t.start_date) = CURDATE())\r\n"
+	        	        		+ "	        	                     OR (:intervalType = 'WEEKLY'  AND YEARWEEK(t.start_date, 1) = YEARWEEK(CURDATE(), 1))\r\n"
+	        	        		+ "	        	                     OR (:intervalType = 'MONTHLY' AND YEAR(t.start_date) = YEAR(CURDATE()) \r\n"
+	        	        		+ "	        	                                                    AND MONTH(t.start_date) = MONTH(CURDATE()))\r\n"
+	        	        		+ "	        	                     OR (:intervalType = 'YEARLY'  AND YEAR(t.start_date) = YEAR(CURDATE()))\r\n"
+	        	        		+ "	        	                  )",
 	        	                nativeQuery = true)
 	        	            Page<TaskTrackerDTO> findTaskListByTmsProjectid(
 	        	            		 Pageable pageble,
@@ -1833,57 +1831,55 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	            );
 
 	        	        
-	        	        @Query(value = """
-	        	                SELECT 
-	        	                    t.taskid,
-	        	                    DATE(t.createddate) AS createddate,
-	        	                    DATE(t.updateddate) AS updateddate,
-	        	                    t.addedby,
-	        	                    t.department,
-	        	                    t.description,
-	        	                    t.maxnum,
-	        	                    t.status,
-	        	                    t.target_date,
-	        	                    t.ticketid,
-	        	                    t.updatedby,
-	        	                    t.taskname,
-	        	                    p.projectid,
-	        	                    t.pid,
-	        	                    t.duration,
-	        	                    t.priority,
-	        	                    t.start_date,
-	        	                    CONCAT(
-	        	                        COALESCE(u1.first_name, u2.first_name), ' ',
-	        	                        COALESCE(u1.middle_name, u2.middle_name, ''), ' ',
-	        	                        COALESCE(u1.last_name, u2.last_name)
-	        	                    ) AS fullname
-	        	                FROM tms_task t
-	        	                JOIN tms_project p ON t.pid = p.pid
-	        	                LEFT JOIN tms_users u1 ON t.updatedby = u1.user_id
-	        	                LEFT JOIN tms_users u2 ON t.addedby = u2.user_id
-	        	                WHERE p.projectid = :projectid
-	        	                  AND (
-	        	                        t.ticketid LIKE CONCAT('%', :keyword, '%')
-	        	                     OR DATE_FORMAT(t.start_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')
-	        	                     OR t.taskname LIKE CONCAT('%', :keyword, '%')
-	        	                     OR DATE_FORMAT(t.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')
-	        	                     OR t.status LIKE CONCAT('%', :keyword, '%')
-	        	                     OR t.priority LIKE CONCAT('%', :keyword, '%')
-	        	                     OR t.duration LIKE CONCAT('%', :keyword, '%')
-	        	                     OR CONCAT(
-	        	                            COALESCE(u1.first_name, u2.first_name), ' ',
-	        	                            COALESCE(u1.middle_name, u2.middle_name, ''), ' ',
-	        	                            COALESCE(u1.last_name, u2.last_name)
-	        	                        ) LIKE CONCAT('%', :keyword, '%')
-	        	                  )
-	        	                  AND (
-	        	                        (:intervalType = 'DAILY'   AND DATE(t.start_date) = CURDATE())
-	        	                     OR (:intervalType = 'WEEKLY'  AND YEARWEEK(t.start_date, 1) = YEARWEEK(CURDATE(), 1))
-	        	                     OR (:intervalType = 'MONTHLY' AND YEAR(t.start_date) = YEAR(CURDATE()) 
-	        	                                                    AND MONTH(t.start_date) = MONTH(CURDATE()))
-	        	                     OR (:intervalType = 'YEARLY'  AND YEAR(t.start_date) = YEAR(CURDATE()))
-	        	                  )
-	        	                """,
+	        	        @Query(value = "SELECT \r\n"
+	        	        		+ "	        	                    t.taskid,\r\n"
+	        	        		+ "	        	                    DATE(t.createddate) AS createddate,\r\n"
+	        	        		+ "	        	                    DATE(t.updateddate) AS updateddate,\r\n"
+	        	        		+ "	        	                    t.addedby,\r\n"
+	        	        		+ "	        	                    t.department,\r\n"
+	        	        		+ "	        	                    t.description,\r\n"
+	        	        		+ "	        	                    t.maxnum,\r\n"
+	        	        		+ "	        	                    t.status,\r\n"
+	        	        		+ "	        	                    t.target_date,\r\n"
+	        	        		+ "	        	                    t.ticketid,\r\n"
+	        	        		+ "	        	                    t.updatedby,\r\n"
+	        	        		+ "	        	                    t.taskname,\r\n"
+	        	        		+ "	        	                    p.projectid,\r\n"
+	        	        		+ "	        	                    t.pid,\r\n"
+	        	        		+ "	        	                    t.duration,\r\n"
+	        	        		+ "	        	                    t.priority,\r\n"
+	        	        		+ "	        	                    t.start_date,\r\n"
+	        	        		+ "	        	                    CONCAT(\r\n"
+	        	        		+ "	        	                        COALESCE(u1.first_name, u2.first_name), ' ',\r\n"
+	        	        		+ "	        	                        COALESCE(u1.middle_name, u2.middle_name, ''), ' ',\r\n"
+	        	        		+ "	        	                        COALESCE(u1.last_name, u2.last_name)\r\n"
+	        	        		+ "	        	                    ) AS fullname\r\n"
+	        	        		+ "	        	                FROM tms_task t\r\n"
+	        	        		+ "	        	                JOIN tms_project p ON t.pid = p.pid\r\n"
+	        	        		+ "	        	                LEFT JOIN tms_users u1 ON t.updatedby = u1.user_id\r\n"
+	        	        		+ "	        	                LEFT JOIN tms_users u2 ON t.addedby = u2.user_id\r\n"
+	        	        		+ "	        	                WHERE p.projectid = :projectid\r\n"
+	        	        		+ "	        	                  AND (\r\n"
+	        	        		+ "	        	                        t.ticketid LIKE CONCAT('%', :keyword, '%')\r\n"
+	        	        		+ "	        	                     OR DATE_FORMAT(t.start_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')\r\n"
+	        	        		+ "	        	                     OR t.taskname LIKE CONCAT('%', :keyword, '%')\r\n"
+	        	        		+ "	        	                     OR DATE_FORMAT(t.target_date, '%d-%m-%Y') LIKE CONCAT('%', :keyword, '%')\r\n"
+	        	        		+ "	        	                     OR t.status LIKE CONCAT('%', :keyword, '%')\r\n"
+	        	        		+ "	        	                     OR t.priority LIKE CONCAT('%', :keyword, '%')\r\n"
+	        	        		+ "	        	                     OR t.duration LIKE CONCAT('%', :keyword, '%')\r\n"
+	        	        		+ "	        	                     OR CONCAT(\r\n"
+	        	        		+ "	        	                            COALESCE(u1.first_name, u2.first_name), ' ',\r\n"
+	        	        		+ "	        	                            COALESCE(u1.middle_name, u2.middle_name, ''), ' ',\r\n"
+	        	        		+ "	        	                            COALESCE(u1.last_name, u2.last_name)\r\n"
+	        	        		+ "	        	                        ) LIKE CONCAT('%', :keyword, '%')\r\n"
+	        	        		+ "	        	                  )\r\n"
+	        	        		+ "	        	                  AND (\r\n"
+	        	        		+ "	        	                        (:intervalType = 'DAILY'   AND DATE(t.start_date) = CURDATE())\r\n"
+	        	        		+ "	        	                     OR (:intervalType = 'WEEKLY'  AND YEARWEEK(t.start_date, 1) = YEARWEEK(CURDATE(), 1))\r\n"
+	        	        		+ "	        	                     OR (:intervalType = 'MONTHLY' AND YEAR(t.start_date) = YEAR(CURDATE()) \r\n"
+	        	        		+ "	        	                                                    AND MONTH(t.start_date) = MONTH(CURDATE()))\r\n"
+	        	        		+ "	        	                     OR (:intervalType = 'YEARLY'  AND YEAR(t.start_date) = YEAR(CURDATE()))\r\n"
+	        	        		+ "	        	                  )",
 	        	                nativeQuery = true)
 	        	            Page<TaskTrackerDTO> findTaskListByTmsProjectIdWithSearching(
 	        	            		 Pageable pageble,

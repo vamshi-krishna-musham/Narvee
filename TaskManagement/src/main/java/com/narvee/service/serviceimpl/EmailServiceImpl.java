@@ -901,7 +901,7 @@ public class EmailServiceImpl {
 			// ========== Reminder 1 day before ==========
 			subject = "Reminder: Project " + project.getProjectid() + " target date is tomorrow";
 			body = buildHtmlBody("Reminder: Project Deadline Approaching", project, assignUsernames, createdBy,
-					"This is a friendly reminder that the project is due tomorrow.");
+					"This is a gentle reminder that the following project is due tomorrow. Please review the details below and ensure that all required actions are completed on time.");
 
 		} else {
 			// ========== Exceeded (overdue) ==========
@@ -1053,7 +1053,7 @@ public class EmailServiceImpl {
 			// ========== Reminder 1 day before ==========
 			subject = "Reminder: Task " + task.getTicketid() + " target date is tomorrow";
 			body = buildHtmlBody("Reminder: Project Deadline Approaching", task, assignUsernames, createdBy,
-					"This is a friendly reminder that the task is due tomorrow.");
+					"This is a gentle reminder that the following task is due tomorrow. Please review the details below and ensure that all required actions are completed on time.");
 
 		} else {
 			// ========== Exceeded (overdue) ==========
@@ -1113,13 +1113,13 @@ public class EmailServiceImpl {
 
 		if (!emailType.equals("expiredSubTask")) {
 			// ========== Reminder 1 day before ==========
-			subject = "Reminder: SubTask " + subtask.getSubTaskId() + " target date is tomorrow";
+			subject = "Reminder: SubTask " + subtask.getSubtasktokenid() + " target date is tomorrow";
 			body = buildHtmlBody("Reminder: SubTask Deadline Approaching", subtask, assignUsernames, createdBy,
-					"This is a friendly reminder that the Subtask is due tomorrow.");
+					" This is a gentle reminder that the following subtask is due tomorrow. Please review the details below and ensure that all required actions are completed on time.");
 
 		} else {
 			// ========== Exceeded (overdue) ==========
-			subject = "⚠ SubTask Overdue: " + subtask.getSubTaskId();
+			subject = "⚠ SubTask Overdue: " + subtask.getSubtasktokenid();
 			body = buildHtmlBody("SubTask Deadline Exceeded", subtask, assignUsernames, createdBy,
 					"The target date has passed and the SubTask is still open. Please take action.");
 		}
@@ -1132,7 +1132,7 @@ public class EmailServiceImpl {
 		helper.setSubject(subject);
 		helper.setText(body, true);
 		mailSender.send(message);
-		logger.info("Deadline alert mail sent for task: " + subtask.getSubTaskId());
+		logger.info("Deadline alert mail sent for task: " + subtask.getSubtasktokenid());
 		System.err.println("task :"+ taskRepository.findNameByUserId(subtask.getAddedby()));
 	}
 
@@ -1148,7 +1148,7 @@ public class EmailServiceImpl {
 				+ "<h2 style='margin:0;'>Task Management</h2></td></tr>" + "<tr><td style='padding:30px;color:#333;'>"
 				+ "<p style='font-size:16px;'>Hi Team,</p>" + "<p style='font-size:14px;'>" + extraMessage + "</p>"
 				+ "<table cellpadding='6' cellspacing='0' style='font-size:14px;'>"
-				+ "<tr><td style='font-weight:bold;'>SubTask ID:</td><td>" + subtask.getSubTaskId() + "</td></tr>"
+				+ "<tr><td style='font-weight:bold;'>SubTask ID:</td><td>" + subtask.getSubtasktokenid() + "</td></tr>"
 				+ "<tr><td style='font-weight:bold;'>SubTask Name:</td><td>" + subtask.getSubTaskName() + "</td></tr>"
 				+ "<tr><td style='font-weight:bold;'>Description:</td><td>" + subtask.getSubTaskDescription() + "</td></tr>"
 				+ "<tr><td style='font-weight:bold;'>Assigned Users:</td><td>" + assignedUsers + "</td></tr>"

@@ -50,7 +50,7 @@ public class TmsProject extends AuditModel {
 	private String projectid;
 	@Column(name = "projectname")
 	private String projectName;
-	@Column(name ="addedby" )s
+	@Column(name ="addedby" )
 	private Long addedBy;
 	private Long adminId;
 	@Column(name ="updatedby")

@@ -33,7 +33,7 @@ public class ProjectDeadlineScheduler {
 	@Autowired
 	private ProjectRepository projectRepository;
 
-	@Autowired
+	@Autowired   
 	private TaskRepository taskRepository;
 	
 	@Autowired
@@ -169,8 +169,9 @@ public class ProjectDeadlineScheduler {
 
 		}
 	}
-
-//	 @Scheduled(cron = "0 * * * * *") // every 1 minute
+	
+	  @Transactional
+	// @Scheduled(cron = "0 * * * * *") // every 1 minute
 	public void subtaskDailyDeadlineCheck() throws UnsupportedEncodingException, MessagingException {
 		logger.info("!!! inside class: ProjectDeadlineScheduler, !! method: taskDailyDeadlineCheck");
 		List<TmsSubTask> allTasks = subTaskRepository.getAllSubTaskDeatils();
