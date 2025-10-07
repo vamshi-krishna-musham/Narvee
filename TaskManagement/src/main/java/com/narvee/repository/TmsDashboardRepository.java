@@ -1786,7 +1786,10 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	        	    nativeQuery = true)
 	        	        	List<TmsTaskCountData> getTeamMemberTaskStats(@Param("userId") Long userId, @Param("projectId") Long projectId,@Param("interval") String interval);
 
-	        	        @Query(value = " SELECT  \r\n"
+
+
+	        	        @Query(value = "SELECT  \r\n"
+
 	        	        		+ "	        	                    t.taskid,\r\n"
 	        	        		+ "	        	                    DATE(t.createddate) AS createddate,\r\n"
 	        	        		+ "	        	                    DATE(t.updateddate) AS updateddate,\r\n"
@@ -1822,6 +1825,7 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	        		+ "	        	                                                    AND MONTH(t.start_date) = MONTH(CURDATE()))\r\n"
 	        	        		+ "	        	                     OR (:intervalType = 'YEARLY'  AND YEAR(t.start_date) = YEAR(CURDATE()))\r\n"
 	        	        		+ "	        	                  )",
+
 	        	                nativeQuery = true)
 	        	            Page<TaskTrackerDTO> findTaskListByTmsProjectid(
 	        	            		 Pageable pageble,
@@ -1831,6 +1835,7 @@ public interface TmsDashboardRepository extends JpaRepository<TmsProject, Long> 
 	        	            );
 
 	        	        
+
 	        	        @Query(value = "SELECT \r\n"
 	        	        		+ "	        	                    t.taskid,\r\n"
 	        	        		+ "	        	                    DATE(t.createddate) AS createddate,\r\n"

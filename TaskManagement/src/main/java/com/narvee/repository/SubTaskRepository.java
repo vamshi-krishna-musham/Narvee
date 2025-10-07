@@ -187,8 +187,9 @@ public interface SubTaskRepository extends JpaRepository<TmsSubTask, Long> {
 	@Query(value = "SELECT p.subtasktoken_id, p.subtaskname, p.subtaskdescription, p.addedby, p.status, p.start_date, p.target_date, p.createddate, p.updateddate, p.duration, p.priority,p.subtaskid ,p.last_status_updateddate,subtaskmaxnum,	p.updatedby, p.taskid, p.createddate FROM tms_sub_task p", nativeQuery = true)
 	public List<TmsSubTask>  getAllSubTaskDeatils();
 	
-	
+
 	@Query(value = "select max(subtaskmaxnum) as max from tms_sub_task", nativeQuery = true)
 	public Long subtaskmaxnum();
+
 }
 
