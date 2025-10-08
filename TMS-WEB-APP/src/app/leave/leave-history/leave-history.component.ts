@@ -14,7 +14,7 @@ import { ViewChild } from '@angular/core';
 })
 
 export class LeaveHistoryComponent implements OnInit {
-  displayedColumns = ['userId','type', 'dates', 'reason', 'status','Admin Comment', 'actions'];
+  displayedColumns = ['type', 'dates', 'reason', 'status','Admin Comment', 'actions'];
   displayedSummaryColumns =[
   'totalConsumed',
   'approved',
