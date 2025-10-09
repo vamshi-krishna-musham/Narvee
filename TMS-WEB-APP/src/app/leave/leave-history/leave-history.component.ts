@@ -112,7 +112,10 @@ export class LeaveHistoryComponent implements OnInit {
       }
     });
   }
-
+  private toDateOnly(d: string | Date): Date {
+    const date = typeof d === 'string' ? new Date(d) : d;
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  }
 
   isCancellable(r: LeaveRequest): boolean {
     if (!r?.startDate) return false;

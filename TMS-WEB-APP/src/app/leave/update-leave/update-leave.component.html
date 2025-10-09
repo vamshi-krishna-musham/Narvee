@@ -1,5 +1,9 @@
 <div class="apply-leave-container mat-elevation-z2">
   <h2>Update Leave</h2>
+  <button mat-icon-button class="close-btn" (click)="exit()">
+  <mat-icon>close</mat-icon>
+</button>
+
 
   <form [formGroup]="form" (ngSubmit)="submit()" class="leave-form">
 
@@ -49,10 +53,21 @@
     </mat-form-field>
     <!-- Actions -->
     <div class="actions">
-      <button mat-stroked-button color="warn" type="button" (click)="cancel()">Cancel</button>
+      <button mat-stroked-button color="primary" type="button" (click)="cancel(leaveId)">Cancel Leave</button>
       <button mat-raised-button color="primary" type="submit" [disabled]="!datesChanged() || form.invalid">
         Update
       </button>
     </div>
   </form>
 </div>
+
+<ng-template #cancelDialog>
+  <h2 mat-dialog-title>Cancel Leave Request</h2>
+  <mat-dialog-content>
+    <p>Are you sure you want to cancel this leave request?</p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button [mat-dialog-close]="false">No</button>
+    <button mat-raised-button color="primary" [mat-dialog-close]="true">Cancel Leave</button>
+  </mat-dialog-actions>
+</ng-template>

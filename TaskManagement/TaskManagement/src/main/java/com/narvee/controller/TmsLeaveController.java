@@ -63,8 +63,8 @@ public class TmsLeaveController {
                        : ResponseEntity.notFound().build();
     }
     @PatchMapping("/{id}/cancel")
-    public ResponseEntity<TmsLeave> patchLeaveCancel(@PathVariable Long id) {
-        TmsLeave cancelled = service.cancelLeave(id);
+    public ResponseEntity<TmsLeave> patchLeaveCancel(@PathVariable Long id, @RequestBody TmsLeave partial) {
+        TmsLeave cancelled = service.cancelLeave(id, partial);
         return cancelled != null
             ? ResponseEntity.ok(cancelled)
             : ResponseEntity.notFound().build();

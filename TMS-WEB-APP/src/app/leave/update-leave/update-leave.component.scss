@@ -1,8 +1,9 @@
 .apply-leave-container {
-  padding: 24px;
-  margin: 16px;
-  background: #fff;
-  border-radius: 8px;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0px;
+    padding: 10px;
+    background-color: #fff;
 }
 
 .leave-form {
@@ -10,7 +11,18 @@
   gap: 16px;
   max-width: 720px;
 }
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: #555;
+  z-index: 2;
+  transition: color 0.2s ease;
 
+  &:hover {
+    color: #000;
+  }
+}
 .dates-row {
   display: grid;
   grid-template-columns: 1fr 1fr 0.8fr;
@@ -28,7 +40,22 @@
 
 .actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+  justify-content: space-between; /* pushes Cancel left, Update right */
   margin-top: 16px;
+}
+
+.actions button {
+  min-width: 120px; /* optional: makes buttons consistent */
+}
+
+.close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: #555;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #000;
+  }
 }

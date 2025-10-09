@@ -3,6 +3,7 @@
   Manage Leaves
 </button>
 
+<div class="leave-summary-section">
 <!-- Header -->
 <div class="header-row">
   <h2>Leave Summary</h2>
@@ -20,7 +21,7 @@
     <div class="description">{{ c.description }}</div>
   </mat-card>
 </div>
-
+</div>
 <!-- Leave History -->
 <div class="leave-history">
 
@@ -83,16 +84,9 @@
           <button
             mat-stroked-button
             color="primary"
-            (click)="cancel(r.id)"
-            *ngIf="r.status === 'PENDING'">
-            Cancel
-          </button>
-          <button
-            mat-stroked-button
-            color="primary"
             (click)="update(r.id)"
             *ngIf="r.status === 'PENDING' || r.status === 'DENIED'">
-            Update
+            Modify
           </button>
         </td>
       </ng-container>

@@ -62,7 +62,7 @@ public class TmsLeaveService {
         }
         return false;
     }
-    public TmsLeave cancelLeave(Long id) {
+    public TmsLeave cancelLeave(Long id, TmsLeave partial) {
         return repo.findById(id).map(existing -> {
             if ("PENDING".equalsIgnoreCase(existing.getStatus())) {
                 existing.setStatus("CANCELED");

@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,TemplateRef,ViewChild } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LeaveService } from '../../services/leave.service';
+import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+
 
 @Component({
   selector: 'app-update-leave',
@@ -10,6 +13,7 @@ import { LeaveService } from '../../services/leave.service';
   styleUrls: ['./update-leave.component.scss']
 })
 export class UpdateLeaveComponent implements OnInit {
+  @ViewChild('cancelDialog') cancelDialogTpl!: TemplateRef<any>;
   form = this.fb.group({
     leaveType: [null, Validators.required],
     startDate: [null, Validators.required],
@@ -19,6 +23,7 @@ export class UpdateLeaveComponent implements OnInit {
     adminComment: [''],
     status: ['PENDING', Validators.required]
   });
+  
 
   leaveId!: number;
 
@@ -27,7 +32,8 @@ export class UpdateLeaveComponent implements OnInit {
     private leave: LeaveService,
     private route: ActivatedRoute,
     private snack: MatSnackBar,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
   originalStartDate: string | null = null;
   originalEndDate: string | null = null;
@@ -94,8 +100,31 @@ export class UpdateLeaveComponent implements OnInit {
       error: () => this.snack.open('Update failed', 'OK', { duration: 3000 })
     });
   }
-
-  cancel(): void {
+  exit(): void {
     this.router.navigate(['/leave/history']);
+  }
+  cancel(id: number): void {
+    const profileId = Number(localStorage.getItem('profileId'));
+    const ref = this.dialog.open(this.cancelDialogTpl, {
+      width: '420px',
+      disableClose: true,
+      data: { comment: '' }
+    });
+ref.afterClosed().subscribe(comment => {
+      if (!comment) return;
+      this.leave.cancel(id).subscribe({
+        next: () => {
+          this.snack.open('Leave Canceled', 'OK', {
+            duration: 2000, horizontalPosition: 'center', verticalPosition: 'bottom',
+            panelClass: ['custom-snack-success']
+          });
+          this.router.navigate(['/leave/history']);
+        },
+        error: () => this.snack.open('Deny failed', 'OK', {
+          duration: 3000, horizontalPosition: 'center', verticalPosition: 'bottom',
+          panelClass: ['custom-snack-failure']
+        })
+      });
+    });
   }
 }
