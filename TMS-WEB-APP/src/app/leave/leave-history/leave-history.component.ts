@@ -21,7 +21,7 @@ type SummaryRow = {
   encapsulation: ViewEncapsulation.Emulated
 })
 export class LeaveHistoryComponent implements OnInit {
-  displayedColumns = ['type', 'dates', 'reason', 'status', 'Admin Comment', 'actions'];
+  displayedColumns = ['no','type', 'startdate', 'enddate','duration', 'reason', 'status', 'Admin Comment', 'actions'];
 
   dataSource = new MatTableDataSource<LeaveRequest>([]);
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -112,6 +112,9 @@ export class LeaveHistoryComponent implements OnInit {
       }
     });
   }
+    getIndex(i: number): number {
+  return i + 1;
+}
   private toDateOnly(d: string | Date): Date {
     const date = typeof d === 'string' ? new Date(d) : d;
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());

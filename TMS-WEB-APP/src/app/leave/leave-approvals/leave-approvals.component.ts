@@ -20,7 +20,7 @@ export class LeaveApprovalsComponent implements OnInit {
   isAdminOrSuperAdmin = false;
 
   // ✅ Use this for Angular Material table
-  displayedColumns: string[] = ['user', 'type', 'dates', 'reason', 'status', 'actions'];
+  displayedColumns: string[] = ['user', 'type', 'startdate','enddate','duration', 'reason', 'status', 'actions'];
 
   constructor(
     private leave: LeaveService,
@@ -53,6 +53,10 @@ export class LeaveApprovalsComponent implements OnInit {
       error: () => { this.loading = false; this.snack.open('Failed to load pending leaves', 'OK', { duration: 3000 }); }
     });
   }
+  getIndex(i: number): number {
+  return i + 1;
+}
+
 
   // ✅ Material dialog for Approve
   approve(id: number): void {

@@ -15,6 +15,14 @@
        class="mat-elevation-z2"
        style="width:100%; margin-bottom: 24px;">
 
+  <ng-container matColumnDef="no">
+  <th mat-header-cell *matHeaderCellDef>S.No</th>
+  <td mat-cell *matCellDef="let element; let i = index">
+    {{ getIndex(i) }}
+  </td>
+  </ng-container>
+
+
   <!-- User ID -->
   <ng-container matColumnDef="userName">
     <th mat-header-cell *matHeaderCellDef>Resource Name</th>
@@ -28,13 +36,24 @@
   </ng-container>
 
   <!-- Dates -->
-  <ng-container matColumnDef="dates">
-    <th mat-header-cell *matHeaderCellDef>Dates</th>
-    <td mat-cell *matCellDef="let r">
-      {{ r.startDate | date }} → {{ r.endDate | date }} ({{r.duration}} days)
-    </td>
-  </ng-container>
-
+      <ng-container matColumnDef="startdate">
+        <th mat-header-cell *matHeaderCellDef>Start Date</th>
+        <td mat-cell *matCellDef="let r">
+          {{ r.startDate | date }} 
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="enddate">
+        <th mat-header-cell *matHeaderCellDef>End Date</th>
+        <td mat-cell *matCellDef="let r">
+          {{ r.endDate | date }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="duration">
+        <th mat-header-cell *matHeaderCellDef>Duration</th>
+        <td mat-cell *matCellDef="let r">
+          {{ r.duration }}  days
+        </td>
+      </ng-container>
   <!-- Reason -->
   <ng-container matColumnDef="reason">
     <th mat-header-cell *matHeaderCellDef>Reason</th>
@@ -57,8 +76,8 @@
   </ng-container>
 
   <!-- ✅ Updated row definitions without status -->
-  <tr mat-header-row *matHeaderRowDef="['userName','type','dates','reason','actions']"></tr>
-  <tr mat-row *matRowDef="let row; columns: ['userName','type','dates','reason','actions']"></tr>
+  <tr mat-header-row *matHeaderRowDef="['no','userName','type','startdate','enddate','duration','reason','actions']"></tr>
+  <tr mat-row *matRowDef="let row; columns: ['no','userName','type','startdate','enddate','duration','reason','actions']"></tr>
 </table>
 
 <!-- Back Button -->
