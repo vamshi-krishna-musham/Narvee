@@ -1,121 +1,108 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LeaveService, LeaveRequest } from '../../services/leave.service';
 import { Router } from '@angular/router';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
-import { ViewChild } from '@angular/core';
+
+type SummaryRow = {
+  totalEligible: number;
+  approved: number;
+  cancelled: number;
+  pending: number;
+  balanceSl: number;
+};
 
 @Component({
   selector: 'app-leave-history',
   templateUrl: './leave-history.component.html',
-  encapsulation: ViewEncapsulation.None
-
+  // Important if your dashboard styles are global/shared. If your dashboard styles
+  // are component-scoped, copy those classes into this component's SCSS (see notes below).
+  encapsulation: ViewEncapsulation.Emulated
 })
-
 export class LeaveHistoryComponent implements OnInit {
-  displayedColumns = ['type', 'dates', 'reason', 'status','Admin Comment', 'actions'];
-  displayedSummaryColumns =[
-  'totalConsumed',
-  'approved',
-  'cancelled',
-  'pending',
-  'balanceSl'
-];
+  displayedColumns = ['type', 'dates', 'reason', 'status', 'Admin Comment', 'actions'];
+
   dataSource = new MatTableDataSource<LeaveRequest>([]);
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  casualLeaves: number = 20;
-  sickLeaves: number = 10;
-  totalEligible: number = 30;
-  totalLeavesApproved: number = 0;
-  CancelledLeaves: number = 0;
-  pendingLeaves: number = 0;
-  balanceSl: number = 0;
-  balanceCl: number = 0;
-  duration?: number; // <-- add this
-  leaves: LeaveRequest[] = [];
-  loading = false;
-  
-
-
-  summaryData: any[] = [];
-
-
 
   // role check flag
-  isManager = localStorage.getItem('profileRole')?.toUpperCase() === 'SUPER ADMIN';
+  isManager = (localStorage.getItem('profileRole') || '').toUpperCase() === 'SUPER ADMIN';
+
+  // raw leaves
+  leaves: LeaveRequest[] = [];
+  loading = false;
+
+  // summary one-row data used by cards
+  summaryData: SummaryRow[] = [];
 
   constructor(
     private leave: LeaveService,
     private snack: MatSnackBar,
     private router: Router
   ) {}
+
   ngOnInit(): void {
     const profileId = Number(localStorage.getItem('profileId'));
     this.load(profileId);
+  }
 
- }
+  // --- KPI cards (same structure/look as dashboard cards) ---
+  get summaryCards() {
+    const s = this.summaryData?.[0] ?? {
+      totalEligible: 0,
+      approved: 0,
+      cancelled: 0,
+      pending: 0,
+      balanceSl: 0
+    };
+
+    return [
+      { title: 'Balance',   count: s.totalEligible, description: 'Days available to use.',           dotColor: '#1976d2' },
+      { title: 'Approved',  count: s.approved,      description: 'Approved leave requests.',         dotColor: '#1e88e5' },
+      { title: 'Cancelled', count: s.cancelled,     description: 'Cancelled leave requests.',        dotColor: '#42a5f5' },
+      { title: 'Pending',   count: s.pending,       description: 'Awaiting approval.',               dotColor: '#90caf9' },
+      { title: 'Sick',      count: s.balanceSl,     description: 'Sick leave taken.',                dotColor: '#0ea5e9' }
+    ];
+  }
+  // ---------------------------------------------------------
 
   load(id: number): void {
     this.loading = true;
+
     this.leave.listMine(id).subscribe({
       next: (res: LeaveRequest[]) => {
-        this.leaves = (res || []).sort((a: LeaveRequest, b: LeaveRequest) => {
+        // sort newest first
+        this.leaves = (res || []).sort((a, b) => {
           const ad = new Date(a.startDate).getTime();
           const bd = new Date(b.startDate).getTime();
-          return bd - ad; // newest first
+          return bd - ad;
         });
+
         this.dataSource = new MatTableDataSource<LeaveRequest>(this.leaves);
         this.dataSource.paginator = this.paginator;
-        this.casualLeaves = 20;
-        this.sickLeaves = 0;
-        this.totalEligible = 30;
-        this.totalLeavesApproved = 0;
-        this.CancelledLeaves = 0;
-        this.pendingLeaves = 0;
-        this.balanceSl = 0;
-        this.balanceCl = 0;
-        const approvedLeaves = this.leaves.filter(
-          l => l.status === 'APPROVED'
-        );
 
+        // compute summary values
+        const approvedLeaves = this.leaves.filter(l => l.status === 'APPROVED');
+        const totalApprovedDays = approvedLeaves.reduce((sum, l: any) => sum + (l.duration || 0), 0);
 
-        const totalUsed = approvedLeaves.reduce(
-          (sum, l) => sum + ((l as any).duration || 0),
-          0
-        );
-        this.totalLeavesApproved = totalUsed;
-        this.totalEligible = this.totalEligible-totalUsed
+        // you can replace these with real entitlements if you pull them from backend
+        const ENTITLED_TOTAL = 30;
 
-        this.CancelledLeaves = this.leaves.filter(l => l.status === 'CANCELED').length;
-        this.pendingLeaves = this.leaves.filter(l => l.status === 'PENDING').length;
+        const cancelledCount = this.leaves.filter(l => l.status === 'CANCELED').length;
+        const pendingCount = this.leaves.filter(l => l.status === 'PENDING').length;
 
-        const approvedSickLeaves = this.leaves.filter(
-          l => l.leaveType === 'Sick' && l.status === 'APPROVED'
-        );
+        const approvedSick = this.leaves.filter(l => l.leaveType === 'Sick' && l.status === 'APPROVED');
+        const totalSickUsed = approvedSick.reduce((sum, l: any) => sum + (l.duration || 0), 0);
 
-
-        const totalSickUsed = approvedSickLeaves.reduce(
-          (sum, l) => sum + ((l as any).duration || 0),
-          0
-        );
-
-
-        this.balanceSl = totalSickUsed;
-
-        
-
-        // Prepare summary data for the summary table
-
-        this.summaryData = [
-          {
-            totalEligible: this.totalEligible,
-            approved: this.totalLeavesApproved,
-            cancelled: this.CancelledLeaves,
-            pending: this.pendingLeaves,
-            balanceSl: this.balanceSl,            
-          }
-        ];
+        // prepare one-row summary for the cards
+        this.summaryData = [{
+          totalEligible: Math.max(ENTITLED_TOTAL - totalApprovedDays, 0),
+          approved: totalApprovedDays,
+          cancelled: cancelledCount,
+          pending: pendingCount,
+          balanceSl: totalSickUsed
+        }];
 
         this.loading = false;
       },
@@ -154,25 +141,15 @@ export class LeaveHistoryComponent implements OnInit {
     this.router.navigate(['/leave/update', id]);
   }
 
-  // Navigate to full-page Apply Leave
   openApplyLeave(): void {
     this.router.navigate(['/leave/apply']);
   }
 
-  // Navigate to Manage Leaves (manager/super admin only)
   openManageLeaves(): void {
     this.router.navigate(['/leave/approvals']);
   }
 
-
-  private toDateOnly(d: string | Date): Date {
-    const date = typeof d === 'string' ? new Date(d) : d;
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  trackByTitle(_: number, c: { title: string }) {
+    return c.title;
   }
-
-  trackById(_: number, r: LeaveRequest) {
-    return r.id;
-  }
-
-
 }

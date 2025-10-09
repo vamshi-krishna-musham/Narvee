@@ -26,6 +26,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   background-color: #4caf50 !important; /* Green for success */
   color: white;
 }
+/* Style for cancel - white background */
+.custom-snack-cancel {
+  background-color: #FFFFFF !important; /* Green for cancel */
+  color: #000000 ;
+}
 .mat-mdc-snack-bar-container .mat-mdc-snackbar-surface {
   min-width: 344px;
   max-width: 672px;
@@ -52,6 +57,57 @@ a:focus {
   color: white !important;
   font-weight: bold;
 }
+/* === KPI Card Grid (same as dashboard) === */
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.dashboard-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06);
+  padding: 14px;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 400;     /* was 600 — now normal */
+  color: #1f2937;
+  margin-bottom: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.title {
+  font-size: 14px;      /* was 15px */
+  font-weight: 400;     /* remove bold */
+}
+
+.count {
+  font-size: 22px;      /* was 32px */
+  font-weight: 500;     /* medium for subtle emphasis */
+  color: #111;
+  margin-bottom: 4px;
+}
+
+.description {
+  font-size: 12px;      /* smaller text */
+  color: #6b7280;
+  font-weight: 400;     /* normal text */
+}
+
 
 
 
