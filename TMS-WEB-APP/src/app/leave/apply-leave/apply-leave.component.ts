@@ -22,6 +22,7 @@ export class ApplyLeaveComponent implements OnInit {
     endDate: [null, Validators.required],
     reason: ['', [Validators.required, Validators.maxLength(500)]],
   });
+  existingleaves: LeaveRequest[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -29,6 +30,7 @@ export class ApplyLeaveComponent implements OnInit {
     private snack: MatSnackBar,
     private router: Router
   ) {}
+
 
   ngOnInit(): void {
     
@@ -45,6 +47,18 @@ export class ApplyLeaveComponent implements OnInit {
     });
     this.form.valueChanges.subscribe(() => this.computeDuration());
     setTimeout(() => this.computeDuration());
+    this.loadLeaves();
+  }
+  loadLeaves(): void {
+    const profileId = Number(localStorage.getItem('profileId'));
+    this.leave.listMine(profileId).subscribe({
+      next: (data) => {
+        this.existingleaves = data;
+      },
+      error: (err) => {
+        this.snack.open(err.error?.message || 'Failed to load leaves', 'OK', { duration: 3000 });
+      }
+    });
   }
 
   private computeDuration(): void {
@@ -103,8 +117,8 @@ export class ApplyLeaveComponent implements OnInit {
 
     const start = this.toDateOnly(this.form.value.startDate!);
     const end   = this.toDateOnly(this.form.value.endDate!);
+    let flag=false;
     const duration = this.durationDays;
-
     const payload = {
       userId: Number(localStorage.getItem('profileId')),
       userName: ((localStorage.getItem('firstName') || '') + ' ' + (localStorage.getItem('lastName') || '')) || 'Unknown',
@@ -115,11 +129,30 @@ export class ApplyLeaveComponent implements OnInit {
       status: 'PENDING',
       duration: duration
     };
-
-
-
-
-    this.leave.apply(payload as any).subscribe({
+    this.existingleaves.forEach(leave => {
+      const existingFrom = this.toDateOnly(leave.startDate);
+      const existingTo = this.toDateOnly(leave.endDate); 
+      const existingstatus= leave.status 
+      // check for overlap
+      if (
+      (start >= existingFrom && start <= existingTo && (existingstatus === 'APPROVED' || existingstatus === 'PENDING' || existingstatus === 'REJECTED')) ||
+      (end >= existingFrom && end <= existingTo && (existingstatus === 'APPROVED' || existingstatus === 'PENDING' || existingstatus === 'REJECTED')) ||
+      (start <= existingFrom && end >= existingTo && (existingstatus === 'APPROVED' || existingstatus === 'PENDING' || existingstatus === 'REJECTED'))
+      ){
+        flag=true;
+      }
+    });
+    if(flag){
+          this.snack.open('Leave dates overlap with existing pending leave or approved leave', 'OK', { 
+          duration: 3000,
+          horizontalPosition: 'center',  
+          verticalPosition: 'bottom',
+          panelClass: ['custom-snack-failure']
+        });
+        this.router.navigate(['/leave/history']);
+    }
+    else{
+      this.leave.apply(payload as any).subscribe({
       next: () => {
         this.snack.open('Leave submitted successfully', 'OK', {
           duration: 2500,
@@ -137,6 +170,9 @@ export class ApplyLeaveComponent implements OnInit {
           panelClass: ['custom-snack-failure']});
       }
     });
+    }
+    
+
   }
 
   cancel(): void {

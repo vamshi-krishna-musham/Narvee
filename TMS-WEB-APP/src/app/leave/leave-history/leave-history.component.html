@@ -31,8 +31,8 @@
   <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
   <!-- Empty State -->
-  <div *ngIf="!loading && (!leaves || leaves.length === 0)" class="empty-state mat-elevation-z1">
-    No leaves yet.
+  <div *ngIf="dataSource?.data?.length === 0" class="empty-state">
+  No matching data found
   </div>
 
   <div class="table-wrapper" *ngIf="!loading && leaves?.length">
@@ -111,6 +111,5 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
   </div>
-
-  <mat-paginator [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>
 </div>
+<mat-paginator [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>

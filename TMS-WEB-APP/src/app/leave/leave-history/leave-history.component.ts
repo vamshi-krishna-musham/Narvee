@@ -13,6 +13,7 @@ type SummaryRow = {
   balanceSl: number;
 };
 
+
 @Component({
   selector: 'app-leave-history',
   templateUrl: './leave-history.component.html',

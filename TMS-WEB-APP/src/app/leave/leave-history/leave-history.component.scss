@@ -83,10 +83,12 @@ mat-paginator {
 
 /* ======= Empty State ======= */
 .empty-state {
-  padding: 16px;
   text-align: center;
   color: gray;
   font-style: italic;
-  border-radius: 8px;
-  background: #fafafa;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  margin-top: 8px;
+  border: 1px solid #e0e0e0;
 }
