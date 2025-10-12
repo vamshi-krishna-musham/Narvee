@@ -78,6 +78,9 @@ public class TmsLeaveService {
     public List<TmsLeave> findPending(Long managerId) {
     return repo.findByStatusAndUserIdNot("PENDING", managerId);
     }
+    public List<TmsLeave> findApproved(Long managerId) {
+    return repo.findByStatusAndUserIdNot("APPROVED", managerId);
+    }
 
     public TmsLeave approve(Long id, TmsLeave partial) {
     return repo.findById(id).map(existing -> {

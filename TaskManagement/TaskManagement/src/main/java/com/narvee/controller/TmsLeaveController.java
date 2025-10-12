@@ -42,6 +42,10 @@ public class TmsLeaveController {
     public List<TmsLeave> pendingLeavesForManager(@PathVariable Long managerId) {
         return service.findPending(managerId);
     }
+    @GetMapping("/approved/{managerId}")
+    public List<TmsLeave> approvedLeavesForManager(@PathVariable Long managerId) {
+        return service.findApproved(managerId);
+    }
 
     @GetMapping("/{id}")
     public TmsLeave getById(@PathVariable Long id) {
