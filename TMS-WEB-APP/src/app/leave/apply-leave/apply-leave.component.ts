@@ -33,7 +33,7 @@ export class ApplyLeaveComponent implements OnInit {
 
 
   ngOnInit(): void {
-    
+
     this.form.get('leaveType')?.valueChanges.subscribe(type => {
       const today= this.toDateOnly(new Date());
       if (type === 'Casual') {
@@ -146,10 +146,9 @@ export class ApplyLeaveComponent implements OnInit {
           this.snack.open('Leave dates overlap with existing pending leave or approved leave', 'OK', { 
           duration: 3000,
           horizontalPosition: 'center',  
-          verticalPosition: 'bottom',
+          verticalPosition: 'top',
           panelClass: ['custom-snack-failure']
         });
-        this.router.navigate(['/leave/history']);
     }
     else{
       this.leave.apply(payload as any).subscribe({

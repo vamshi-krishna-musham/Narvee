@@ -8,7 +8,7 @@
   <form [formGroup]="form" (ngSubmit)="submit()" class="leave-form">
 
     <!-- Leave Type -->
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="fill" >
       <mat-label>Leave Type</mat-label>
       <mat-select formControlName="leaveType" required>
         <mat-option value="Sick">Sick</mat-option>
@@ -25,11 +25,19 @@
       <!-- Start Date -->
       <mat-form-field appearance="fill">
         <mat-label>Start Date</mat-label>
-        <input matInput [matDatepicker]="p1" formControlName="startDate" />
+        <input
+          matInput
+          [matDatepicker]="p1"
+          [min]="minDate"
+          formControlName="startDate"
+          required
+        />
         <mat-datepicker-toggle matSuffix [for]="p1"></mat-datepicker-toggle>
         <mat-datepicker #p1></mat-datepicker>
+        <mat-error *ngIf="form.get('startDate')?.hasError('required')">
+          Start date is required
+        </mat-error>
       </mat-form-field>
-
       <!-- End Date -->
       <mat-form-field appearance="fill">
         <mat-label>End Date</mat-label>
@@ -41,7 +49,7 @@
       <!-- Duration -->
       <mat-form-field appearance="fill">
         <mat-label>Duration (days)</mat-label>
-        <input matInput formControlName="duration" />
+        <input matInput [value]="durationDays" />
       </mat-form-field>
     </div>
 

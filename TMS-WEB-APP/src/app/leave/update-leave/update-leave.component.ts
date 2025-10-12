@@ -24,8 +24,11 @@ export class UpdateLeaveComponent implements OnInit {
     status: ['PENDING', Validators.required]
   });
   
-
+  durationDays = 0;
   leaveId!: number;
+  private holidaysYMD: string[] = [];
+  private holidaySet = new Set(this.holidaysYMD);
+  minDate = this.toDateOnly(new Date());
 
   constructor(
     private fb: FormBuilder,
@@ -37,13 +40,13 @@ export class UpdateLeaveComponent implements OnInit {
   ) {}
   originalStartDate: string | null = null;
   originalEndDate: string | null = null;
+  originalStatus: string | null = null;
 
   ngOnInit(): void {
     // Get leave ID from URL
     this.leaveId = Number(this.route.snapshot.paramMap.get('id'));
     console.log('Received Leave ID:', this.leaveId);  // ✅ verify here
     console.log('Type of Leave ID:', typeof this.leaveId);  // ✅ verify type
-    
 
     // Fetch existing leave data
     this.leave.getById(this.leaveId).subscribe({
@@ -61,16 +64,74 @@ export class UpdateLeaveComponent implements OnInit {
           });
         this.originalStartDate = res.fromDate;
         this.originalEndDate = res.toDate;
+        this.originalStatus = res.status;
+        this.form.get('leaveType')?.disable();
+        const today= this.toDateOnly(new Date());
+        const type = res.leaveCategory;
+        if (type === 'Casual') {
+          this.minDate = new Date(today.setDate(today.getDate() + 14));
         }
+        else {
+          // default (today)
+          this.minDate = new Date();
+        }
+        }
+
       },
       error: () => this.snack.open('Failed to load leave details', 'OK', { duration: 2500 })
     });
+    this.form.valueChanges.subscribe(() => this.computeDuration());
+    setTimeout(() => this.computeDuration());
   }
   datesChanged(): boolean {
   const start = this.form.get('startDate')?.value;
   const end = this.form.get('endDate')?.value;
   return start !== this.originalStartDate || end !== this.originalEndDate;
 }
+    private computeDuration(): void {
+    const s = this.form.get('startDate')!.value as Date | string | null;
+    const e = this.form.get('endDate')!.value as Date | string | null;
+
+    if (!s || !e) { this.durationDays = 0; return; }
+
+    const start = this.toDateOnly(s);
+    const end = this.toDateOnly(e);
+    if (end.getTime() < start.getTime()) { this.durationDays = 0; return; }
+
+    this.durationDays = this.businessDaysBetween(start, end);
+  }
+
+  private businessDaysBetween(start: Date, end: Date): number {
+    let count = 0;
+    const cur = new Date(start);
+    while (cur.getTime() <= end.getTime()) {
+      const d = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate());
+      if (!this.isWeekend(d) && !this.isHoliday(d)) count++;
+      cur.setDate(cur.getDate() + 1);
+    }
+    return count;
+  }
+
+  private isWeekend(d: Date): boolean {
+    const w = d.getDay();
+    return w === 0 || w === 6;
+  }
+
+  private isHoliday(d: Date): boolean {
+    return this.holidaySet.has(this.toYMD(d));
+  }
+
+  private toDateOnly(v: string | Date): Date {
+    const d = typeof v === 'string' ? new Date(v) : v;
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  private toYMD(d: Date): string {
+    const y = d.getFullYear();
+    const m = `${d.getMonth() + 1}`.padStart(2, '0');
+    const day = `${d.getDate()}`.padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
 
 
   submit(): void {
