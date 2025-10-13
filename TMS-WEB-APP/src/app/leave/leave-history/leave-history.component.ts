@@ -59,11 +59,11 @@ export class LeaveHistoryComponent implements OnInit {
     };
 
     return [
-      { title: 'Balance',   count: s.totalEligible, description: 'Days available to use.',           dotColor: '#1976d2' },
-      { title: 'Approved',  count: s.approved,      description: 'Approved leave requests.',         dotColor: '#1e88e5' },
-      { title: 'Cancelled', count: s.cancelled,     description: 'Cancelled leave requests.',        dotColor: '#42a5f5' },
-      { title: 'Pending',   count: s.pending,       description: 'Awaiting approval.',               dotColor: '#90caf9' },
-      { title: 'Sick',      count: s.balanceSl,     description: 'Sick leave taken.',                dotColor: '#0ea5e9' }
+      { title: 'Balance',   count: s.totalEligible, dotColor: '#1976d2' },
+      { title: 'Approved',  count: s.approved,      dotColor: '#1e88e5' },
+      { title: 'Cancelled', count: s.cancelled,     dotColor: '#42a5f5' },
+      { title: 'Pending',   count: s.pending,       dotColor: '#90caf9' },
+      { title: 'Sick',      count: s.balanceSl,     dotColor: '#0ea5e9' }
     ];
   }
   // ---------------------------------------------------------

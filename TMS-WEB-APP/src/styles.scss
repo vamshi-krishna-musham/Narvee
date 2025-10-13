@@ -59,22 +59,31 @@ a:focus {
 }
 /* === KPI Card Grid (same as dashboard) === */
 .card-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
+  display: flex;                  /* use flex layout instead of grid */
+  flex-direction: row;            /* keep them side by side */
+  flex-wrap: nowrap;              /* prevents wrapping to next line */
+  justify-content: space-between; /* evenly distribute cards */
+  align-items: stretch;           /* same height alignment */
+  gap: 16px;                      /* spacing between cards */
+  overflow-x: auto;               /* allow horizontal scroll on smaller screens */
   margin-bottom: 16px;
 }
 
 .dashboard-card {
+  flex: 1;                        /* cards share equal width */
+  min-width: 200px;               /* ensures readability on smaller screens */
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 6px 16px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06);
-  padding: 14px;
-  min-height: 110px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
 }
-
+.dashboard-card {
+  width: calc(20% - 16px); /* 5 cards = 20% each, minus spacing */
+  flex: none;
+}
 .card-header {
   display: flex;
   align-items: center;
