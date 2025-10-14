@@ -1,5 +1,7 @@
 package com.narvee.dto;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public interface GetUsersDTO {
 	
@@ -7,7 +9,7 @@ public interface GetUsersDTO {
 	public String getFullname();
 	public String getPseudoname();
 	public String getEmail();
-	public String getCreatedby();
+	public LocalDate getCreatedby();
 	public String getTaskid();
 	public String getProjectname();
 	public String getTaskname();
@@ -16,6 +18,11 @@ public interface GetUsersDTO {
 	public String getCemail();
 	public String getStart_date();
 	public String getTarget_date();
+
+	public LocalDateTime updateddate();
 	
+
+	public byte[] getProfile();
+
 	
 }

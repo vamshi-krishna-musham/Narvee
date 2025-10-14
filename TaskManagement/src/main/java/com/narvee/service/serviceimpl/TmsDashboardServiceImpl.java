@@ -9,18 +9,31 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.narvee.controller.ProjectController;
 import com.narvee.dto.CompletedStatusCountResponse;
 import com.narvee.dto.DashBoardRequestDto;
+import com.narvee.dto.FileUploadDto;
+import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.ProjectDropDownDTO;
+import com.narvee.dto.RequestDTO;
+import com.narvee.dto.TaskResponse;
+import com.narvee.dto.TaskTrackerDTO;
+import com.narvee.dto.TasksResponseDTO;
 import com.narvee.dto.TmsTaskCountData;
-
+import com.narvee.entity.TmsFileUpload;
+import com.narvee.repository.TaskRepository;
 import com.narvee.repository.TmsDashboardRepository;
 import com.narvee.service.service.TmsDashboardService;
 
@@ -33,6 +46,9 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 	
 	@Autowired
 	private TmsDashboardRepository dashboardRepository;
+	
+	@Autowired
+	private TaskRepository taskRepo;
 
 	@Override
 	public List<TmsTaskCountData> getAllTaskCount() {
@@ -148,7 +164,8 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 		  if ( "Admin".equalsIgnoreCase(userRole) ||"Project Manager".equalsIgnoreCase(userRole) || "Super Admin".equalsIgnoreCase(userRole)) {
 				 Long adminid = ("Super Admin".equalsIgnoreCase(userRole))
 			                ? userid
-			                : dashboardRepository.AdminId(userid);		
+			                : dashboardRepository.AdminId(userid);	
+				 System.err.println("adminid "+adminid);
 			return	dashboardRepository.getProjectUsersTaskStats(adminid,projectId,timeIntervel);
 		  }else {
 			return dashboardRepository.getTeamMemberTaskStats(userid,projectId,timeIntervel);
@@ -365,6 +382,98 @@ public class TmsDashboardServiceImpl implements TmsDashboardService {
 
             return yearBlockList;
         }
+    
+    
+
+	@Override
+	public TaskResponse getAllTaskByPidAndTimeIntervel(RequestDTO requestDTO) {
+		logger.info("!!! inside class: TmsDashboardServiceImpl , !! method: getAllTaskByPidAndTimeIntervel");
+	
+		    String sortfield = requestDTO.getSortField();
+		    String sortorder = requestDTO.getSortOrder();
+		    String projectid = requestDTO.getProjectid();
+		    String keyword = requestDTO.getKeyword();
+		    int pageNo = requestDTO.getPageNumber();
+		    int pageSize = requestDTO.getPageSize();
+		    String Time  = requestDTO.getTimeIntervel();
+
+		    // Map frontend sort fields to DB columns
+		    if (sortfield.equalsIgnoreCase("ticketid"))
+		        sortfield = "ticketid";
+		    else if (sortfield.equalsIgnoreCase("TaskName"))
+		        sortfield = "taskname";
+		    else if (sortfield.equalsIgnoreCase("TaskDescription"))
+		        sortfield = "description";
+		    else if (sortfield.equalsIgnoreCase("DueDate"))
+		        sortfield = "target_date";
+		    else if (sortfield.equalsIgnoreCase("StartDate"))
+		        sortfield = "start_date";
+		    else if (sortfield.equalsIgnoreCase("status"))
+		        sortfield = "status";
+		    else if (sortfield.equalsIgnoreCase("Priority"))
+		        sortfield = "priority";
+		    
+
+		    Sort.Direction sortDirection = Sort.Direction.ASC;
+		    if (sortorder != null && sortorder.equalsIgnoreCase("desc")) {
+		        sortDirection = Sort.Direction.DESC;
+		    }
+
+		    Pageable pageable = PageRequest.of(pageNo - 1, pageSize, Sort.by(sortDirection, sortfield));
+
+		
+
+
+		    if (keyword.equalsIgnoreCase("empty")) {
+				logger.info("!!! inside class: TaskServiceImpl , !! method: findTaskByProjectid -- tms with empty ");
+				Page<TaskTrackerDTO> res = dashboardRepository.findTaskListByTmsProjectid(pageable,projectid,Time);
+
+				List<TasksResponseDTO> tasksList = new ArrayList<>();
+
+				for (TaskTrackerDTO order : res) {
+					logger.info("!!! inside class:  for loop");
+					TasksResponseDTO result = new TasksResponseDTO(order);
+              System.err.println(result.toString());
+					List<GetUsersDTO> assignUsers = taskRepo.getTmsAssignUsers(order.getTaskid());
+
+					List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
+							.collect(Collectors.toList());
+					result.setAssignUsers(filteredAssignUsers);
+					tasksList.add(result);
+
+				}
+				Page<TasksResponseDTO> tasksPage = new PageImpl<>(tasksList, pageable, res.getTotalElements());
+				Long pid = taskRepo.findPid(projectid);
+				TaskResponse taskResp = new TaskResponse();
+				taskResp.setTasks(tasksPage);
+				taskResp.setPid(pid);
+				System.err.println(taskResp.toString());
+				return taskResp;
+				
+				
+			} else {
+				logger.info("!!! inside class: TaskServiceImpl , !! method: findTaskByProjectIdWithSearching , Filter-tms");
+				Page<TaskTrackerDTO> res = dashboardRepository.findTaskListByTmsProjectIdWithSearching(pageable,projectid,keyword,Time);
+				List<TasksResponseDTO> tasksList = new ArrayList<>();
+				for (TaskTrackerDTO order : res) {
+					TasksResponseDTO result = new TasksResponseDTO(order);
+					List<GetUsersDTO> assignUsers = taskRepo.getTmsAssignUsers(order.getTaskid());
+					List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
+							.collect(Collectors.toList());
+					result.setAssignUsers(filteredAssignUsers);
+					tasksList.add(result);
+
+				}
+				Page<TasksResponseDTO> tasksPage = new PageImpl<>(tasksList, pageable, res.getTotalElements());
+
+				Long pid = taskRepo.findPid(projectid);
+				TaskResponse taskResp = new TaskResponse();
+				taskResp.setTasks(tasksPage);
+				taskResp.setPid(pid);
+				return taskResp;
+			}
+	}
+
 	
 }
 

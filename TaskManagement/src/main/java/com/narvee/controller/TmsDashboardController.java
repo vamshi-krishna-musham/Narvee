@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.narvee.commons.RestAPIResponse;
 import com.narvee.dto.DashBoardRequestDto;
+import com.narvee.dto.RequestDTO;
+import com.narvee.dto.TaskResponse;
 import com.narvee.service.service.TmsDashboardService;
 
 @RestController
@@ -136,4 +138,16 @@ public class TmsDashboardController {
 				new RestAPIResponse("success", " Daily DropDown  fetched  successfully",daily),       
 				HttpStatus.OK); 
     }
+	
+	
+	@PostMapping("/getAllTaskByPidAndTime")
+    public ResponseEntity<RestAPIResponse> getAllTaskByPidAndTime(@RequestBody RequestDTO requestResponseDTO) {
+		logger.info("!!! inside class: TmsDashboardController , !! method: getDailyDropDown"); 
+		TaskResponse response = dashboardService.getAllTaskByPidAndTimeIntervel(requestResponseDTO);
+        return new ResponseEntity<RestAPIResponse>(
+				new RestAPIResponse("success", "Task fetched  successfully",response),       
+				HttpStatus.OK); 
+    }
+	
+	
 }

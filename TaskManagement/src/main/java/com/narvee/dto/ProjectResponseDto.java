@@ -14,12 +14,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProjectResponseDto {
-
-	ProjectDTO projePage;
+	 private ProjectDTO projePage;
 	
 	Set<TmsAssignedUsers> assignUsers;
-	//Set<GetUsersDTO> assignUsers;
+	
+	List<GetUsersDTO> assigednUsers;
+	
+	private List<String> assignedUsers;
 	
 	List<TmsFileUpload> files;
-
+	
 }

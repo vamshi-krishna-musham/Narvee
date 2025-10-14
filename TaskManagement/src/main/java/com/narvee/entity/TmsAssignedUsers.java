@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Transient;
 
 import lombok.AllArgsConstructor;
@@ -23,11 +24,14 @@ public class TmsAssignedUsers {
 	private Long tmsUserId;
 	private boolean completed ;
 	private String userstatus = "open";
-	
+	@Lob
+	private byte[] UserProfile;
+	private String email;
 	@Transient
 	private String fullname;
-	
 	@Transient
 	private String pseudoname;
+	
+	
 	
 }
