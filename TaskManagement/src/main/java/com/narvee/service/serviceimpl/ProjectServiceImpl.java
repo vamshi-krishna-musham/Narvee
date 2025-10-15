@@ -29,10 +29,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.narvee.dto.EmailConfigResponseDto;
 import com.narvee.dto.GetUsersDTO;
 import com.narvee.dto.ProjectDTO;
-import com.narvee.dto.ProjectDropDownDTO;
 import com.narvee.dto.ProjectResponseDto;
 import com.narvee.dto.RequestDTO;
-import com.narvee.dto.TmsEmailConfigurationDto;
 import com.narvee.entity.TmsAssignedUsers;
 import com.narvee.entity.TmsFileUpload;
 import com.narvee.entity.TmsProject;
@@ -476,8 +474,6 @@ public class ProjectServiceImpl implements ProjectService {
 									GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
 									if (user != null) {
 										assignUser.setFullname(user.getFullname());
-										assignUser.setEmail(user.getEmail());
-										assignUser.setUserProfile(user.getProfile());
 
 									}
 									return assignUser;
@@ -503,8 +499,6 @@ public class ProjectServiceImpl implements ProjectService {
 									GetUsersDTO user = repository.gettmsUser(assignUser.getTmsUserId());
 									if (user != null) {
 										assignUser.setFullname(user.getFullname());
-										assignUser.setEmail(user.getEmail());
-										assignUser.setUserProfile(user.getProfile());
 
 									}
 									return assignUser;

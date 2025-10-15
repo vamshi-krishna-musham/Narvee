@@ -10,4 +10,5 @@ public interface ScheduleTasksService {
 
 	public void TaskdeadlineExceededEmail() throws UnsupportedEncodingException, MessagingException;
 
+	
 }

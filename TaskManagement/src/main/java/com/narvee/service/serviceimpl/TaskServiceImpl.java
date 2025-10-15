@@ -536,11 +536,7 @@ public class TaskServiceImpl implements TaskService {
 		    if (incompleteTasks > 0 ) {
 		        throw new RuntimeException("Cannot mark Task as Closed. Some subtasks are still not closed.");
 		    }
-		}	
-		
-		if (task.getStatus() != null && !update.getStatus().equalsIgnoreCase(task.getStatus())) {
-			update.setLastStatusUpdateddate(LocalDateTime.now());
-		}
+		}			
 		update.setTargetDate(task.getTargetDate());
 		update.setStartDate(task.getStartDate());
 		update.setTaskname(task.getTaskname());
@@ -550,8 +546,6 @@ public class TaskServiceImpl implements TaskService {
 		update.setUpdatedby(task.getUpdatedby());
 		update.setStatus(task.getStatus());
 		update.setDuration(task.getDuration());
-		
-		
 
 		// Path path = Paths.get(UPLOAD_DIR + getOriginalFilename);
 		if (files != null && !files.isEmpty()) {
@@ -681,7 +675,7 @@ public class TaskServiceImpl implements TaskService {
 				TasksResponseDTO result = new TasksResponseDTO(order);
 
 				List<GetUsersDTO> assignUsers = taskRepo.getTmsAssignUsers(order.getTaskid());
-   
+
 				List<GetUsersDTO> filteredAssignUsers = assignUsers.stream().filter(user -> user.getFullname() != null)
 						.collect(Collectors.toList());
 				result.setAssignUsers(filteredAssignUsers);

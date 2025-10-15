@@ -1,7 +1,10 @@
 package com.narvee.controller;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
+
+import javax.mail.MessagingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +23,7 @@ import com.narvee.commons.RestAPIResponse;
 import com.narvee.dto.TmsEmailConfigurationDto;
 import com.narvee.entity.TmsEmailConfiguration;
 import com.narvee.service.service.EmailConfigurationService;
+import com.narvee.service.serviceimpl.ProjectDeadlineScheduler;
 
 @RestController
 @RequestMapping("/EmailConfiguration")
@@ -70,5 +74,14 @@ public class EmailConfiguration {
 				new RestAPIResponse("success", "All email configurations fetched successfully.", configList),
 				HttpStatus.OK);
 	}
+	
+	
+//	@Autowired
+//	private ProjectDeadlineScheduler deadlineScheduler;
+//	@GetMapping("/testapi")
+//	public String mailtest() throws UnsupportedEncodingException, MessagingException {
+//		deadlineScheduler.dailyDeadlineCheck();
+//		return "sucessful";
+//	}
 
 }
