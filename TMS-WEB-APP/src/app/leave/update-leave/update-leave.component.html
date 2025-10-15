@@ -56,8 +56,8 @@
     <!-- Reason -->
     <mat-form-field appearance="fill" class="reason-field">
       <mat-label>Reason</mat-label>
-      <textarea matInput rows="4" formControlName="reason" maxlength="500"></textarea>
-      <mat-hint align="end">{{ (form.get('reason')?.value?.length || 0) }}/500</mat-hint>
+      <textarea matInput rows="4" formControlName="reason" maxlength="100"></textarea>
+      <mat-hint align="end">{{ (form.get('reason')?.value?.length || 0) }}/100</mat-hint>
     </mat-form-field>
     <!-- Actions -->
     <div class="actions">
