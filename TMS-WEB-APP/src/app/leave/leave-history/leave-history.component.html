@@ -34,11 +34,11 @@
   No matching data found
   </div>
 
-  <div class="table-wrapper" *ngIf="!loading && leaves?.length">
+  <div class="table-wrapper" *ngIf="!loading">
     <table
       mat-table
       [dataSource]="dataSource"
-      class="mat-elevation-z2 full-table">
+      class="mat-elevation-z2 full-table fixed-table">
       <ng-container matColumnDef="no">
         <th mat-header-cell *matHeaderCellDef>S.No</th>
           <td mat-cell *matCellDef="let element; let i = index">
@@ -124,6 +124,11 @@
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+          No leaves yet.
+        </td>
+      </tr>
     </table>
   </div>
 </div>
