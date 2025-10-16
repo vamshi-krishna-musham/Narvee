@@ -54,7 +54,24 @@ getById(id: number) {
       })))
     );
   }
-
+  listApproved(id: number): Observable<LeaveRequest[]> {
+    return this.http.get<any[]>(`${this.base}/task/leaves/approved/${id}`).pipe(
+      map(res => res.map(r => ({
+        id: r.id,
+        userId: r.userId,
+        userName: r.userName,
+        leaveType: r.leaveCategory,
+        startDate: r.fromDate,
+        endDate: r.toDate,
+        reason: r.reason,
+        status: r.status,
+        adminComment: r.adminComment,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+        duration: r.duration
+      })))
+    );
+  }
 
   cancel(id: number) {
     return this.http.patch(`${this.base}/task/leaves/${id}/cancel`, {});
