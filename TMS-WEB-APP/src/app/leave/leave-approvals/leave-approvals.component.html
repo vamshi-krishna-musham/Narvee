@@ -1,4 +1,13 @@
 <!-- Loading bar -->
+  <button mat-stroked-button color="accent" (click)="viewCalendar()">
+    View Calendar
+  </button>
+  <!-- Back Button -->
+<!--<div style="text-align:right; margin-top:16px;"> -->
+  <button mat-stroked-button color="accent" (click)="backToHistory()">
+    Back to History
+  </button>
+<!--</div> -->
 <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
 <!-- Empty state -->
@@ -80,12 +89,6 @@
   <tr mat-row *matRowDef="let row; columns: ['no','userName','type','startdate','enddate','duration','reason','actions']"></tr>
 </table>
 
-<!-- Back Button -->
-<div style="text-align:right; margin-top:16px;">
-  <button mat-stroked-button color="accent" (click)="backToHistory()">
-    Back to History
-  </button>
-</div>
 
 <!-- Approve dialog -->
 <ng-template #approveDialog>
