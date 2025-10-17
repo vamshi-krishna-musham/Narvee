@@ -1,0 +1,58 @@
+package com.narvee.dto;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+public interface TaskTrackerDTO {
+
+	public Long getTrackid();
+
+	public Long getTaskid();
+	
+	public Long getSubtaskid();
+	
+	public Long getUpdatedby();
+	
+	public Long getPid();
+
+	public String getStatus();
+
+	public String getFullname();
+
+	public String getTicketid();
+
+	public String getTaskName();
+	
+	public String getSubtaskname();
+	
+	public String getDescription();
+	 public String getAddedbyfullname();//for addedby
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	public LocalDate getCreateddate();
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	public LocalDate getUpdateddate();
+	
+	public LocalDate getTarget_date();
+	
+	public LocalDate getStart_date();
+
+	public String getTaskdescription();
+
+	public String getPseudoname();
+	
+	public String getDuration();
+	
+	public String getPriority();
+	
+	public String getEmail();
+	
+	   ProjectDTO project();               // parent project info
+	    List<UserDTO> assignedUsers(); 
+
+	public String getSubtasktokenid();
+
+	public Long getSubtaskmaxnum();
+
+}
