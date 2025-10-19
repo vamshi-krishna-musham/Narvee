@@ -20,6 +20,7 @@ import { ApplyLeaveComponent } from './leave/apply-leave/apply-leave.component';
 import { LeaveHistoryComponent } from './leave/leave-history/leave-history.component';
 import { LeaveApprovalsComponent } from './leave/leave-approvals/leave-approvals.component';
 import { UpdateLeaveComponent } from './leave/update-leave/update-leave.component';
+import { CalendarViewComponent } from './leave/calendar-view/calendar-view.component';
 const routes: Routes = [
   {path:'',redirectTo:'/register-login',pathMatch:'full'},
   {path:'register-login',component:RegisterManagmentComponent},
@@ -44,12 +45,13 @@ const routes: Routes = [
       {path:'leave/history',component: LeaveHistoryComponent , canActivate: [AuthGuard], },
       { path: 'leave/approvals', component: LeaveApprovalsComponent },
       { path: 'leave/update/:id', component: UpdateLeaveComponent },
-       {
-    path: '**',
-    redirectTo: 'register-login'
-  }
-      // other routes
-    ]
+    { path: 'leave/calendar-view', component: CalendarViewComponent },
+    {
+      path: '**',
+      redirectTo: 'register-login'
+    }
+    // other routes
+  ]
   }
 ];
 

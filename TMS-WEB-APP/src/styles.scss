@@ -59,62 +59,85 @@ a:focus {
 }
 /* === KPI Card Grid (same as dashboard) === */
 .card-container {
-  display: flex;                  /* use flex layout instead of grid */
-  flex-direction: row;            /* keep them side by side */
-  flex-wrap: nowrap;              /* prevents wrapping to next line */
-  justify-content: space-between; /* evenly distribute cards */
-  align-items: stretch;           /* same height alignment */
-  gap: 16px;                      /* spacing between cards */
-  overflow-x: auto;               /* allow horizontal scroll on smaller screens */
-  margin-bottom: 16px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  
+  .dashboard-card {
+    flex: 1;
+    min-width: 50px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(255, 0, 0, 0.1);
+    border-radius: 12px;
+  }
+  
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .dot {
+    width: 10px;
+    height: 10px;
+    background-color: #2196f3;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+  
+  .title {
+    flex: 1;
+    font-weight: 500;
+    margin-left: 8px;
+  }
+  
+  .more-icon {
+    color: rgba(0, 0, 0, 0.54);
+    cursor: pointer;
+  }
+  
+  .count {
+    font-size: 20px;
+    margin-top: 12px;
+    color: #333;
+    margin-left: 7px;
+  }
+.status-text { font-weight: 400; text-transform: uppercase; }
+.status-approved { color: #2e7d32 !important; }
+.status-denied { color: #d32f2f !important; }
+.status-pending { color: #1565c0 !important; }
+.status-cancelled { color: #ef6c00 !important; }
+
+/* Make the Material table honor fixed widths (needed for ellipsis) */
+table.mat-mdc-table {
+  table-layout: fixed;
+  width: 100%;
 }
 
-.dashboard-card {
-  flex: 1;                        /* cards share equal width */
-  min-width: 200px;               /* ensures readability on smaller screens */
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 6px 16px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+/* Lock the Reason column width (header + cells use this class automatically) */
+.reason-header {
+  width: 200px;                 /* tweak to taste: 160–240px */
 }
-.dashboard-card {
-  width: calc(20% - 16px); /* 5 cards = 20% each, minus spacing */
-  flex: none;
-}
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 400;     /* was 600 — now normal */
-  color: #1f2937;
-  margin-bottom: 6px;
+.mat-column-reason {
+  width: 200px;
+  max-width: 200px;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+/* Reuse the same utility used for Task Name ellipsis */
+.ellipsis-text {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.title {
-  font-size: 14px;      /* was 15px */
-  font-weight: 400;     /* remove bold */
-}
-
-.count {
-  font-size: 22px;      /* was 32px */
-  font-weight: 500;     /* medium for subtle emphasis */
-  color: #111;
-  margin-bottom: 4px;
-}
-
-.description {
-  font-size: 12px;      /* smaller text */
-  color: #6b7280;
-  font-weight: 400;     /* normal text */
+/* Optional: subtle hover to hint interactivity */
+.reason-cell:hover {
+  background-color: #f3f4f6;
 }
 
 

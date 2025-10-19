@@ -1,0 +1,25 @@
+.calendar-container {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px;
+  margin: 16px;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  background: #fff;
+}
+
+.empty-state {
+  text-align: center;
+  color: #666;
+  padding: 24px;
+  font-style: italic;
+}
