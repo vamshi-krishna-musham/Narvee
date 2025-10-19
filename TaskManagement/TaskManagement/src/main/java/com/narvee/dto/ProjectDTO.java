@@ -2,6 +2,7 @@ package com.narvee.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 
 public interface ProjectDTO {
@@ -14,20 +15,26 @@ public interface ProjectDTO {
 
 	public String getAddedby();
 	
-	public String getaddedByFullname();
+	public String getAddedByFullname();
 	
 	public String getStatus();
 
 	public String getUpdatedby();
 	
+	public String getUpdatedByFullname();
+	
 	public String getProjectid();
 	
-	public LocalDateTime getCreateddate();
+	public LocalDate getCreateddate();
 	
-	public LocalDate getstartDate();
+	public LocalDate getStartDate();
 	
-	public LocalDate gettargetDate();
+	public LocalDate getTargetDate();
 	
+	 public String getAssignedTo();
+	 
 	
+
+	public LocalDate getUpdateddate();
 	
 }

@@ -151,26 +151,41 @@ export class ApplyLeaveComponent implements OnInit {
         });
     }
     else{
-      this.leave.apply(payload as any).subscribe({
-      next: () => {
-        this.snack.open('Leave submitted successfully', 'OK', {
-          duration: 2500,
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom',
-          panelClass: ['custom-snack-success']   // or 'snack-light'
+        const MAX_LEAVE_DAYS = 30;
+        const approvedOrPendingDays = this.existingleaves
+            .filter(l => l.status === 'APPROVED' || l.status === 'PENDING')
+            .reduce((sum, l) => sum + (l.duration || 0), 0);
+        
+        if (approvedOrPendingDays + payload.duration > MAX_LEAVE_DAYS) {
+          this.snack.open('You have exceeded your annual 30-day leave limit.', 'OK', { 
+            duration: 3000,
+            horizontalPosition: 'center',  
+            verticalPosition: 'top',
+            panelClass: ['custom-snack-failure']
+          });
+          return; // stop submission
+        }
+        else{
+          this.leave.apply(payload as any).subscribe({
+          next: () => {
+            this.snack.open('Leave submitted successfully', 'OK', {
+              duration: 2500,
+              horizontalPosition: 'center',
+              verticalPosition: 'bottom',
+              panelClass: ['custom-snack-success']   // or 'snack-light'
+            });
+            this.router.navigate(['/leave/history']); // ✅ go back to history after success
+          },
+          error: e => {
+            this.snack.open(e.error?.message || 'Submission failed', 'OK', {
+              duration: 3500,
+              horizontalPosition: 'center',
+              verticalPosition: 'bottom',
+              panelClass: ['custom-snack-failure']});
+          }
         });
-        this.router.navigate(['/leave/history']); // ✅ go back to history after success
-      },
-      error: e => {
-        this.snack.open(e.error?.message || 'Submission failed', 'OK', {
-          duration: 3500,
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom',
-          panelClass: ['custom-snack-failure']});
       }
-    });
-    }
-    
+    }    
 
   }
 

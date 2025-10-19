@@ -1,4 +1,4 @@
-package com.narvee.service;
+package com.narvee.service.service;
 
 import com.narvee.entity.TmsLeave;
 import com.narvee.repository.TmsLeaveRepository;

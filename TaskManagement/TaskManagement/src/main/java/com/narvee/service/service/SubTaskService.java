@@ -1,4 +1,4 @@
-package com.narvee.service;
+package com.narvee.service.service;
 
 import java.util.List;
 
