@@ -14,10 +14,14 @@ public class SubTaskResponseDTO {
 	private Long pid;
 	private String status;
 	private String fullname;
+	private String addedbyfullname;
 	private String ticketid;
 	private String taskName;
+	private String subtasktokenid;
+	private Long subtaskmaxnum;
 	private String subTaskDescription;
 	private LocalDate startDate;
+	private LocalDate updateddate;
 	private Long subTaskId;
 	private String subtaskName;
 	private LocalDate createddate;
@@ -26,6 +30,8 @@ public class SubTaskResponseDTO {
 	private String pseudoname;
 	private String duration;
 	private String priority;
+	//private LocalDate dueDate;
+
 	List<GetUsersDTO> assignUsers;
 
 	List<FileUploadDto> files;
@@ -35,6 +41,7 @@ public class SubTaskResponseDTO {
 		this.taskid = dto.getTaskid();
 		this.status = dto.getStatus();
 		this.fullname = dto.getFullname();
+		this.addedbyfullname = dto.getAddedbyfullname();
 		this.ticketid = dto.getTicketid();
 		this.taskName = dto.getTaskName();
 		this.startDate = dto.getStart_date();
@@ -44,10 +51,13 @@ public class SubTaskResponseDTO {
 		this.taskdescription = dto.getTaskdescription();
 		this.pseudoname = dto.getPseudoname();
 		this.duration = dto.getDuration();
+		this.subtasktokenid=dto.getSubtasktokenid();
+		this.subtaskmaxnum =dto.getSubtaskmaxnum();
 		this.subTaskId = dto.getSubtaskid();
 		this.subtaskName = dto.getSubtaskname();
 		this.priority = dto.getPriority();
 		this.pid = dto.getPid();
+		this.updateddate=dto.getUpdateddate();
 	}
 
 }

@@ -41,9 +41,18 @@
       <!-- End Date -->
       <mat-form-field appearance="fill">
         <mat-label>End Date</mat-label>
-        <input matInput [matDatepicker]="p2" formControlName="endDate" />
+        <input
+          matInput
+          [matDatepicker]="p2"
+          [min]="form.get('startDate')?.value || minDate"
+          formControlName="endDate"
+          required
+        />
         <mat-datepicker-toggle matSuffix [for]="p2"></mat-datepicker-toggle>
         <mat-datepicker #p2></mat-datepicker>
+        <mat-error *ngIf="form.get('endDate')?.hasError('required')">
+          End date is required
+        </mat-error>
       </mat-form-field>
 
       <!-- Duration -->

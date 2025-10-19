@@ -12,9 +12,9 @@
 <!-- KPI CARDS: same look & width as dashboard cards -->
 <!-- Uses .card-container, .dashboard-card, .card-header, .dot, .count, .description -->
 <div class="card-container">
-  <mat-card *ngFor="let c of summaryCards; trackBy: trackByTitle" class="dashboard-card">
+  <mat-card *ngFor="let c of summaryCards" class="dashboard-card">
     <div class="card-header">
-      <div class="dot" [style.backgroundColor]="c.dotColor"></div>
+      <div class="dot"></div>
       <span class="title">{{ c.title }}</span>
     </div>
     <div class="count">{{ c.count }}</div>
