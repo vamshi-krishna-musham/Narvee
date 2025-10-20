@@ -23,7 +23,6 @@ export class UpdateLeaveComponent implements OnInit {
     endDate:   this.fb.control<Date | null>(null, { validators: [Validators.required] }),
     duration:  this.fb.control<number | null>(null),
     reason:    this.fb.control<string>('', { validators: [Validators.required, Validators.maxLength(100)] }),
-    adminComment: this.fb.control<string>(''),
     status: this.fb.control<string>('PENDING', { validators: [Validators.required] })
   });
 
@@ -64,7 +63,6 @@ export class UpdateLeaveComponent implements OnInit {
           endDate:   end,
           duration:  res.duration ?? null,
           reason:    res.reason ?? '',
-          adminComment: res.adminComment ?? '',
           status:    res.status ?? 'PENDING'
         });
 
@@ -170,7 +168,6 @@ export class UpdateLeaveComponent implements OnInit {
       toDate: end,
       duration: this.durationDays,
       reason: this.form.value.reason,
-      adminComment: this.form.value.adminComment,
       status: 'PENDING'
     };
 
