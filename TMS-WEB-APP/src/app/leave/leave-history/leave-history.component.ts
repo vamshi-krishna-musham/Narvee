@@ -160,7 +160,7 @@ export class LeaveHistoryComponent implements OnInit {
   openUpdateLeaveDialog(row: { id: number }) {
     const ref = this.dialog.open(UpdateLeaveComponent, {
       width: '100%',
-      maxWidth: '700px',
+      maxWidth: '600px',
       disableClose: true,
       panelClass: 'project-dialog', // optional rounded dialog
       data: { id: row.id }
