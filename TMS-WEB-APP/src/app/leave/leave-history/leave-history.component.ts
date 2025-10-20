@@ -60,11 +60,11 @@ export class LeaveHistoryComponent implements OnInit {
     };
 
     return [
-      { title: 'Balance',   count: s.totalEligible, dotColor: '#1976d2' },
-      { title: 'Approved',  count: s.approved,      dotColor: '#1e88e5' },
-      { title: 'Cancelled', count: s.cancelled,     dotColor: '#42a5f5' },
-      { title: 'Pending',   count: s.pending,       dotColor: '#90caf9' },
-      { title: 'Sick',      count: s.balanceSl,     dotColor: '#0ea5e9' }
+      { title: 'Balance',   count: s.totalEligible },
+      { title: 'Approved',  count: s.approved },
+      { title: 'Cancelled', count: s.cancelled },
+      { title: 'Pending',   count: s.pending },
+      { title: 'Sick',      count: s.balanceSl }
     ];
   }
   // ---------------------------------------------------------
