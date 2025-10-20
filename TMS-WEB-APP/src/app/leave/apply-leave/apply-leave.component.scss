@@ -3,6 +3,9 @@
   display: block;
   overflow-x: hidden;        /* safety */
 }
+.leave-type-field {
+  width: 100px;  // reduce from full width
+}
 
 /* Remove the negative edge-stretch that caused overflow */
 .dialog-header {

@@ -18,6 +18,7 @@ public class RequestDTO {
 	private String keyword;
 	private String access;
 	private Long userid;
+	private String TimeIntervel;
 	
 	private String ticketId;
 	

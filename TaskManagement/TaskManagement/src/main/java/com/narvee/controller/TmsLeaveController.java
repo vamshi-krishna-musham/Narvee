@@ -1,7 +1,8 @@
 package com.narvee.controller;
 
 import com.narvee.entity.TmsLeave;
-import com.narvee.service.TmsLeaveService;
+import com.narvee.service.service.TmsLeaveService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

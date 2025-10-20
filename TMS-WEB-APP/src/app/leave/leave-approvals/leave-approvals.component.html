@@ -1,4 +1,13 @@
 <!-- Loading bar -->
+  <button mat-stroked-button color="accent" (click)="viewCalendar()">
+    View Calendar
+  </button>
+  <!-- Back Button -->
+<!--<div style="text-align:right; margin-top:16px;"> -->
+  <button mat-stroked-button color="accent" (click)="backToHistory()">
+    Back to History
+  </button>
+<!--</div> -->
 <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
 <!-- Empty state -->
@@ -7,6 +16,42 @@
      style="padding:16px;border-radius:8px;">
   No pending leave requests.
 </div>
+<style>
+  table {
+    table-layout: fixed;           /* ensures equal-width columns */
+    width: 100%;
+  }
+
+  th, td {
+    padding: 8px 10px !important;
+    white-space: nowrap;           /* prevents text wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;       /* adds “…” for long text */
+  }
+    th:nth-child(1), td:nth-child(1) { /* S.no column */
+    width: 7%;                    /* adjust this number if needed */
+  }
+    th:nth-child(2), td:nth-child(2) { /* Resource Name column */
+    width: 15%;                    /* adjust this number if needed */
+  }
+  th:nth-child(3), td:nth-child(3) { /* Type column */
+    width: 7%;                    /* adjust this number if needed */
+  }
+
+  th:nth-child(7), td:nth-child(7) { /* Reason column */
+    width: 20%;                    /* adjust this number if needed */
+  }
+
+  th:nth-child(8), td:nth-child(8) { /* Actions column */
+    width: 20%;
+    text-align: center;
+  }
+
+  .mat-stroked-button {
+    min-width: 70px;
+    padding: 0 8px !important;
+  }
+</style>
 
 <!-- Table -->
 <table *ngIf="!loading && pending?.length"
@@ -14,21 +59,17 @@
        [dataSource]="pending"
        class="mat-elevation-z2"
        style="width:100%; margin-bottom: 24px;">
-
   <ng-container matColumnDef="no">
   <th mat-header-cell *matHeaderCellDef>S.No</th>
   <td mat-cell *matCellDef="let element; let i = index">
     {{ getIndex(i) }}
   </td>
   </ng-container>
-
-
   <!-- User ID -->
   <ng-container matColumnDef="userName">
     <th mat-header-cell *matHeaderCellDef>Resource Name</th>
     <td mat-cell *matCellDef="let r">{{ r.userName }}</td>
   </ng-container>
-
   <!-- Type -->
   <ng-container matColumnDef="type">
     <th mat-header-cell *matHeaderCellDef>Type</th>
@@ -66,12 +107,8 @@
   <ng-container matColumnDef="actions">
     <th mat-header-cell *matHeaderCellDef>Actions</th>
     <td mat-cell *matCellDef="let r">
-      <button mat-stroked-button color="primary" (click)="approve(r.id!)" style="margin-right:8px;">
-        Approve
-      </button>
-      <button mat-stroked-button color="primary" (click)="deny(r.id!)">
-        Deny
-      </button>
+      <button mat-stroked-button color="primary" (click)="approve(r.id!)" style="margin-right:8px;">Approve</button>
+      <button mat-stroked-button color="primary" (click)="deny(r.id!)">Deny</button>
     </td>
   </ng-container>
 
@@ -80,12 +117,6 @@
   <tr mat-row *matRowDef="let row; columns: ['no','userName','type','startdate','enddate','duration','reason','actions']"></tr>
 </table>
 
-<!-- Back Button -->
-<div style="text-align:right; margin-top:16px;">
-  <button mat-stroked-button color="accent" (click)="backToHistory()">
-    Back to History
-  </button>
-</div>
 
 <!-- Approve dialog -->
 <ng-template #approveDialog>

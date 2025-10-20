@@ -10,5 +10,7 @@ public interface SubTaskUserDTO {
 	public String getStatus();
 	public LocalDate getTargetdate();
 	public String getaddedby();
+	public String getsubtasktokenid();
+	public Long getsubtaskmaxnum();
 	
 }

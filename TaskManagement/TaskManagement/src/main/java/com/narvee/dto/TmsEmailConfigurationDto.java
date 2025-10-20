@@ -14,8 +14,8 @@ public class TmsEmailConfigurationDto {
 	private Long id;
 	private String emailNotificationType;
 	private  Boolean isEnabled;
-	private List<String> ccMails;
 	private List<String> bccMails;
+	private List<String> ccMails;
 	private String subject;
 	private Long adminId;
 	
