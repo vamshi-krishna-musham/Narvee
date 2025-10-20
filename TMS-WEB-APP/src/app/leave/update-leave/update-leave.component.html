@@ -1,18 +1,23 @@
-<div class="apply-leave-container mat-elevation-z2">
-  <h2>Update Leave</h2>
-  <button mat-icon-button class="close-btn" (click)="exit()">
-  <mat-icon>close</mat-icon>
-</button>
+<h2 mat-dialog-title class="dialog-header">
+  <span>Update Leave</span>
+  <!-- Close (X) button: cancels dialog without changes -->
+  <button mat-icon-button mat-dialog-close class="dialog-close" aria-label="Close dialog">
+    <mat-icon>close</mat-icon>
+  </button>
+</h2>
 
-
+<mat-dialog-content class="sheet">
   <form [formGroup]="form" (ngSubmit)="submit()" class="leave-form">
 
-    <!-- Leave Type -->
-    <mat-form-field appearance="fill" >
-      <mat-label>Leave Type</mat-label>
+    <!-- Leave Type with trigger placeholder -->
+    <mat-form-field appearance="outline" class="field">
+      <mat-label>Leave Type*</mat-label>
       <mat-select formControlName="leaveType" required>
+        <mat-select-trigger>
+          {{ form.get('leaveType')?.value || 'Select leave type' }}
+        </mat-select-trigger>
         <mat-option value="Sick">Sick</mat-option>
-        <mat-option value="Casual">Casual or Vacation (Requires 2 weeks prior notice)</mat-option>
+        <mat-option value="Casual">Casual / Vacation</mat-option>
         <mat-option value="Emergency">Emergency</mat-option>
       </mat-select>
       <mat-error *ngIf="form.get('leaveType')?.hasError('required')">
@@ -20,16 +25,16 @@
       </mat-error>
     </mat-form-field>
 
-    <!-- Dates + Duration -->
-    <div class="dates-row">
-      <!-- Start Date -->
-      <mat-form-field appearance="fill">
+    <!-- Start / End / Duration on one line -->
+    <div class="date-row">
+      <mat-form-field appearance="outline" class="field">
         <mat-label>Start Date</mat-label>
         <input
           matInput
           [matDatepicker]="p1"
           [min]="minDate"
           formControlName="startDate"
+          placeholder="Select start date"
           required
         />
         <mat-datepicker-toggle matSuffix [for]="p1"></mat-datepicker-toggle>
@@ -38,44 +43,76 @@
           Start date is required
         </mat-error>
       </mat-form-field>
-      <!-- End Date -->
-      <mat-form-field appearance="fill">
+
+      <mat-form-field appearance="outline" class="field">
         <mat-label>End Date</mat-label>
-        <input matInput [matDatepicker]="p2" formControlName="endDate" />
+        <input
+          matInput
+          [matDatepicker]="p2"
+          [min]="form.get('startDate')?.value || minDate"
+          formControlName="endDate"
+          placeholder="Select end date"
+          required
+        />
         <mat-datepicker-toggle matSuffix [for]="p2"></mat-datepicker-toggle>
         <mat-datepicker #p2></mat-datepicker>
+        <mat-error *ngIf="form.get('endDate')?.hasError('required')">
+          End date is required
+        </mat-error>
       </mat-form-field>
 
-      <!-- Duration -->
-      <mat-form-field appearance="fill">
-        <mat-label>Duration (days)</mat-label>
-        <input matInput [value]="durationDays" />
+      <mat-form-field appearance="outline" class="field">
+        <mat-label>Duration (working days)</mat-label>
+        <input matInput [value]="durationDays" readonly aria-label="Duration in working days" />
+        <mat-hint align="end">days</mat-hint>
       </mat-form-field>
     </div>
 
     <!-- Reason -->
-    <mat-form-field appearance="fill" class="reason-field">
-      <mat-label>Reason</mat-label>
-      <textarea matInput rows="4" formControlName="reason" maxlength="100"></textarea>
+    <mat-form-field appearance="outline" class="field">
+      <mat-label>Reason*</mat-label>
+      <textarea
+        matInput
+        rows="6"
+        formControlName="reason"
+        maxlength="100"
+        placeholder="Describe the reason"
+        required
+      ></textarea>
       <mat-hint align="end">{{ (form.get('reason')?.value?.length || 0) }}/100</mat-hint>
     </mat-form-field>
-    <!-- Actions -->
-    <div class="actions">
-      <button mat-stroked-button color="primary" type="button" (click)="cancel(leaveId)">Cancel Leave</button>
-      <button mat-raised-button color="primary" type="submit" [disabled]="!datesChanged() || form.invalid">
-        Update
-      </button>
-    </div>
-  </form>
-</div>
 
+    <!-- Admin Comment -->
+    <mat-form-field appearance="outline" class="field">
+      <mat-label>Admin Comment</mat-label>
+      <input matInput formControlName="adminComment" />
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-footer">
+  <button mat-raised-button type="button" class="btn-blue" (click)="cancelLeave()">
+    Cancel Leave
+  </button>
+  <button
+    mat-raised-button
+    class="btn-blue"
+    (click)="submit()"
+    [disabled]="!hasUpdateEligibleChanges() || form.invalid || durationDays <= 0"
+  >
+    Update
+  </button>
+</mat-dialog-actions>
+
+<!-- Confirm dialog uses booleans so No won't cancel -->
 <ng-template #cancelDialog>
-  <h2 mat-dialog-title>Cancel Leave Request</h2>
-  <mat-dialog-content>
-    <p>Are you sure you want to cancel this leave request?</p>
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-stroked-button [mat-dialog-close]="false">No</button>
-    <button mat-raised-button color="primary" [mat-dialog-close]="true">Cancel Leave</button>
-  </mat-dialog-actions>
+  <div style="padding:16px 16px 0 16px; font-weight:600;">Cancel this leave?</div>
+  <div style="padding:8px 16px 16px 16px; opacity:.8;">
+    This action cannot be undone.
+  </div>
+  <div style="display:flex; gap:8px; justify-content:flex-end; padding:0 16px 16px 16px;">
+    <button mat-button [mat-dialog-close]="false">No</button>
+    <button mat-raised-button color="warn" [mat-dialog-close]="true">Yes, Cancel</button>
+  </div>
 </ng-template>

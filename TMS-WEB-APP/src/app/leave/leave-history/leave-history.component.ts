@@ -4,6 +4,9 @@ import { LeaveService, LeaveRequest } from '../../services/leave.service';
 import { Router } from '@angular/router';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatDialog } from '@angular/material/dialog';
+import { ApplyLeaveComponent } from '../apply-leave/apply-leave.component';
+import { UpdateLeaveComponent } from '../update-leave/update-leave.component';
 
 type SummaryRow = {
   totalEligible: number;
@@ -13,12 +16,9 @@ type SummaryRow = {
   balanceSl: number;
 };
 
-
 @Component({
   selector: 'app-leave-history',
   templateUrl: './leave-history.component.html',
-  // Important if your dashboard styles are global/shared. If your dashboard styles
-  // are component-scoped, copy those classes into this component's SCSS (see notes below).
   encapsulation: ViewEncapsulation.Emulated
 })
 export class LeaveHistoryComponent implements OnInit {
@@ -40,7 +40,8 @@ export class LeaveHistoryComponent implements OnInit {
   constructor(
     private leave: LeaveService,
     private snack: MatSnackBar,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -113,9 +114,11 @@ export class LeaveHistoryComponent implements OnInit {
       }
     });
   }
-    getIndex(i: number): number {
-  return i + 1;
-}
+
+  getIndex(i: number): number {
+    return i + 1;
+  }
+
   private toDateOnly(d: string | Date): Date {
     const date = typeof d === 'string' ? new Date(d) : d;
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -136,20 +139,56 @@ export class LeaveHistoryComponent implements OnInit {
     const profileId = Number(localStorage.getItem('profileId'));
     this.leave.cancel(id).subscribe({
       next: () => {
-        this.snack.open('Leave cancelled', 'OK', { duration: 2000, horizontalPosition: 'center', verticalPosition: 'bottom',
-        panelClass: ['custom-snack-failure'] });
+        this.snack.open('Leave cancelled', 'OK', {
+          duration: 2000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+          panelClass: ['custom-snack-failure']
+        });
         this.load(profileId);
       },
       error: () => this.snack.open('Cancel failed', 'OK', { duration: 3000 })
     });
   }
 
+  // OLD (router-based) — now call the dialog version so UX matches:
   update(id: number): void {
-    this.router.navigate(['/leave/update', id]);
+    this.openUpdateLeaveDialog({ id });
   }
 
+  // === NEW: open Update Leave as a dialog ===
+  openUpdateLeaveDialog(row: { id: number }) {
+    const ref = this.dialog.open(UpdateLeaveComponent, {
+      width: '100%',
+      maxWidth: '700px',
+      disableClose: true,
+      panelClass: 'project-dialog', // optional rounded dialog
+      data: { id: row.id }
+    });
+
+    ref.afterClosed().subscribe((refresh?: boolean) => {
+      if (refresh) {
+        const profileId = Number(localStorage.getItem('profileId'));
+        this.load(profileId);
+      }
+    });
+  }
+  // =========================================
+
   openApplyLeave(): void {
-    this.router.navigate(['/leave/apply']);
+    const ref = this.dialog.open(ApplyLeaveComponent, {
+      width: '100%',
+      maxWidth: '600px',
+      disableClose: true,
+      panelClass: 'project-dialog',
+    });
+
+    ref.afterClosed().subscribe((refresh?: boolean) => {
+      if (refresh) {
+        const profileId = Number(localStorage.getItem('profileId'));
+        this.load(profileId);
+      }
+    });
   }
 
   openManageLeaves(): void {

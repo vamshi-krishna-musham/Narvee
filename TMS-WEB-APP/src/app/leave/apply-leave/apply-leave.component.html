@@ -1,14 +1,16 @@
-<div class="apply-leave-container mat-elevation-z2">
-  <h2>Apply Leave</h2>
+<h2 mat-dialog-title class="dialog-header">
+  Apply Leave
+</h2>
 
+<mat-dialog-content class="sheet">
   <form [formGroup]="form" (ngSubmit)="submit()" class="leave-form">
 
     <!-- Leave Type -->
-    <mat-form-field appearance="fill">
-      <mat-label>Leave Type</mat-label>
+    <mat-form-field appearance="outline" class="field">
+      <mat-label>Leave Type*</mat-label>
       <mat-select formControlName="leaveType" required>
         <mat-option value="Sick">Sick</mat-option>
-        <mat-option value="Casual">Casual or Vacation (Requires 2 weeks prior notice)</mat-option>
+        <mat-option value="Casual">Casual / Vacation</mat-option>
         <mat-option value="Emergency">Emergency</mat-option>
       </mat-select>
       <mat-error *ngIf="form.get('leaveType')?.hasError('required')">
@@ -16,16 +18,16 @@
       </mat-error>
     </mat-form-field>
 
-    <!-- Dates + Duration -->
-    <div class="dates-row">
+    <div class="date-row">
       <!-- Start Date -->
-      <mat-form-field appearance="fill">
+      <mat-form-field appearance="outline" class="field">
         <mat-label>Start Date</mat-label>
         <input
           matInput
           [matDatepicker]="p1"
           [min]="minDate"
           formControlName="startDate"
+          placeholder="Select start date"
           required
         />
         <mat-datepicker-toggle matSuffix [for]="p1"></mat-datepicker-toggle>
@@ -36,13 +38,14 @@
       </mat-form-field>
 
       <!-- End Date -->
-      <mat-form-field appearance="fill">
+      <mat-form-field appearance="outline" class="field">
         <mat-label>End Date</mat-label>
         <input
           matInput
           [matDatepicker]="p2"
           [min]="form.get('startDate')?.value || minDate"
           formControlName="endDate"
+          placeholder="Select end date"
           required
         />
         <mat-datepicker-toggle matSuffix [for]="p2"></mat-datepicker-toggle>
@@ -52,51 +55,44 @@
         </mat-error>
       </mat-form-field>
 
-      <!-- Duration -->
-      <mat-form-field appearance="fill">
-        <mat-label>Duration (working days)</mat-label>
-        <input matInput [value]="durationDays" readonly />
+      <!-- Duration (read only) -->
+      <mat-form-field appearance="outline" class="field">
+        <mat-label>Duration</mat-label>
+        <input matInput [value]="durationDays" readonly aria-label="Duration in working days" />
+        <mat-hint align="end">days</mat-hint>
       </mat-form-field>
     </div>
 
-    <small class="hint-text">
-      Duration excludes weekends and company holidays.
-    </small>
-
     <!-- Reason -->
-    <mat-form-field appearance="fill" class="reason-field">
-      <mat-label>Reason</mat-label>
+    <mat-form-field appearance="outline" class="field">
+      <mat-label>Reason*</mat-label>
       <textarea
         matInput
-        rows="4"
+        rows="6"
         formControlName="reason"
         maxlength="100"
+        placeholder="Describe the reason"
         required
       ></textarea>
-      <mat-hint align="end">
-        {{ (form.get('reason')?.value?.length || 0) }}/100
-      </mat-hint>
+      <mat-hint align="end">{{ (form.get('reason')?.value?.length || 0) }}/100</mat-hint>
       <mat-error *ngIf="form.get('reason')?.hasError('required')">
         Reason is required
       </mat-error>
     </mat-form-field>
 
-    <!-- Actions -->
-    <div class="actions">
-      <button mat-stroked-button color="warn" type="button" (click)="cancel()">
-        Cancel
-      </button>
-      <button
-        mat-raised-button
-        color="primary"
-        type="submit"
-        [disabled]="form.invalid || durationDays <= 0"
-      >
-        Submit
-      </button>
-    </div>
+
   </form>
-</div>
+</mat-dialog-content>
 
-
-
+<mat-dialog-actions align="end" class="dialog-footer">
+  <button mat-raised-button type="button" class="btn-blue" (click)="cancel()">Cancel</button>
+  <button
+    mat-raised-button
+    class=".btn-blue"
+    color="primary"
+    (click)="submit()"
+    [disabled]="form.invalid || durationDays <= 0"
+  >
+    Submit
+  </button>
+</mat-dialog-actions>
