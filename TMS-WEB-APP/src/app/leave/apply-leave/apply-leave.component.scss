@@ -1,37 +1,138 @@
-.apply-leave-container {
-  padding: 24px;
-  margin: 16px;
-  background: #fff;
-  border-radius: 8px;
+/* 1) No horizontal scroll */
+:host {
+  display: block;
+  overflow-x: hidden;        /* safety */
 }
 .leave-type-field {
   width: 100px;  // reduce from full width
 }
 
-.leave-form {
-  display: grid;
-  gap: 16px;
-  max-width: 720px;
+/* Remove the negative edge-stretch that caused overflow */
+.dialog-header {
+  background: #e6e3ff;
+  font-weight: 600;        /* header stays bold */
+  margin: 0;
+
+  /* center-left positioning */
+  display: flex;           /* lets us center vertically */
+  align-items: center;     /* vertical center */
+  justify-content: flex-start; /* left align horizontally */
+
+  /* spacing (tweak to taste) */
+  padding: 8px 20px;       /* top/bottom 8px, sides 20px */
+  text-align: left;
 }
 
-.dates-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 0.8fr;
-  gap: 16px;
+/* Content padding stays internal */
+.sheet {
+  background: #f7f6ff;
+  padding: 12px 16px 80px;
 }
 
-.hint-text {
-  opacity: 0.7;
-  margin-top: -8px;
-}
-
-.reason-field textarea {
-  resize: vertical;
-}
-
-.actions {
+/* Footer without negative margins; still sticky */
+.dialog-footer {
+  position: sticky;
+  bottom: 0;
+  left: 0; right: 0;         /* pin to edges without margin hacks */
+  background: #f1efff;
+  padding: 12px 16px;
+  margin: 0;                 /* <<< no negative margins */
   display: flex;
-  justify-content: flex-end;
   gap: 12px;
-  margin-top: 16px;
+  justify-content: flex-end;
+  z-index: 2;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 -6px 16px rgba(0,0,0,0.06);
+}
+
+/* 2) Make everything else NORMAL weight */
+.field { width: 100%; margin: 14px 0; }
+
+/* Labels back to normal */
+:host ::ng-deep .mat-mdc-floating-label {
+  font-weight: 400;          /* normal text for labels */
+}
+
+/* Inputs, selects, textarea text normal */
+:host ::ng-deep .mdc-text-field__input,
+:host ::ng-deep .mat-mdc-select-value-text,
+:host ::ng-deep textarea[matInput] {
+  font-weight: 400;
+}
+
+/* Hints/errors normal */
+:host ::ng-deep .mat-mdc-form-field-subscript-wrapper,
+:host ::ng-deep .mat-mdc-form-field-error {
+  font-weight: 400;
+}
+
+/* Buttons normal text (keep pill shape if you had it) */
+.btn-cancel,
+.btn-submit {
+  border-radius: 9999px;
+  padding: 8px 18px;
+  font-weight: 400;          /* normal, not bold */
+}
+
+/* Keep outline rounding; harmless to leave as-is */
+:host ::ng-deep .mat-mdc-form-field {
+  --mdc-outlined-text-field-container-shape: 12px;
+}
+:host ::ng-deep .mat-mdc-form-field-appearance-outline .mdc-notched-outline__leading,
+:host ::ng-deep .mat-mdc-form-field-appearance-outline .mdc-notched-outline__notch,
+:host ::ng-deep .mat-mdc-form-field-appearance-outline .mdc-notched-outline__trailing {
+  border-radius: 12px;
+}
+
+/* Blue, pill-shaped buttons like project dialog */
+.btn-blue {
+  background: #3b82f6;              /* primary blue */
+  color: #fff;
+  border-radius: 9999px;            /* pill */
+  padding: 8px 18px;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(59,130,246,0.35);
+  transition: box-shadow 120ms ease, transform 80ms ease, filter 120ms ease;
+}
+
+/* hover/active only when not disabled */
+.btn-blue:not(.mdc-button--disabled):hover {
+  filter: brightness(0.97);
+  box-shadow: 0 4px 10px rgba(59,130,246,0.45);
+}
+.btn-blue:not(.mdc-button--disabled):active {
+  transform: translateY(1px);
+}
+
+/* focus ring */
+.btn-blue:not(.mdc-button--disabled):focus-visible {
+  outline: 2px solid #93c5fd;       /* light blue ring */
+  outline-offset: 2px;
+}
+
+/* disabled look */
+.btn-blue.mdc-button--disabled,
+.btn-blue[disabled] {
+  background: #cbd5e1 !important;   /* slate-300 */
+  color: #6b7280 !important;        /* gray-500 */
+  box-shadow: none !important;
+  cursor: not-allowed;
+}
+.date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr; /* start, end, duration */
+  gap: 12px;
+}
+
+.date-row .field {
+  width: 100%;
+  margin: 14px 0;
+}
+
+/* stack on small screens; optional 2-up on medium */
+@media (max-width: 900px) {
+  .date-row { grid-template-columns: 1fr 1fr; } /* start + end on first line, duration wraps */
+}
+@media (max-width: 640px) {
+  .date-row { grid-template-columns: 1fr; }     /* stack everything */
 }

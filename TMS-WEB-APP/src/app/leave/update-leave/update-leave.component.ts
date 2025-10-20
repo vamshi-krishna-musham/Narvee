@@ -1,11 +1,13 @@
-import { Component, OnInit,TemplateRef,ViewChild } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild, Inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LeaveService } from '../../services/leave.service';
-import { MatDialog } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
+export const LEAVE_TYPES = ['Sick','Casual','Emergency'] as const;
+export type LeaveType = typeof LEAVE_TYPES[number];
+
+type UpdateLeaveData = { id: number };
 
 @Component({
   selector: 'app-update-leave',
@@ -14,111 +16,80 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class UpdateLeaveComponent implements OnInit {
   @ViewChild('cancelDialog') cancelDialogTpl!: TemplateRef<any>;
+
   form = this.fb.group({
-    leaveType: [null, Validators.required],
-    startDate: [null, Validators.required],
-    endDate: [null, Validators.required],
-    duration: [null],
-    reason: ['', [Validators.required, Validators.maxLength(500)]],
-    adminComment: [''],
-    status: ['PENDING', Validators.required]
+    leaveType: this.fb.control<LeaveType | null>(null, { validators: [Validators.required] }),
+    startDate: this.fb.control<Date | null>(null, { validators: [Validators.required] }),
+    endDate:   this.fb.control<Date | null>(null, { validators: [Validators.required] }),
+    duration:  this.fb.control<number | null>(null),
+    reason:    this.fb.control<string>('', { validators: [Validators.required, Validators.maxLength(100)] }),
+    adminComment: this.fb.control<string>(''),
+    status: this.fb.control<string>('PENDING', { validators: [Validators.required] })
   });
-  
+
   durationDays = 0;
   leaveId!: number;
+
   private holidaysYMD: string[] = [];
   private holidaySet = new Set(this.holidaysYMD);
   minDate = this.toDateOnly(new Date());
 
+  // store originals (normalized) to detect eligible changes
+  originalLeaveType: string | null = null;
+  originalStartDateYMD: string | null = null;
+  originalEndDateYMD:   string | null = null;
+
   constructor(
     private fb: FormBuilder,
     private leave: LeaveService,
-    private route: ActivatedRoute,
     private snack: MatSnackBar,
-    private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private dialogRef: MatDialogRef<UpdateLeaveComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: UpdateLeaveData
   ) {}
-  originalStartDate: string | null = null;
-  originalEndDate: string | null = null;
-  originalStatus: string | null = null;
 
   ngOnInit(): void {
-    // Get leave ID from URL
-    this.leaveId = Number(this.route.snapshot.paramMap.get('id'));
-    console.log('Received Leave ID:', this.leaveId);  // ✅ verify here
-    console.log('Type of Leave ID:', typeof this.leaveId);  // ✅ verify type
+    this.leaveId = this.data.id;
 
-    // Fetch existing leave data
     this.leave.getById(this.leaveId).subscribe({
       next: (res: any) => {
-        console.log('Leave Data:', res);
-        if (res) {
-          this.form.patchValue({
-            leaveType: res.leaveCategory,
-            startDate: res.fromDate,
-            endDate: res.toDate,
-            duration: res.duration,
-            reason: res.reason,
-            adminComment: res.adminComment,
-            status: res.status
-          });
-        this.originalStartDate = res.fromDate;
-        this.originalEndDate = res.toDate;
-        this.originalStatus = res.status;
-        this.form.get('leaveType')?.disable();
-        const today= this.toDateOnly(new Date());
-        const type = res.leaveCategory;
-        if (type === 'Casual') {
-          this.minDate = new Date(today.setDate(today.getDate() + 14));
-        }
-        else {
-          // default (today)
-          this.minDate = new Date();
-        }
-        }
+        if (!res) return;
 
+        const start = this.normalizeDateInput(res.fromDate);
+        const end   = this.normalizeDateInput(res.toDate);
+
+        this.form.patchValue({
+          leaveType: res.leaveCategory as LeaveType,
+          startDate: start,
+          endDate:   end,
+          duration:  res.duration ?? null,
+          reason:    res.reason ?? '',
+          adminComment: res.adminComment ?? '',
+          status:    res.status ?? 'PENDING'
+        });
+
+        // normalize originals to YMD so equality checks are exact
+        this.originalLeaveType   = res.leaveCategory ?? null;
+        this.originalStartDateYMD = start ? this.toYMD(this.toDateOnly(start)) : null;
+        this.originalEndDateYMD   = end   ? this.toYMD(this.toDateOnly(end))   : null;
+
+        // Min date rule (2-week notice for Casual)
+        const today = this.toDateOnly(new Date());
+        this.minDate = res.leaveCategory === 'Casual'
+          ? new Date(today.setDate(today.getDate() + 14))
+          : new Date();
       },
       error: () => this.snack.open('Failed to load leave details', 'OK', { duration: 2500 })
     });
+
     this.form.valueChanges.subscribe(() => this.computeDuration());
     setTimeout(() => this.computeDuration());
   }
-  datesChanged(): boolean {
-  const start = this.form.get('startDate')?.value;
-  const end = this.form.get('endDate')?.value;
-  return start !== this.originalStartDate || end !== this.originalEndDate;
-}
-    private computeDuration(): void {
-    const s = this.form.get('startDate')!.value as Date | string | null;
-    const e = this.form.get('endDate')!.value as Date | string | null;
 
-    if (!s || !e) { this.durationDays = 0; return; }
-
-    const start = this.toDateOnly(s);
-    const end = this.toDateOnly(e);
-    if (end.getTime() < start.getTime()) { this.durationDays = 0; return; }
-
-    this.durationDays = this.businessDaysBetween(start, end);
-  }
-
-  private businessDaysBetween(start: Date, end: Date): number {
-    let count = 0;
-    const cur = new Date(start);
-    while (cur.getTime() <= end.getTime()) {
-      const d = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate());
-      if (!this.isWeekend(d) && !this.isHoliday(d)) count++;
-      cur.setDate(cur.getDate() + 1);
-    }
-    return count;
-  }
-
-  private isWeekend(d: Date): boolean {
-    const w = d.getDay();
-    return w === 0 || w === 6;
-  }
-
-  private isHoliday(d: Date): boolean {
-    return this.holidaySet.has(this.toYMD(d));
+  // ---- helpers ----
+  private normalizeDateInput(v: Date | string | undefined | null): Date | null {
+    if (!v) return null;
+    return typeof v === 'string' ? new Date(v) : v;
   }
 
   private toDateOnly(v: string | Date): Date {
@@ -133,57 +104,109 @@ export class UpdateLeaveComponent implements OnInit {
     return `${y}-${m}-${day}`;
   }
 
+  private isWeekend(d: Date): boolean {
+    const w = d.getDay();
+    return w === 0 || w === 6;
+  }
 
+  private isHoliday(d: Date): boolean {
+    return this.holidaySet.has(this.toYMD(d));
+  }
+
+  private businessDaysBetween(start: Date, end: Date): number {
+    let count = 0;
+    const cur = new Date(start);
+    while (cur.getTime() <= end.getTime()) {
+      const d = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate());
+      if (!this.isWeekend(d) && !this.isHoliday(d)) count++;
+      cur.setDate(cur.getDate() + 1);
+    }
+    return count;
+  }
+
+  private computeDuration(): void {
+    const s = this.form.get('startDate')!.value as Date | null;
+    const e = this.form.get('endDate')!.value as Date | null;
+    if (!s || !e) { this.durationDays = 0; return; }
+    const start = this.toDateOnly(s);
+    const end   = this.toDateOnly(e);
+    if (end.getTime() < start.getTime()) { this.durationDays = 0; return; }
+    this.durationDays = this.businessDaysBetween(start, end);
+  }
+
+  // enable only if leaveType OR start OR end changes
+  hasUpdateEligibleChanges(): boolean {
+    const currentType = this.form.get('leaveType')?.value ?? null;
+
+    const s = this.form.get('startDate')?.value as Date | null;
+    const e = this.form.get('endDate')?.value as Date | null;
+
+    const currentStartYMD = s ? this.toYMD(this.toDateOnly(s)) : null;
+    const currentEndYMD   = e ? this.toYMD(this.toDateOnly(e)) : null;
+
+    const typeChanged  = currentType !== this.originalLeaveType;
+    const startChanged = currentStartYMD !== this.originalStartDateYMD;
+    const endChanged   = currentEndYMD   !== this.originalEndDateYMD;
+
+    return !!(typeChanged || startChanged || endChanged);
+  }
+
+  // ---- actions ----
   submit(): void {
-    if (this.form.invalid) {
-      this.snack.open('Please fill all required fields', 'OK', { duration: 2500 });
+    if (this.form.invalid || this.durationDays <= 0) {
+      this.snack.open(
+        this.durationDays <= 0 ? 'No working days in selected range' : 'Please fill all required fields',
+        'OK', { duration: 2500 }
+      );
       return;
     }
 
+    const start = this.form.value.startDate ? this.toYMD(this.toDateOnly(this.form.value.startDate)) : null;
+    const end   = this.form.value.endDate   ? this.toYMD(this.toDateOnly(this.form.value.endDate))   : null;
+
     const payload = {
-      leaveCategory: this.form.value.leaveType,
-      fromDate: this.form.value.startDate,
-      toDate: this.form.value.endDate,
-      duration: this.form.value.duration,
+      leaveCategory: (this.form.getRawValue().leaveType as LeaveType | null),
+      fromDate: start,
+      toDate: end,
+      duration: this.durationDays,
       reason: this.form.value.reason,
       adminComment: this.form.value.adminComment,
-      status: "PENDING"  // Always reset to PENDING on update
+      status: 'PENDING'
     };
 
     this.leave.update(this.leaveId, payload).subscribe({
       next: () => {
-      this.snack.open('Leave Updated', 'OK', {
-                  duration: 2000, horizontalPosition: 'center', verticalPosition: 'bottom',
-                  panelClass: ['custom-snack-success']
-                });        
-      this.router.navigate(['/leave/history']);
+        this.snack.open('Leave Updated', 'OK', {
+          duration: 2000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+          panelClass: ['custom-snack-success'],
+        });
+        this.dialogRef.close(true);
       },
       error: () => this.snack.open('Update failed', 'OK', { duration: 3000 })
     });
   }
-  exit(): void {
-    this.router.navigate(['/leave/history']);
-  }
-  cancel(id: number): void {
-    const profileId = Number(localStorage.getItem('profileId'));
-    const ref = this.dialog.open(this.cancelDialogTpl, {
-      width: '420px',
-      disableClose: true,
-      data: { comment: '' }
-    });
-ref.afterClosed().subscribe(comment => {
-      if (!comment) return;
-      this.leave.cancel(id).subscribe({
+
+  cancelLeave(): void {
+    const ref = this.dialog.open(this.cancelDialogTpl, { width: '420px', disableClose: true });
+    ref.afterClosed().subscribe((confirm: boolean) => {
+      if (!confirm) return; // NO clicked → do nothing
+      this.leave.cancel(this.leaveId).subscribe({
         next: () => {
           this.snack.open('Leave Canceled', 'OK', {
-            duration: 2000, horizontalPosition: 'center', verticalPosition: 'bottom',
-            panelClass: ['custom-snack-success']
+            duration: 2000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
+            panelClass: ['custom-snack-success'],
           });
-          this.router.navigate(['/leave/history']);
+          this.dialogRef.close(true);
         },
-        error: () => this.snack.open('Deny failed', 'OK', {
-          duration: 3000, horizontalPosition: 'center', verticalPosition: 'bottom',
-          panelClass: ['custom-snack-failure']
+        error: () => this.snack.open('Cancel failed', 'OK', {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+          panelClass: ['custom-snack-failure'],
         })
       });
     });

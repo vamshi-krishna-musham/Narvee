@@ -1,13 +1,25 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { LeaveService,LeaveRequest } from '../../services/leave.service';
-import { Router } from '@angular/router';
+import { LeaveService, LeaveRequest } from '../../services/leave.service';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+
+const LEAVE_TYPES = ['Sick','Casual','Emergency'] as const;
+type LeaveType = typeof LEAVE_TYPES[number];
+
+type ApplyLeaveDialogData = {
+  prefill?: {
+    leaveType?: LeaveType;   // ← use the exported alias
+    startDate?: Date | string;
+    endDate?: Date | string;
+    reason?: string;
+  };
+};
 
 @Component({
   selector: 'app-apply-leave',
   templateUrl: './apply-leave.component.html',
-  styleUrls: ['./apply-leave.component.scss']
+  styleUrls: ['./apply-leave.component.scss'],
 })
 export class ApplyLeaveComponent implements OnInit {
   minDate = this.toDateOnly(new Date());
@@ -17,10 +29,10 @@ export class ApplyLeaveComponent implements OnInit {
   private holidaySet = new Set(this.holidaysYMD);
 
   form = this.fb.group({
-    leaveType: [null, Validators.required],
-    startDate: [null, Validators.required],
-    endDate: [null, Validators.required],
-    reason: ['', [Validators.required, Validators.maxLength(500)]],
+    leaveType: this.fb.control<LeaveType | null>(null, { validators: [Validators.required] }),
+    startDate: this.fb.control<Date | null>(null, { validators: [Validators.required] }),
+    endDate:   this.fb.control<Date | null>(null, { validators: [Validators.required] }),
+    reason:    this.fb.control<string>('', { validators: [Validators.required, Validators.maxLength(100)] }),
   });
   existingleaves: LeaveRequest[] = [];
 
@@ -28,36 +40,53 @@ export class ApplyLeaveComponent implements OnInit {
     private fb: FormBuilder,
     private leave: LeaveService,
     private snack: MatSnackBar,
-    private router: Router
+    private dialogRef: MatDialogRef<ApplyLeaveComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: ApplyLeaveDialogData
   ) {}
 
+private normalizeDateInput(v: Date | string | undefined | null): Date | null {
+    if (!v) return null;
+    return typeof v === 'string' ? new Date(v) : v;
+  }
 
   ngOnInit(): void {
+    // Prefill (optional)
+    if (this.data?.prefill) {
+      const { leaveType, startDate, endDate, reason } = this.data.prefill;
+      this.form.patchValue({
+        leaveType,
+        startDate: this.normalizeDateInput(startDate),  // ← convert to Date
+        endDate:   this.normalizeDateInput(endDate),    // ← convert to Date
+        reason
+      });
+    }
 
-    this.form.get('leaveType')?.valueChanges.subscribe(type => {
-      const today= this.toDateOnly(new Date());
+    // Enforce 2-week notice for Casual, else allow today
+    this.form.get('leaveType')?.valueChanges.subscribe((type) => {
+      const today = this.toDateOnly(new Date());
       if (type === 'Casual') {
         this.minDate = new Date(today.setDate(today.getDate() + 14));
-      }
-       else {
-        // default (today)
+      } else {
         this.minDate = new Date();
       }
-
     });
+
     this.form.valueChanges.subscribe(() => this.computeDuration());
     setTimeout(() => this.computeDuration());
     this.loadLeaves();
   }
+
   loadLeaves(): void {
     const profileId = Number(localStorage.getItem('profileId'));
     this.leave.listMine(profileId).subscribe({
-      next: (data) => {
-        this.existingleaves = data;
-      },
-      error: (err) => {
-        this.snack.open(err.error?.message || 'Failed to load leaves', 'OK', { duration: 3000 });
-      }
+      next: (data) => (this.existingleaves = data),
+      error: (err) =>
+        this.snack.open(err.error?.message || 'Failed to load leaves', 'OK', {
+          duration: 3000,
+          panelClass: ['custom-snack-failure'],
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+        }),
     });
   }
 
@@ -65,11 +94,17 @@ export class ApplyLeaveComponent implements OnInit {
     const s = this.form.get('startDate')!.value as Date | string | null;
     const e = this.form.get('endDate')!.value as Date | string | null;
 
-    if (!s || !e) { this.durationDays = 0; return; }
+    if (!s || !e) {
+      this.durationDays = 0;
+      return;
+    }
 
     const start = this.toDateOnly(s);
     const end = this.toDateOnly(e);
-    if (end.getTime() < start.getTime()) { this.durationDays = 0; return; }
+    if (end.getTime() < start.getTime()) {
+      this.durationDays = 0;
+      return;
+    }
 
     this.durationDays = this.businessDaysBetween(start, end);
   }
@@ -109,87 +144,93 @@ export class ApplyLeaveComponent implements OnInit {
   submit(): void {
     if (this.form.invalid || this.durationDays <= 0) {
       this.snack.open(
-        this.durationDays <= 0 ? 'No working days in selected range' : 'Please fill all required fields',
-        'OK', { duration: 2800 }
+        this.durationDays <= 0
+          ? 'No working days in selected range'
+          : 'Please fill all required fields',
+        'OK',
+        {
+          duration: 2800,
+          panelClass: ['custom-snack-failure'],
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+        }
       );
       return;
     }
 
     const start = this.toDateOnly(this.form.value.startDate!);
-    const end   = this.toDateOnly(this.form.value.endDate!);
-    let flag=false;
-    const duration = this.durationDays;
+    const end = this.toDateOnly(this.form.value.endDate!);
+
+    let hasOverlap = false;
+  this.existingleaves.forEach((leave) => {
+  const existingFrom = this.toDateOnly(leave.startDate);
+  const existingTo   = this.toDateOnly(leave.endDate);
+  const existingStatus = (leave.status ?? '');  // ← normalize to string
+
+  const isBlocking = ['APPROVED','PENDING','REJECTED'].includes(existingStatus); // ← now a string
+
+  if (
+    (start >= existingFrom && start <= existingTo && isBlocking) ||
+    (end   >= existingFrom && end   <= existingTo && isBlocking) ||
+    (start <= existingFrom && end   >= existingTo && isBlocking)
+  ) {
+    hasOverlap = true;
+  }
+});
+
+
+    if (hasOverlap) {
+      this.snack.open(
+        'Leave dates overlap with existing pending/approved leave',
+        'OK',
+        {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['custom-snack-failure'],
+        }
+      );
+      return;
+    }
+
     const payload = {
       userId: Number(localStorage.getItem('profileId')),
-      userName: ((localStorage.getItem('firstName') || '') + ' ' + (localStorage.getItem('lastName') || '')) || 'Unknown',
+      userName:
+        (localStorage.getItem('firstName') || '') +
+          ' ' +
+          (localStorage.getItem('lastName') || '') || 'Unknown',
       leaveCategory: this.form.value.leaveType,
       fromDate: this.toYMD(start),
       toDate: this.toYMD(end),
       reason: (this.form.value.reason || '').trim(),
       status: 'PENDING',
-      duration: duration
+      duration: this.durationDays,
     };
-    this.existingleaves.forEach(leave => {
-      const existingFrom = this.toDateOnly(leave.startDate);
-      const existingTo = this.toDateOnly(leave.endDate); 
-      const existingstatus= leave.status 
-      // check for overlap
-      if (
-      (start >= existingFrom && start <= existingTo && (existingstatus === 'APPROVED' || existingstatus === 'PENDING' || existingstatus === 'REJECTED')) ||
-      (end >= existingFrom && end <= existingTo && (existingstatus === 'APPROVED' || existingstatus === 'PENDING' || existingstatus === 'REJECTED')) ||
-      (start <= existingFrom && end >= existingTo && (existingstatus === 'APPROVED' || existingstatus === 'PENDING' || existingstatus === 'REJECTED'))
-      ){
-        flag=true;
-      }
-    });
-    if(flag){
-          this.snack.open('Leave dates overlap with existing pending leave or approved leave', 'OK', { 
-          duration: 3000,
-          horizontalPosition: 'center',  
-          verticalPosition: 'top',
-          panelClass: ['custom-snack-failure']
-        });
-    }
-    else{
-        const MAX_LEAVE_DAYS = 30;
-        const approvedOrPendingDays = this.existingleaves
-            .filter(l => l.status === 'APPROVED' || l.status === 'PENDING')
-            .reduce((sum, l) => sum + (l.duration || 0), 0);
-        
-        if (approvedOrPendingDays + payload.duration > MAX_LEAVE_DAYS) {
-          this.snack.open('You have exceeded your annual 30-day leave limit.', 'OK', { 
-            duration: 3000,
-            horizontalPosition: 'center',  
-            verticalPosition: 'top',
-            panelClass: ['custom-snack-failure']
-          });
-          return; // stop submission
-        }
-        else{
-          this.leave.apply(payload as any).subscribe({
-          next: () => {
-            this.snack.open('Leave submitted successfully', 'OK', {
-              duration: 2500,
-              horizontalPosition: 'center',
-              verticalPosition: 'bottom',
-              panelClass: ['custom-snack-success']   // or 'snack-light'
-            });
-            this.router.navigate(['/leave/history']); // ✅ go back to history after success
-          },
-          error: e => {
-            this.snack.open(e.error?.message || 'Submission failed', 'OK', {
-              duration: 3500,
-              horizontalPosition: 'center',
-              verticalPosition: 'bottom',
-              panelClass: ['custom-snack-failure']});
-          }
-        });
-      }
-    }    
 
+    this.leave.apply(payload as any).subscribe({
+      next: () => {
+        this.snack.open('Leave submitted successfully', 'OK', {
+          duration: 2500,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+          panelClass: ['custom-snack-success'],
+        });
+        // Close dialog and tell parent to refresh
+        this.dialogRef.close(true);
+      },
+      error: (e) => {
+        this.snack.open(e.error?.message || 'Submission failed', 'OK', {
+          duration: 3500,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+          panelClass: ['custom-snack-failure'],
+        });
+      },
+    });
   }
 
   cancel(): void {
-    this.router.navigate(['/leave/history']); // ✅ cancel → back to history
+    // Close like other dialogs rather than routing away
+    this.dialogRef.close(false);
   }
 }
