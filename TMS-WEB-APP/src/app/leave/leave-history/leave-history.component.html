@@ -14,10 +14,12 @@
 <div class="card-container">
   <mat-card *ngFor="let c of summaryCards" class="dashboard-card">
     <div class="card-header">
-      <div class="dot"></div>
-      <span class="title">{{ c.title }}</span>
+      <div class="left">
+        <span class="dot"></span>
+        <span class="title">{{ c.title }}</span>
+      </div>
+      <div class="count">{{ c.count }}</div>
     </div>
-    <div class="count">{{ c.count }}</div>
   </mat-card>
 </div>
 </div>
