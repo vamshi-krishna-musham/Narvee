@@ -1,137 +1,129 @@
-<button mat-raised-button color="primary" (click)="openApplyLeave()" style="float:right;">Apply Leave</button>
-<button mat-raised-button color="primary" *ngIf="isManager" (click)="openManageLeaves()" style="float:right;">
+<button mat-raised-button class="apply-leave" (click)="openApplyLeave()" style="float:right;">Apply Leave</button>
+<button mat-raised-button class="manage-leave" *ngIf="isManager" (click)="openManageLeaves()" style="float:right;">
   Manage Leaves
 </button>
 
 <div class="leave-summary-section">
-<!-- Header -->
-<div class="header-row">
-  <h2>Leave Summary</h2>
-</div>
+  <h2 class="leave-summary-header">Leave summary</h2>
 
-<!-- KPI CARDS: same look & width as dashboard cards -->
-<!-- Uses .card-container, .dashboard-card, .card-header, .dot, .count, .description -->
-<div class="card-container">
-  <mat-card *ngFor="let c of summaryCards" class="dashboard-card">
-    <div class="card-header">
-      <div class="left">
-        <span class="dot"></span>
-        <span class="title">{{ c.title }}</span>
+  <div class="card-container">
+    <mat-card *ngFor="let c of summaryCards" class="dashboard-card">
+      <div class="card-header">
+        <div class="left">
+          <span class="dot"></span>
+          <span class="title">{{ c.title }}</span>
+        </div>
+        <div class="count">{{ c.count }}</div>
       </div>
-      <div class="count">{{ c.count }}</div>
-    </div>
-  </mat-card>
+    </mat-card>
+  </div>
 </div>
-</div>
-<!-- Leave History -->
+
+<!-- Leave History Section -->
 <div class="leave-history">
+  <h2 class="leave-history-header">Leave History</h2>
 
-  <h2>Leave History</h2>
-
-  <!-- Loading -->
+  <!-- Loader -->
   <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
-  <!-- Empty State -->
-  <div *ngIf="dataSource?.data?.length === 0" class="empty-state">
-  No matching data found
-  </div>
-
+  <!-- Table Wrapper -->
   <div class="table-wrapper" *ngIf="!loading">
-    <table
-      mat-table
-      [dataSource]="dataSource"
-      class="mat-elevation-z2 full-table fixed-table">
-      <ng-container matColumnDef="no">
-        <th mat-header-cell *matHeaderCellDef>S.No</th>
+    <section class="mat-elevation-z8 leave-table-style">
+      <table mat-table [dataSource]="dataSource" class="mat-elevation-z2 full-table fixed-table">
+        <!-- S.No -->
+        <ng-container matColumnDef="no">
+          <th mat-header-cell *matHeaderCellDef>S.No</th>
           <td mat-cell *matCellDef="let element; let i = index">
             {{ getIndex(i) }}
           </td>
-      </ng-container>
-      <!-- Type -->
-      <ng-container matColumnDef="type">
-        <th mat-header-cell *matHeaderCellDef>Type</th>
-        <td mat-cell *matCellDef="let r">{{ r.leaveType }}</td>
-      </ng-container>
+        </ng-container>
 
-      <!-- Dates -->
-      <ng-container matColumnDef="startdate">
-        <th mat-header-cell *matHeaderCellDef>Start Date</th>
-        <td mat-cell *matCellDef="let r">
-          {{ r.startDate | date }}
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="enddate">
-        <th mat-header-cell *matHeaderCellDef>End Date</th>
-        <td mat-cell *matCellDef="let r">
-          {{ r.endDate | date }}
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="duration">
-        <th mat-header-cell *matHeaderCellDef>Duration</th>
-        <td mat-cell *matCellDef="let r">
-          {{ r.duration }}  days
-        </td>
-      </ng-container>
-      <!-- Reason -->
-      <ng-container matColumnDef="reason">
-        <th mat-header-cell *matHeaderCellDef class="reason-header">Reason</th>
-        <td
-          mat-cell
-          *matCellDef="let r"
-          class="reason-cell"
-        >
-    <span class="ellipsis-text" [matTooltip]="r.reason" matTooltipPosition="above">
-      {{ r.reason }}
-    </span>
-        </td>
-      </ng-container>
+        <!-- Type -->
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef>Type</th>
+          <td mat-cell *matCellDef="let r">{{ r.leaveType }}</td>
+        </ng-container>
 
-      <!-- Status -->
-      <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef class="nowrap">Status</th>
-        <td mat-cell *matCellDef="let r">
-    <span
-      class="status-text"
-      [ngClass]="{
-        'status-approved': r.status === 'APPROVED',
-        'status-denied': r.status === 'DENIED',
-        'status-pending': r.status === 'PENDING',
-        'status-cancelled': r.status === 'CANCELED' || r.status === 'CANCELLED'
-      }"
-    >
-      {{ r.status }}
-    </span>
-        </td>
-      </ng-container>
+        <!-- Start Date -->
+        <ng-container matColumnDef="startdate">
+          <th mat-header-cell *matHeaderCellDef>Start Date</th>
+          <td mat-cell *matCellDef="let r">{{ r.startDate | date }}</td>
+        </ng-container>
 
-      <!-- Admin Comment -->
-      <ng-container matColumnDef="Admin Comment">
-        <th mat-header-cell *matHeaderCellDef>Admin Comment</th>
-        <td mat-cell *matCellDef="let r">{{ r.adminComment || '-' }}</td>
-      </ng-container>
+        <!-- End Date -->
+        <ng-container matColumnDef="enddate">
+          <th mat-header-cell *matHeaderCellDef>End Date</th>
+          <td mat-cell *matCellDef="let r">{{ r.endDate | date }}</td>
+        </ng-container>
 
-      <!-- Actions -->
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Actions</th>
-        <td mat-cell *matCellDef="let r">
-          <button
-            mat-stroked-button
-            color="primary"
-            (click)="update(r.id)"
-            *ngIf="r.status === 'PENDING' || r.status === 'DENIED'">
-            Modify
-          </button>
-        </td>
-      </ng-container>
+        <!-- Duration -->
+        <ng-container matColumnDef="duration">
+          <th mat-header-cell *matHeaderCellDef>Duration</th>
+          <td mat-cell *matCellDef="let r">{{ r.duration }} days</td>
+        </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-      <tr class="mat-row" *matNoDataRow>
-        <td class="mat-cell" [attr.colspan]="displayedColumns.length">
-          No leaves yet.
-        </td>
-      </tr>
-    </table>
+        <!-- Reason -->
+        <ng-container matColumnDef="reason">
+          <th mat-header-cell *matHeaderCellDef>Reason</th>
+          <td mat-cell *matCellDef="let r" class="reason-cell">
+            <span class="ellipsis-text" [matTooltip]="r.reason" matTooltipPosition="above">
+              {{ r.reason }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Status -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let r">
+            <span
+              class="status-text"
+              [ngClass]="{
+                'status-approved': r.status === 'APPROVED',
+                'status-denied': r.status === 'DENIED',
+                'status-pending': r.status === 'PENDING',
+                'status-cancelled': r.status === 'CANCELED' || r.status === 'CANCELLED'
+              }"
+            >
+              {{ r.status }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Admin Comment -->
+        <ng-container matColumnDef="Admin Comment">
+          <th mat-header-cell *matHeaderCellDef>Admin Comment</th>
+          <td mat-cell *matCellDef="let r">{{ r.adminComment || '-' }}</td>
+        </ng-container>
+
+        <!-- Actions -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let r">
+            <button
+              mat-stroked-button
+              color="primary"
+              (click)="update(r.id)"
+              *ngIf="r.status === 'PENDING' || r.status === 'DENIED'">
+              Modify
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Table rows -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+
+      <p class="no-data-found" *ngIf="!dataSource.data.length">No matching data found</p>
+    </section>
+
+    <!-- Paginator -->
+    <div class="paginator">
+      <mat-paginator
+        [pageSizeOptions]="[10, 20, 50]"
+        showFirstLastButtons>
+      </mat-paginator>
+    </div>
   </div>
 </div>
-<mat-paginator [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>

@@ -3,6 +3,130 @@
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 /* styles.scss */
+.apply-leave{
+  color: white !important;
+  background-color: rgba(52, 61, 255, 0.8) !important;
+}
+.manage-leave{
+  color: white !important;
+  background-color: rgba(52, 61, 255, 0.8) !important;
+}
+.leave-summary-section {
+  margin-bottom: 1rem;
+}
+
+.leave-history {
+  display: flex;
+  flex-direction: column;
+  min-height: 85vh;
+}
+.leave-summary-header{
+    font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.leave-history-header {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow: auto;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.leave-table-style {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mat-mdc-header-row {
+  background-color: #343dff36 !important;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.mat-header-cell,
+.mat-cell {
+  padding: 12px 16px !important;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.mat-row:hover .mat-cell {
+  background-color: #f5f7ff !important;
+  transition: background-color 0.3s ease;
+}
+
+.ellipsis-text {
+  display: inline-block;
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+/* Empty state message */
+.no-data-found {
+  text-align: center;
+  font-weight: 500;
+  color: #555;
+  padding: 12px 0;
+  border-top: 1px solid #e0e0e0;
+  margin: 0;
+}
+
+/* Paginator section (same as projects page) */
+/* Paginator fix: pinned below table like Projects page */
+.paginator {
+  display: flex;
+  justify-content: flex-end;
+  background-color: #fff;
+  border-top: 1px solid #e0e0e0;
+  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.1);
+  padding: 8px 16px; /* adds equal padding like in Projects */
+  margin-top: -4px; /* visually pulls paginator closer to table */
+  min-height: 56px; /* ensure stable height even if data is small */
+}
+
+::ng-deep .mat-mdc-paginator {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+
+/* Status colors */
+.status-approved {
+  color: green;
+  font-weight: 600;
+}
+.status-denied {
+  color: red;
+  font-weight: 600;
+}
+.status-pending {
+  color: #ff9800;
+  font-weight: 600;
+}
+.status-cancelled {
+  color: #757575;
+  font-weight: 600;
+}
+
 
 
 /* Style for failure - Red background */
