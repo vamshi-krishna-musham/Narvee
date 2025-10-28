@@ -1,35 +1,46 @@
-<button mat-raised-button class="apply-leave" (click)="openApplyLeave()" style="float:right;">Apply Leave</button>
-<button mat-raised-button class="manage-leave" *ngIf="isManager" (click)="openManageLeaves()" style="float:right;">
-  Manage Leaves
-</button>
+<mat-card class="summary-header-card">
+  <h2 class="summary-title">Leave Summary</h2>
 
-<div class="leave-summary-section">
-  <h2 class="leave-summary-header">Leave summary</h2>
-
-  <div class="card-container">
-    <mat-card *ngFor="let c of summaryCards" class="dashboard-card">
-      <div class="card-header">
-        <div class="left">
-          <span class="dot"></span>
-          <span class="title">{{ c.title }}</span>
-        </div>
-        <div class="count">{{ c.count }}</div>
-      </div>
-    </mat-card>
+  <div class="summary-actions">
+    <button mat-raised-button class="apply-leave" (click)="openApplyLeave()">Apply Leave</button>
+    <button mat-raised-button class="manage-leave" *ngIf="isManager" (click)="openManageLeaves()">Manage Leaves</button>
   </div>
+</mat-card>
+
+<!-- KPI CARDS: same look & width as dashboard cards -->
+<!-- Uses .card-container, .dashboard-card, .card-header, .dot, .count, .description -->
+<div class="card-container">
+  <mat-card *ngFor="let c of summaryCards; trackBy: trackByTitle" class="dashboard-card">
+    <div class="card-header">
+      <div class="left">
+        <span class="dot"></span>
+        <span class="title">{{ c.title }}</span>
+      </div>
+      <div class="count">{{ c.count }}</div>
+    </div>
+  </mat-card>
 </div>
 
+
 <!-- Leave History Section -->
-<div class="leave-history">
-  <h2 class="leave-history-header">Leave History</h2>
+<mat-card class="page-header-card">
+  <h2 class="page-header-title">Leave History</h2>
+
+  <!-- optional: right-side actions -->
+  <div class="page-header-actions">
+    <!-- put filters/search/buttons here if you need -->
+  </div>
+</mat-card>
+
 
   <!-- Loader -->
   <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
   <!-- Table Wrapper -->
-  <div class="table-wrapper" *ngIf="!loading">
-    <section class="mat-elevation-z8 leave-table-style">
-      <table mat-table [dataSource]="dataSource" class="mat-elevation-z2 full-table fixed-table">
+  <div class="table-section" *ngIf="!loading">
+    <div class="table-scroll">
+      <section class="mat-elevation-z8 leave-table-style">
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z2 full-table fixed-table">
         <!-- S.No -->
         <ng-container matColumnDef="no">
           <th mat-header-cell *matHeaderCellDef>S.No</th>
@@ -111,19 +122,16 @@
         </ng-container>
 
         <!-- Table rows -->
-        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-      </table>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
 
-      <p class="no-data-found" *ngIf="!dataSource.data.length">No matching data found</p>
-    </section>
+        <p class="no-data-found" *ngIf="!dataSource.data.length">No matching data found</p>
+      </section>
+    </div>
 
     <!-- Paginator -->
     <div class="paginator">
-      <mat-paginator
-        [pageSizeOptions]="[10, 20, 50]"
-        showFirstLastButtons>
-      </mat-paginator>
+      <mat-paginator [pageSizeOptions]="[10,20,50]" showFirstLastButtons></mat-paginator>
     </div>
   </div>
-</div>

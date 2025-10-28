@@ -1,21 +1,20 @@
-<!-- Loading bar -->
-  <button mat-stroked-button color="accent" (click)="viewCalendar()">
-    View Calendar
-  </button>
-  <!-- Back Button -->
-<!--<div style="text-align:right; margin-top:16px;"> -->
-  <button mat-stroked-button color="accent" (click)="backToHistory()">
-    Back to History
-  </button>
+<mat-card class="summary-header-card">
+  <h2 class="summary-title">Manage Leaves</h2>
+
+  <div class="summary-actions">
+    <button mat-stroked-button color="accent" (click)="viewCalendar()">
+      View Calendar
+    </button>
+      <button mat-stroked-button color="accent" (click)="backToHistory()">
+        Back to History
+      </button>
+  </div>
+</mat-card>
+
 <!--</div> -->
 <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
-<!-- Empty state -->
-<div *ngIf="!loading && (!pending || pending.length === 0)"
-     class="mat-elevation-z1"
-     style="padding:16px;border-radius:8px;">
-  No pending leave requests.
-</div>
+
 <style>
   table {
     table-layout: fixed;           /* ensures equal-width columns */
@@ -54,11 +53,12 @@
 </style>
 
 <!-- Table -->
-<table *ngIf="!loading && pending?.length"
-       mat-table
-       [dataSource]="pending"
-       class="mat-elevation-z2"
-       style="width:100%; margin-bottom: 24px;">
+<table
+  *ngIf="!loading"
+  mat-table
+  [dataSource]="pending || []"
+  class="mat-elevation-z2"
+  style="width:100%; margin-bottom:24px;">
   <ng-container matColumnDef="no">
   <th mat-header-cell *matHeaderCellDef>S.No</th>
   <td mat-cell *matCellDef="let element; let i = index">
@@ -80,7 +80,7 @@
       <ng-container matColumnDef="startdate">
         <th mat-header-cell *matHeaderCellDef>Start Date</th>
         <td mat-cell *matCellDef="let r">
-          {{ r.startDate | date }} 
+          {{ r.startDate | date }}
         </td>
       </ng-container>
       <ng-container matColumnDef="enddate">
@@ -112,11 +112,14 @@
     </td>
   </ng-container>
 
-  <!-- ✅ Updated row definitions without status -->
   <tr mat-header-row *matHeaderRowDef="['no','userName','type','startdate','enddate','duration','reason','actions']"></tr>
   <tr mat-row *matRowDef="let row; columns: ['no','userName','type','startdate','enddate','duration','reason','actions']"></tr>
+  <tr class="mat-row" *matNoDataRow>
+    <td class="mat-cell no-data-found" [attr.colspan]="8">
+      No pending leave requests.
+    </td>
+  </tr>
 </table>
-
 
 <!-- Approve dialog -->
 <ng-template #approveDialog>
