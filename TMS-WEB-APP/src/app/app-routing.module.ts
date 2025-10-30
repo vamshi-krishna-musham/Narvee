@@ -15,43 +15,47 @@ import { ViewPrivilegeComponent } from './sidebar/view-privilege/view-privilege.
 import { ViewProfileComponent } from './sidebar/view-profile/view-profile.component';
 import { NotificationsComponent } from './sidebar/notifications/notifications.component';
 import { AuthGuard } from './guards/auth.guard';
+
+// Leave Management Components
 import { LeaveHomeComponent } from './leave/leave-home/leave-home.component';
 import { ApplyLeaveComponent } from './leave/apply-leave/apply-leave.component';
 import { LeaveHistoryComponent } from './leave/leave-history/leave-history.component';
 import { LeaveApprovalsComponent } from './leave/leave-approvals/leave-approvals.component';
 import { UpdateLeaveComponent } from './leave/update-leave/update-leave.component';
 import { CalendarViewComponent } from './leave/calendar-view/calendar-view.component';
+
 const routes: Routes = [
-  {path:'',redirectTo:'/register-login',pathMatch:'full'},
-  {path:'register-login',component:RegisterManagmentComponent},
+  { path: '', redirectTo: '/register-login', pathMatch: 'full' },
+  { path: 'register-login', component: RegisterManagmentComponent },
   {
     path: '',
-    component: SidenavComponent,  canActivate: [AuthGuard],
+    component: SidenavComponent,
+    canActivate: [AuthGuard],
     children: [
-      { path: 'projects', component: ProjectsComponent,  canActivate: [AuthGuard], },
-      {path:'teammember',component:TeamMemberComponent ,  canActivate: [AuthGuard],},
-      {path:'changepassword',component:ChangepasswordComponent ,  canActivate: [AuthGuard],},
-      {path:'addtask',component:AddTaskComponent ,  canActivate: [AuthGuard],},
-      {path:'add-subtask',component:AddSubtaskComponent ,  canActivate: [AuthGuard],},
-      {path:'roles-privileges',component:RolesPrivilegesComponent ,  canActivate: [AuthGuard],},
-      {path:'roles-add',component:RolesAddComponent ,  canActivate: [AuthGuard],},
-      {path:'add-newrole',component:AddNewRoleComponent ,  canActivate: [AuthGuard],},
-      {path:'Dashboard',component:DashboardComponent ,  canActivate: [AuthGuard],},
-      {path:'view-privilege',component:ViewPrivilegeComponent ,  canActivate: [AuthGuard],},
-      {path:'view-profile',component:ViewProfileComponent ,  canActivate: [AuthGuard],},
-      {path:'notification',component:NotificationsComponent ,  canActivate: [AuthGuard],},
-      {path:'leave',component: LeaveHomeComponent , canActivate: [AuthGuard], },
-      {path:'leave/apply',component: ApplyLeaveComponent , canActivate: [AuthGuard], },
-      {path:'leave/history',component: LeaveHistoryComponent , canActivate: [AuthGuard], },
-      { path: 'leave/approvals', component: LeaveApprovalsComponent },
-      { path: 'leave/update/:id', component: UpdateLeaveComponent },
-    { path: 'leave/calendar-view', component: CalendarViewComponent },
-    {
-      path: '**',
-      redirectTo: 'register-login'
-    }
-    // other routes
-  ]
+      { path: 'projects', component: ProjectsComponent, canActivate: [AuthGuard] },
+      { path: 'teammember', component: TeamMemberComponent, canActivate: [AuthGuard] },
+      { path: 'changepassword', component: ChangepasswordComponent, canActivate: [AuthGuard] },
+      { path: 'addtask', component: AddTaskComponent, canActivate: [AuthGuard] },
+      { path: 'add-subtask', component: AddSubtaskComponent, canActivate: [AuthGuard] },
+      { path: 'roles-privileges', component: RolesPrivilegesComponent, canActivate: [AuthGuard] },
+      { path: 'roles-add', component: RolesAddComponent, canActivate: [AuthGuard] },
+      { path: 'add-newrole', component: AddNewRoleComponent, canActivate: [AuthGuard] },
+      { path: 'Dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
+      { path: 'view-privilege', component: ViewPrivilegeComponent, canActivate: [AuthGuard] },
+      { path: 'view-profile', component: ViewProfileComponent, canActivate: [AuthGuard] },
+      { path: 'notification', component: NotificationsComponent, canActivate: [AuthGuard] },
+
+      // Leave management routes (merged from your old version)
+      { path: 'leave', component: LeaveHomeComponent, canActivate: [AuthGuard] },
+      { path: 'leave/apply', component: ApplyLeaveComponent, canActivate: [AuthGuard] },
+      { path: 'leave/history', component: LeaveHistoryComponent, canActivate: [AuthGuard] },
+      { path: 'leave/approvals', component: LeaveApprovalsComponent, canActivate: [AuthGuard] },
+      { path: 'leave/update/:id', component: UpdateLeaveComponent, canActivate: [AuthGuard] },
+      { path: 'leave/calendar-view', component: CalendarViewComponent, canActivate: [AuthGuard] },
+
+      // fallback route
+      { path: '**', redirectTo: 'register-login' }
+    ]
   }
 ];
 

@@ -1,15 +1,19 @@
 <mat-card class="summary-header-card">
-  <h2 class="summary-title">Manage Leaves</h2>
-
-  <div class="summary-actions">
-    <button mat-stroked-button color="accent" (click)="viewCalendar()">
-      View Calendar
-    </button>
-      <button mat-stroked-button color="accent" (click)="backToHistory()">
-        Back to History
+  <div class="header-row">
+    <div class="left-section">
+      <button mat-icon-button (click)="backToHistory()">
+        <mat-icon>arrow_back</mat-icon>
       </button>
+      <h2 class="summary-title">Manage Leaves</h2>
+    </div>
+    <div class="summary-actions">
+      <button mat-stroked-button class="apply-leave" (click)="viewCalendar()">
+        View Approvals
+      </button>
+    </div>
   </div>
 </mat-card>
+
 
 <!--</div> -->
 <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>

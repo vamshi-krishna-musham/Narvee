@@ -17,8 +17,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatOptionModule } from '@angular/material/core';
+import { MatNativeDateModule, MatOptionModule } from '@angular/material/core';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
@@ -30,8 +29,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule } from '@angular/material/table';
 import { MatRippleModule } from '@angular/material/core';
 import { MatPaginatorModule } from '@angular/material/paginator';
-
-
 
 // CDK
 import { TextFieldModule } from '@angular/cdk/text-field';
@@ -49,6 +46,7 @@ import { ConfirmdeleteComponent } from './sidebar/confirmdelete/confirmdelete.co
 import { SidenavComponent } from './sidebar/sidenav/sidenav.component';
 import { ViewProfileComponent } from './sidebar/view-profile/view-profile.component';
 
+// Leave Management Components
 import { LeaveHomeComponent } from './leave/leave-home/leave-home.component';
 import { ApplyLeaveComponent } from './leave/apply-leave/apply-leave.component';
 import { LeaveHistoryComponent } from './leave/leave-history/leave-history.component';
@@ -56,7 +54,6 @@ import { LeaveApprovalsComponent } from './leave/leave-approvals/leave-approvals
 import { LeaveNavComponent } from './leave/leave-nav/leave-nav.component';
 import { UpdateLeaveComponent } from './leave/update-leave/update-leave.component';
 import { CalendarViewComponent } from './leave/calendar-view/calendar-view.component';
-//import { ApplyLeaveComponent } from './leave/apply-leave/apply-leave.component';
 
 // Interceptor
 import { AuthInterceptor } from './interceptor/interceptors/auth.interceptor';
@@ -69,11 +66,13 @@ import { NgxMatIntlTelInputComponent } from 'ngx-mat-intl-tel-input';
     AppComponent,
     RegisterManagmentComponent,
     CustomSnackBarComponent,
-    SidenavComponent,
-    ConfirmdeleteComponent,
     ForgotPasswordComponent,
     ChangepasswordComponent,
+    ConfirmdeleteComponent,
+    SidenavComponent,
     ViewProfileComponent,
+
+    // Leave Management
     LeaveHomeComponent,
     ApplyLeaveComponent,
     LeaveHistoryComponent,
@@ -81,8 +80,6 @@ import { NgxMatIntlTelInputComponent } from 'ngx-mat-intl-tel-input';
     LeaveNavComponent,
     UpdateLeaveComponent,
     CalendarViewComponent,
-    
-    //ApplyLeaveDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -92,17 +89,16 @@ import { NgxMatIntlTelInputComponent } from 'ngx-mat-intl-tel-input';
     ReactiveFormsModule,
     HttpClientModule,
     RouterModule,
+
+    // Angular Material Modules
     MatIconModule,
     MatDialogModule,
     MatPaginatorModule,
-    // Angular Material
     MatButtonModule,
     MatCardModule,
     MatChipsModule,
     MatDatepickerModule,
-    MatDialogModule,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
     MatListModule,
     MatMenuModule,
@@ -118,19 +114,6 @@ import { NgxMatIntlTelInputComponent } from 'ngx-mat-intl-tel-input';
     MatTooltipModule,
     MatTableModule,
     MatRippleModule,
-    MatButtonModule,
-    MatIconModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatTableModule,
-    MatChipsModule,
-    MatProgressBarModule,
-    MatCardModule,
-    MatSnackBarModule,
 
     // CDK
     TextFieldModule,
@@ -149,4 +132,4 @@ import { NgxMatIntlTelInputComponent } from 'ngx-mat-intl-tel-input';
   bootstrap: [AppComponent],
   schemas: [NO_ERRORS_SCHEMA],
 })
-export class AppModule {}
+export class AppModule { }

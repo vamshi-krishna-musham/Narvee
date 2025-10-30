@@ -1,8 +1,15 @@
 <div class="calendar-container mat-elevation-z2">
-  <div class="calendar-header">
-    <h2>Approved Leaves</h2>
-
+<mat-card class="summary-header-card">
+  <div class="header-row">
+    <div class="left-section">
+      <button mat-icon-button (click)="backToHistory()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h2 class="summary-title">Approved Leaves</h2>
+    </div>
   </div>
+</mat-card>
+
 
   <!-- Loading or empty state -->
   <div *ngIf="!leaves?.length" class="empty-state">

@@ -1,9 +1,12 @@
 <mat-card class="summary-header-card">
-  <h2 class="summary-title">Leave Summary</h2>
-
-  <div class="summary-actions">
-    <button mat-raised-button class="apply-leave" (click)="openApplyLeave()">Apply Leave</button>
-    <button mat-raised-button class="manage-leave" *ngIf="isManager" (click)="openManageLeaves()">Manage Leaves</button>
+  <div class="header-row">
+    <div class="left-section">
+      <h2 class="summary-title">Leave Summary</h2>
+    </div>
+    <div class="summary-actions">
+      <button mat-stroked-button class="apply-leave" (click)="openApplyLeave()">Apply Leave</button>
+      <button mat-stroked-button class="manage-leave" *ngIf="isManager" (click)="openManageLeaves()">Manage Leaves</button>
+    </div>
   </div>
 </mat-card>
 

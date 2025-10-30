@@ -34,4 +34,6 @@ export class CalendarViewComponent implements OnInit {
       error: (err) => console.error('Error loading leaves', err)
     });
   }
+  backToHistory(): void { this.router.navigate(['/leave/approvals']); }
+
 }

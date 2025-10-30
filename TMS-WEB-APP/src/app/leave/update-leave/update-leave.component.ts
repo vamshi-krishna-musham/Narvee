@@ -1,7 +1,7 @@
 import { Component, OnInit, TemplateRef, ViewChild, Inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { LeaveService } from '../../services/leave.service';
+import { LeaveService, LeaveRequest } from '../../services/leave.service';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 export const LEAVE_TYPES = ['Sick','Casual','Emergency'] as const;
@@ -25,7 +25,7 @@ export class UpdateLeaveComponent implements OnInit {
     reason:    this.fb.control<string>('', { validators: [Validators.required, Validators.maxLength(100)] }),
     status: this.fb.control<string>('PENDING', { validators: [Validators.required] })
   });
-
+  existingleaves: LeaveRequest[] = [];
   durationDays = 0;
   leaveId!: number;
 
@@ -121,7 +121,19 @@ export class UpdateLeaveComponent implements OnInit {
     }
     return count;
   }
-
+  loadLeaves(): void {
+    const profileId = Number(localStorage.getItem('profileId'));
+    this.leave.listMine(profileId).subscribe({
+      next: (data) => (this.existingleaves = data),
+      error: (err) =>
+        this.snack.open(err.error?.message || 'Failed to load leaves', 'OK', {
+          duration: 3000,
+          panelClass: ['custom-snack-failure'],
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+        }),
+    });
+  }
   private computeDuration(): void {
     const s = this.form.get('startDate')!.value as Date | null;
     const e = this.form.get('endDate')!.value as Date | null;
@@ -159,8 +171,38 @@ export class UpdateLeaveComponent implements OnInit {
       return;
     }
 
-    const start = this.form.value.startDate ? this.toYMD(this.toDateOnly(this.form.value.startDate)) : null;
-    const end   = this.form.value.endDate   ? this.toYMD(this.toDateOnly(this.form.value.endDate))   : null;
+    const start = this.toDateOnly(this.form.value.startDate!);
+    const end = this.toDateOnly(this.form.value.endDate!);
+
+    let hasOverlap = false;
+    this.existingleaves.forEach((leave) => {
+    const existingFrom = this.toDateOnly(leave.startDate);
+    const existingTo   = this.toDateOnly(leave.endDate);
+    const existingStatus = (leave.status ?? '');  // ← normalize to string
+
+    const isBlocking = ['APPROVED','PENDING','REJECTED'].includes(existingStatus); // ← now a string
+
+    if (
+      (start >= existingFrom && start <= existingTo && isBlocking) ||
+      (end   >= existingFrom && end   <= existingTo && isBlocking) ||
+      (start <= existingFrom && end   >= existingTo && isBlocking)
+    ) {
+      hasOverlap = true;
+    }
+  });
+    if (hasOverlap) {
+      this.snack.open(
+        'Leave dates overlap with existing pending/approved leave',
+        'OK',
+        {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['custom-snack-failure'],
+        }
+      );
+      return;
+    }
 
     const payload = {
       leaveCategory: (this.form.getRawValue().leaveType as LeaveType | null),
@@ -171,6 +213,7 @@ export class UpdateLeaveComponent implements OnInit {
       status: 'PENDING'
     };
 
+    
     this.leave.update(this.leaveId, payload).subscribe({
       next: () => {
         this.snack.open('Leave Updated', 'OK', {
