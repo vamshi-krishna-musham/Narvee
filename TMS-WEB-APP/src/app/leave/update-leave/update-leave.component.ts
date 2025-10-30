@@ -7,7 +7,7 @@ import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dial
 export const LEAVE_TYPES = ['Sick','Casual','Emergency'] as const;
 export type LeaveType = typeof LEAVE_TYPES[number];
 
-type UpdateLeaveData = { id: number };
+type UpdateLeaveData = { id: number,balance?: number };
 
 @Component({
   selector: 'app-update-leave',
@@ -16,7 +16,7 @@ type UpdateLeaveData = { id: number };
 })
 export class UpdateLeaveComponent implements OnInit {
   @ViewChild('cancelDialog') cancelDialogTpl!: TemplateRef<any>;
-
+  leaveBalance = 0;
   form = this.fb.group({
     leaveType: this.fb.control<LeaveType | null>(null, { validators: [Validators.required] }),
     startDate: this.fb.control<Date | null>(null, { validators: [Validators.required] }),
@@ -49,7 +49,7 @@ export class UpdateLeaveComponent implements OnInit {
 
   ngOnInit(): void {
     this.leaveId = this.data.id;
-
+    this.leaveBalance = this.data.balance ?? 0;
     this.leave.getById(this.leaveId).subscribe({
       next: (res: any) => {
         if (!res) return;
@@ -121,6 +121,16 @@ export class UpdateLeaveComponent implements OnInit {
     }
     return count;
   }
+  getMaxEndDate(): Date | null {
+  const start = this.form.get('startDate')?.value;
+  if (start) {
+    const max = new Date(start);
+    max.setDate(max.getDate() + 7); // restrict to 7 days from start date
+    return max;
+  }
+  return null;
+}
+
   loadLeaves(): void {
     const profileId = Number(localStorage.getItem('profileId'));
     this.leave.listMine(profileId).subscribe({
@@ -170,6 +180,51 @@ export class UpdateLeaveComponent implements OnInit {
       );
       return;
     }
+  // Restrict leave duration to maximum 7 days
+    if (this.durationDays > 7) {
+      this.snack.open(
+        'You cannot modify leave for more than 7 working days.',
+        'OK',
+        {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['custom-snack-failure'],
+        }
+      );
+      return;
+    }
+
+    // Block completely if no balance
+    if (this.leaveBalance <= 0) {
+      this.snack.open(
+        'You have no remaining leave balance. Please contact your manager for assistance.',
+        'OK',
+        {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['custom-snack-failure'],
+        }
+      );
+      return;
+    }
+
+    // Block if user tries to exceed balance
+    if (this.durationDays > this.leaveBalance) {
+      this.snack.open(
+        `You only have ${this.leaveBalance} leave days remaining. Please reduce your duration.`,
+        'OK',
+        {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['custom-snack-failure'],
+        }
+      );
+      return;
+    }
+
 
     const start = this.toDateOnly(this.form.value.startDate!);
     const end = this.toDateOnly(this.form.value.endDate!);

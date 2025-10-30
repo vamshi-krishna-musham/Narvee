@@ -158,12 +158,13 @@ export class LeaveHistoryComponent implements OnInit {
 
   // === NEW: open Update Leave as a dialog ===
   openUpdateLeaveDialog(row: { id: number }) {
+    const availableBalance = this.summaryData?.[0]?.totalEligible ?? 0;
     const ref = this.dialog.open(UpdateLeaveComponent, {
       width: '100%',
       maxWidth: '600px',
       disableClose: true,
       panelClass: 'project-dialog', // optional rounded dialog
-      data: { id: row.id }
+      data: { id: row.id, balance: availableBalance }
     });
 
     ref.afterClosed().subscribe((refresh?: boolean) => {
