@@ -44,6 +44,7 @@
           matInput
           [matDatepicker]="p2"
           [min]="form.get('startDate')?.value || minDate"
+          [max]="getMaxEndDate()"
           formControlName="endDate"
           placeholder="Select end date"
           required
@@ -53,7 +54,11 @@
         <mat-error *ngIf="form.get('endDate')?.hasError('required')">
           End date is required
         </mat-error>
+        <mat-error *ngIf="form.get('endDate')?.hasError('maxDateExceeded')">
+          End date cannot be more than 7 days after the start date.
+        </mat-error>
       </mat-form-field>
+
 
       <!-- Duration (read only) -->
       <mat-form-field appearance="outline" class="field">

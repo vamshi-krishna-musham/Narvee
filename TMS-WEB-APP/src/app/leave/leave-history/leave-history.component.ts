@@ -176,11 +176,13 @@ export class LeaveHistoryComponent implements OnInit {
   // =========================================
 
   openApplyLeave(): void {
+    const availableBalance = this.summaryData?.[0]?.totalEligible ?? 0;
     const ref = this.dialog.open(ApplyLeaveComponent, {
       width: '100%',
       maxWidth: '600px',
       disableClose: true,
       panelClass: 'project-dialog',
+      data: { balance: availableBalance }
     });
 
     ref.afterClosed().subscribe((refresh?: boolean) => {

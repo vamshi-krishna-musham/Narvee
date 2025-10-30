@@ -14,6 +14,7 @@ type ApplyLeaveDialogData = {
     endDate?: Date | string;
     reason?: string;
   };
+  balance?: number;
 };
 
 @Component({
@@ -24,7 +25,7 @@ type ApplyLeaveDialogData = {
 export class ApplyLeaveComponent implements OnInit {
   minDate = this.toDateOnly(new Date());
   durationDays = 0;
-
+  leaveBalance = 0;
   private holidaysYMD: string[] = [];
   private holidaySet = new Set(this.holidaysYMD);
 
@@ -51,6 +52,7 @@ private normalizeDateInput(v: Date | string | undefined | null): Date | null {
 
   ngOnInit(): void {
     // Prefill (optional)
+    this.leaveBalance = this.data?.balance ?? 0;
     if (this.data?.prefill) {
       const { leaveType, startDate, endDate, reason } = this.data.prefill;
       this.form.patchValue({
@@ -140,6 +142,16 @@ private normalizeDateInput(v: Date | string | undefined | null): Date | null {
     const day = `${d.getDate()}`.padStart(2, '0');
     return `${y}-${m}-${day}`;
   }
+  getMaxEndDate(): Date | null {
+  const start = this.form.get('startDate')?.value;
+  if (start) {
+    const max = new Date(start);
+    max.setDate(max.getDate() + 7);
+    return max;
+      }
+      return null;
+    }
+
 
   submit(): void {
     if (this.form.invalid || this.durationDays <= 0) {
@@ -192,6 +204,32 @@ private normalizeDateInput(v: Date | string | undefined | null): Date | null {
       );
       return;
     }
+      if (this.leaveBalance <= 0) {
+    this.snack.open(
+      'You have no remaining leave balance. Please contact your manager for assistance.',
+      'OK',
+      {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
+        panelClass: ['custom-snack-failure'],
+      }
+    );
+    return;
+  }
+      if (this.durationDays > this.leaveBalance) {
+    this.snack.open(
+      `You only have ${this.leaveBalance} leave days remaining. Please reduce your duration.`,
+      'OK',
+      {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
+        panelClass: ['custom-snack-failure'],
+      }
+    );
+    return;
+  }
 
     const payload = {
       userId: Number(localStorage.getItem('profileId')),
