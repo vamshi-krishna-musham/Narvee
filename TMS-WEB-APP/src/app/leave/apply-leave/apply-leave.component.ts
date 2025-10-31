@@ -178,7 +178,7 @@ private normalizeDateInput(v: Date | string | undefined | null): Date | null {
     let hasOverlap = false;
   this.existingleaves.forEach((leave) => {
   const existingFrom = this.toDateOnly(leave.startDate);
-  const existingTo   = this.toDateOnly(leave.endDate);
+  const existingTo   = new Date(this.toDateOnly(leave.endDate).getTime() + 86400000);
   const existingStatus = (leave.status ?? '');  // ← normalize to string
 
   const isBlocking = ['APPROVED','PENDING','REJECTED'].includes(existingStatus); // ← now a string

@@ -30,6 +30,11 @@ import { MatTableModule } from '@angular/material/table';
 import { MatRippleModule } from '@angular/material/core';
 import { MatPaginatorModule } from '@angular/material/paginator';
 
+// ✅ FullCalendar imports
+import { FullCalendarModule } from '@fullcalendar/angular';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import interactionPlugin from '@fullcalendar/interaction';
+
 // CDK
 import { TextFieldModule } from '@angular/cdk/text-field';
 
@@ -120,6 +125,9 @@ import { NgxMatIntlTelInputComponent } from 'ngx-mat-intl-tel-input';
 
     // Intl Tel Input
     NgxMatIntlTelInputComponent,
+
+    // ✅ Add FullCalendarModule here
+    FullCalendarModule,
   ],
   providers: [
     { provide: LocationStrategy, useClass: HashLocationStrategy },
@@ -132,4 +140,4 @@ import { NgxMatIntlTelInputComponent } from 'ngx-mat-intl-tel-input';
   bootstrap: [AppComponent],
   schemas: [NO_ERRORS_SCHEMA],
 })
-export class AppModule { }
+export class AppModule {}
