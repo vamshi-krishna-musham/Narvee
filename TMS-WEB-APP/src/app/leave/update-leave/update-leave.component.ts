@@ -4,15 +4,15 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { LeaveService, LeaveRequest } from '../../services/leave.service';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
-export const LEAVE_TYPES = ['Sick','Casual','Emergency'] as const;
+export const LEAVE_TYPES = ['Sick', 'Casual', 'Emergency'] as const;
 export type LeaveType = typeof LEAVE_TYPES[number];
 
-type UpdateLeaveData = { id: number,balance?: number };
+type UpdateLeaveData = { id: number; balance?: number };
 
 @Component({
   selector: 'app-update-leave',
   templateUrl: './update-leave.component.html',
-  styleUrls: ['./update-leave.component.scss']
+  styleUrls: ['./update-leave.component.scss'],
 })
 export class UpdateLeaveComponent implements OnInit {
   @ViewChild('cancelDialog') cancelDialogTpl!: TemplateRef<any>;
@@ -20,10 +20,10 @@ export class UpdateLeaveComponent implements OnInit {
   form = this.fb.group({
     leaveType: this.fb.control<LeaveType | null>(null, { validators: [Validators.required] }),
     startDate: this.fb.control<Date | null>(null, { validators: [Validators.required] }),
-    endDate:   this.fb.control<Date | null>(null, { validators: [Validators.required] }),
-    duration:  this.fb.control<number | null>(null),
-    reason:    this.fb.control<string>('', { validators: [Validators.required, Validators.maxLength(100)] }),
-    status: this.fb.control<string>('PENDING', { validators: [Validators.required] })
+    endDate: this.fb.control<Date | null>(null, { validators: [Validators.required] }),
+    duration: this.fb.control<number | null>(null),
+    reason: this.fb.control<string>('', { validators: [Validators.required, Validators.maxLength(100)] }),
+    status: this.fb.control<string>('PENDING', { validators: [Validators.required] }),
   });
   existingleaves: LeaveRequest[] = [];
   durationDays = 0;
@@ -33,10 +33,10 @@ export class UpdateLeaveComponent implements OnInit {
   private holidaySet = new Set(this.holidaysYMD);
   minDate = this.toDateOnly(new Date());
 
-  // store originals (normalized) to detect eligible changes
+  // originals to detect changes & keep preloaded values valid
   originalLeaveType: string | null = null;
   originalStartDateYMD: string | null = null;
-  originalEndDateYMD:   string | null = null;
+  originalEndDateYMD: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -50,44 +50,64 @@ export class UpdateLeaveComponent implements OnInit {
   ngOnInit(): void {
     this.leaveId = this.data.id;
     this.leaveBalance = this.data.balance ?? 0;
+    this.loadLeaves();
     this.leave.getById(this.leaveId).subscribe({
       next: (res: any) => {
         if (!res) return;
 
         const start = this.normalizeDateInput(res.fromDate);
-        const end   = this.normalizeDateInput(res.toDate);
+        const end = this.normalizeDateInput(res.toDate);
 
         this.form.patchValue({
           leaveType: res.leaveCategory as LeaveType,
           startDate: start,
-          endDate:   end,
-          duration:  res.duration ?? null,
-          reason:    res.reason ?? '',
-          status:    res.status ?? 'PENDING'
+          endDate: end,
+          duration: res.duration ?? null,
+          reason: res.reason ?? '',
+          status: res.status ?? 'PENDING',
         });
 
-        // normalize originals to YMD so equality checks are exact
-        this.originalLeaveType   = res.leaveCategory ?? null;
+        // Save originals (normalized to YMD)
+        this.originalLeaveType = res.leaveCategory ?? null;
         this.originalStartDateYMD = start ? this.toYMD(this.toDateOnly(start)) : null;
-        this.originalEndDateYMD   = end   ? this.toYMD(this.toDateOnly(end))   : null;
+        this.originalEndDateYMD = end ? this.toYMD(this.toDateOnly(end)) : null;
 
-        // Min date rule (2-week notice for Casual)
+        // Min date policy (Casual requires 2-week notice) but never invalidate preloaded start
         const today = this.toDateOnly(new Date());
-        this.minDate = res.leaveCategory === 'Casual'
-          ? new Date(today.setDate(today.getDate() + 14))
-          : new Date();
+        const baseMin =
+          res.leaveCategory === 'Casual'
+            ? new Date(today.getFullYear(), today.getMonth(), today.getDate() + 14)
+            : today;
+
+        this.minDate = start && start < baseMin ? start : baseMin;
+
+        // compute once after patch
+        this.computeDuration();
       },
-      error: () => this.snack.open('Failed to load leave details', 'OK', { duration: 2500 })
+      error: () => this.snack.open('Failed to load leave details', 'OK', { duration: 2500 }),
     });
 
     this.form.valueChanges.subscribe(() => this.computeDuration());
     setTimeout(() => this.computeDuration());
   }
 
-  // ---- helpers ----
+  // ----------------- helpers -----------------
+
+  // Parse as LOCAL date to avoid timezone shifts
   private normalizeDateInput(v: Date | string | undefined | null): Date | null {
     if (!v) return null;
-    return typeof v === 'string' ? new Date(v) : v;
+    if (v instanceof Date) return this.toDateOnly(v);
+
+    // 'YYYY-MM-DD' → local date without TZ shift
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(v);
+    if (m) {
+      const y = +m[1],
+        mo = +m[2] - 1,
+        d = +m[3];
+      return new Date(y, mo, d);
+    }
+    // Fallback for ISO/other string formats
+    return this.toDateOnly(new Date(v));
   }
 
   private toDateOnly(v: string | Date): Date {
@@ -122,14 +142,18 @@ export class UpdateLeaveComponent implements OnInit {
     return count;
   }
   getMaxEndDate(): Date | null {
-  const start = this.form.get('startDate')?.value;
-  if (start) {
+    const start = this.form.get('startDate')?.value as Date | null;
+    if (!start) return null;
+
     const max = new Date(start);
-    max.setDate(max.getDate() + 7); // restrict to 7 days from start date
+    max.setDate(max.getDate() + 7);
+
+    if (this.originalEndDateYMD) {
+      const origEnd = this.normalizeDateInput(this.originalEndDateYMD)!;
+      if (origEnd > max) return origEnd;
+    }
     return max;
   }
-  return null;
-}
 
   loadLeaves(): void {
     const profileId = Number(localStorage.getItem('profileId'));
@@ -147,10 +171,16 @@ export class UpdateLeaveComponent implements OnInit {
   private computeDuration(): void {
     const s = this.form.get('startDate')!.value as Date | null;
     const e = this.form.get('endDate')!.value as Date | null;
-    if (!s || !e) { this.durationDays = 0; return; }
+    if (!s || !e) {
+      this.durationDays = 0;
+      return;
+    }
     const start = this.toDateOnly(s);
-    const end   = this.toDateOnly(e);
-    if (end.getTime() < start.getTime()) { this.durationDays = 0; return; }
+    const end = this.toDateOnly(e);
+    if (end.getTime() < start.getTime()) {
+      this.durationDays = 0;
+      return;
+    }
     this.durationDays = this.businessDaysBetween(start, end);
   }
 
@@ -162,113 +192,102 @@ export class UpdateLeaveComponent implements OnInit {
     const e = this.form.get('endDate')?.value as Date | null;
 
     const currentStartYMD = s ? this.toYMD(this.toDateOnly(s)) : null;
-    const currentEndYMD   = e ? this.toYMD(this.toDateOnly(e)) : null;
+    const currentEndYMD = e ? this.toYMD(this.toDateOnly(e)) : null;
 
-    const typeChanged  = currentType !== this.originalLeaveType;
+    const typeChanged = currentType !== this.originalLeaveType;
     const startChanged = currentStartYMD !== this.originalStartDateYMD;
-    const endChanged   = currentEndYMD   !== this.originalEndDateYMD;
+    const endChanged = currentEndYMD !== this.originalEndDateYMD;
 
     return !!(typeChanged || startChanged || endChanged);
   }
 
-  // ---- actions ----
+  // ----------------- actions -----------------
+
   submit(): void {
     if (this.form.invalid || this.durationDays <= 0) {
       this.snack.open(
         this.durationDays <= 0 ? 'No working days in selected range' : 'Please fill all required fields',
-        'OK', { duration: 2500 }
+        'OK',
+        { duration: 2500 }
       );
       return;
     }
-  // Restrict leave duration to maximum 7 days
-    if (this.durationDays > 7) {
-      this.snack.open(
-        'You cannot modify leave for more than 7 working days.',
-        'OK',
-        {
-          duration: 3000,
-          horizontalPosition: 'center',
-          verticalPosition: 'top',
-          panelClass: ['custom-snack-failure'],
-        }
-      );
+
+    const start = this.toDateOnly(this.form.value.startDate!);
+    const end = this.toDateOnly(this.form.value.endDate!);
+
+    const currentStartYMD = this.toYMD(start);
+    const currentEndYMD = this.toYMD(end);
+    const changedDates = currentStartYMD !== this.originalStartDateYMD || currentEndYMD !== this.originalEndDateYMD;
+
+    // Enforce max 7 working days ONLY if user changed dates (preloaded values are always allowed)
+    if (changedDates && this.durationDays > 7) {
+      this.snack.open('You cannot modify leave for more than 7 working days.', 'OK', {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
+        panelClass: ['custom-snack-failure'],
+      });
       return;
     }
 
     // Block completely if no balance
     if (this.leaveBalance <= 0) {
-      this.snack.open(
-        'You have no remaining leave balance. Please contact your manager for assistance.',
-        'OK',
-        {
-          duration: 3000,
-          horizontalPosition: 'center',
-          verticalPosition: 'top',
-          panelClass: ['custom-snack-failure'],
-        }
-      );
+      this.snack.open('You have no remaining leave balance. Please contact your manager for assistance.', 'OK', {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
+        panelClass: ['custom-snack-failure'],
+      });
       return;
     }
 
     // Block if user tries to exceed balance
     if (this.durationDays > this.leaveBalance) {
-      this.snack.open(
-        `You only have ${this.leaveBalance} leave days remaining. Please reduce your duration.`,
-        'OK',
-        {
-          duration: 3000,
-          horizontalPosition: 'center',
-          verticalPosition: 'top',
-          panelClass: ['custom-snack-failure'],
-        }
-      );
+      this.snack.open(`You only have ${this.leaveBalance} leave days remaining. Please reduce your duration.`, 'OK', {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
+        panelClass: ['custom-snack-failure'],
+      });
       return;
     }
 
-
-    const start = this.toDateOnly(this.form.value.startDate!);
-    const end = this.toDateOnly(this.form.value.endDate!);
-
+    // Overlap check vs existing leaves (APPROVED / PENDING / REJECTED block)
     let hasOverlap = false;
     this.existingleaves.forEach((leave) => {
-    const existingFrom = this.toDateOnly(leave.startDate);
-    const existingTo   = this.toDateOnly(leave.endDate);
-    const existingStatus = (leave.status ?? '');  // ← normalize to string
+      const existingFrom = this.toDateOnly(leave.startDate);
+      const existingTo = this.toDateOnly(leave.endDate);
+      const existingStatus = leave.status ?? '';
+      const isBlocking = ['APPROVED', 'PENDING', 'REJECTED'].includes(existingStatus);
 
-    const isBlocking = ['APPROVED','PENDING','REJECTED'].includes(existingStatus); // ← now a string
-
-    if (
-      (start >= existingFrom && start <= existingTo && isBlocking) ||
-      (end   >= existingFrom && end   <= existingTo && isBlocking) ||
-      (start <= existingFrom && end   >= existingTo && isBlocking)
-    ) {
-      hasOverlap = true;
-    }
-  });
+      if (
+        (start >= existingFrom && start <= existingTo && isBlocking) ||
+        (end >= existingFrom && end <= existingTo && isBlocking) ||
+        (start <= existingFrom && end >= existingTo && isBlocking)
+      ) {
+        hasOverlap = true;
+      }
+    });
     if (hasOverlap) {
-      this.snack.open(
-        'Leave dates overlap with existing pending/approved leave',
-        'OK',
-        {
-          duration: 3000,
-          horizontalPosition: 'center',
-          verticalPosition: 'top',
-          panelClass: ['custom-snack-failure'],
-        }
-      );
+      this.snack.open('Leave dates overlap with existing pending/approved leave', 'OK', {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
+        panelClass: ['custom-snack-failure'],
+      });
       return;
     }
 
     const payload = {
-      leaveCategory: (this.form.getRawValue().leaveType as LeaveType | null),
+      leaveCategory: this.form.getRawValue().leaveType as LeaveType | null,
       fromDate: start,
       toDate: end,
       duration: this.durationDays,
       reason: this.form.value.reason,
-      status: 'PENDING'
+      status: 'PENDING',
     };
 
-    
     this.leave.update(this.leaveId, payload).subscribe({
       next: () => {
         this.snack.open('Leave Updated', 'OK', {
@@ -279,14 +298,14 @@ export class UpdateLeaveComponent implements OnInit {
         });
         this.dialogRef.close(true);
       },
-      error: () => this.snack.open('Update failed', 'OK', { duration: 3000 })
+      error: () => this.snack.open('Update failed', 'OK', { duration: 3000 }),
     });
   }
 
   cancelLeave(): void {
     const ref = this.dialog.open(this.cancelDialogTpl, { width: '420px', disableClose: true });
     ref.afterClosed().subscribe((confirm: boolean) => {
-      if (!confirm) return; // NO clicked → do nothing
+      if (!confirm) return;
       this.leave.cancel(this.leaveId).subscribe({
         next: () => {
           this.snack.open('Leave Canceled', 'OK', {
@@ -297,12 +316,13 @@ export class UpdateLeaveComponent implements OnInit {
           });
           this.dialogRef.close(true);
         },
-        error: () => this.snack.open('Cancel failed', 'OK', {
-          duration: 3000,
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom',
-          panelClass: ['custom-snack-failure'],
-        })
+        error: () =>
+          this.snack.open('Cancel failed', 'OK', {
+            duration: 3000,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
+            panelClass: ['custom-snack-failure'],
+          }),
       });
     });
   }
