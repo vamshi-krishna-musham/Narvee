@@ -3,6 +3,18 @@
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 /* styles.scss */
+.calendar-wrapper {
+  padding: 16px;
+}
+
+.summary-header-card {
+  margin-bottom: 16px;
+}
+
+:host ::ng-deep .fc {
+  font-family: Roboto, sans-serif;
+}
+
 .apply-leave{
   color: white !important;
   background-color: rgba(52, 61, 255, 0.8) !important;
