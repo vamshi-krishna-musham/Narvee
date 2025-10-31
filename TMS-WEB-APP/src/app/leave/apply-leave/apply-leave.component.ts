@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { LeaveService, LeaveRequest } from '../../services/leave.service';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
-const LEAVE_TYPES = ['Sick','Casual','Emergency'] as const;
+const LEAVE_TYPES = ['Sick','Casual','Emergency','Long Leave'] as const;
 type LeaveType = typeof LEAVE_TYPES[number];
 
 type ApplyLeaveDialogData = {
@@ -144,6 +144,8 @@ private normalizeDateInput(v: Date | string | undefined | null): Date | null {
   }
   getMaxEndDate(): Date | null {
   const start = this.form.get('startDate')?.value;
+  const type = this.form.get('leaveType')?.value;
+  if (type === 'Long Leave') return null;
   if (start) {
     const max = new Date(start);
     max.setDate(max.getDate() + 7);
