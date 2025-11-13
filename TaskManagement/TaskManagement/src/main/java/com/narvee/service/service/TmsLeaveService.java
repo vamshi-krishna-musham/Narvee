@@ -1,10 +1,8 @@
 package com.narvee.service.service;
-
 import com.narvee.entity.TmsLeave;
 import com.narvee.repository.TmsLeaveRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -46,22 +44,6 @@ public class TmsLeaveService {
         }).orElse(null);
     }
 
-
-    public List<TmsLeave> all() {
-        return repo.findAll();
-    }
-
-    public TmsLeave getById(Long id) {
-        return repo.findById(id).orElse(null);
-    }
-
-    public boolean deleteById(Long id) {
-        if (repo.existsById(id)) {
-            repo.deleteById(id);
-            return true;
-        }
-        return false;
-    }
     public TmsLeave cancelLeave(Long id, TmsLeave partial) {
         return repo.findById(id).map(existing -> {
             if ("PENDING".equalsIgnoreCase(existing.getStatus())) {
@@ -73,11 +55,10 @@ public class TmsLeaveService {
         }).orElse(null);                      // ✅ return null if not found
     }
 
-
-
     public List<TmsLeave> findPending(Long managerId) {
     return repo.findByStatusAndUserIdNot("PENDING", managerId);
     }
+
     public List<TmsLeave> findApproved(Long managerId) {
     return repo.findByStatusAndUserIdNot("APPROVED", managerId);
     }
@@ -97,7 +78,8 @@ public class TmsLeaveService {
 
         return repo.save(existing); // save updated entity
     }).orElse(null); // return null if not found
-}
+    }
+
     public TmsLeave deny(Long id, TmsLeave partial) {
     return repo.findById(id).map(existing -> {
         // TODO: copy only the fields you want to update
@@ -110,15 +92,9 @@ public class TmsLeaveService {
         if (partial.getAdminComment()!=null){
             existing.setAdminComment(partial.getAdminComment());
         }
-
-
-
         return repo.save(existing); // save updated entity
     }).orElse(null); // return null if not found
-}
-
-
-
+    }
 
     public List<TmsLeave> findByUserId(Long userId) {
       return repo.findByUserId(userId);

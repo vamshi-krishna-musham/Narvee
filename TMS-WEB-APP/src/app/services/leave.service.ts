@@ -29,7 +29,7 @@ export class LeaveService {
 
   // ----- Member APIs -----
   apply(body: any): Observable<LeaveRequest[]>{
-    return this.http.post<LeaveRequest[]>(`${this.base}/task/leaves`, body);
+    return this.http.post<LeaveRequest[]>(`${this.base}/task/leaves/apply`, body);
   }
 getById(id: number) {
   return this.http.get<LeaveRequest>(`${this.base}/task/leaves/${id}`);
