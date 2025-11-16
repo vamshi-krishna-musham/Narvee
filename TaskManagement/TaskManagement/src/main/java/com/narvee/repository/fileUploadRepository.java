@@ -13,7 +13,7 @@ import com.narvee.entity.TmsSubTask;
 import com.narvee.entity.TmsTask;
 
 @Repository
-public interface fileUploadRepository extends JpaRepository<TmsFileUpload, Long> {
+public interface FileUploadRepository extends JpaRepository<TmsFileUpload, Long> {
 
 	
 	@Query("SELECT f FROM TmsFileUpload f WHERE f.task.taskid = :taskid")

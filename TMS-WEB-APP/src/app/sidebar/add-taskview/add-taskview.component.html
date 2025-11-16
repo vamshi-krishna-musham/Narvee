@@ -41,6 +41,42 @@
         </mat-error>
       </mat-form-field>
 
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Acceptance Criteria</mat-label>
+        <textarea
+          matInput
+          formControlName="acceptanceCriteria"
+          rows="5"
+          placeholder="Enter Acceptance Criteria"
+        ></textarea>
+        <!-- <mat-error
+          *ngIf="
+            Taskcreate.get('acceptanceCriteria')?.hasError('required') &&
+            Taskcreate.get('acceptanceCriteria')?.touched
+          "
+        >
+          Acceptance Criteria is required
+        </mat-error>
+        <mat-error
+          *ngIf="Taskcreate.get('acceptanceCriteria')?.hasError('whitespace')"
+        >
+          Whitespace is not allowed
+        </mat-error>
+        <mat-error
+          *ngIf="Taskcreate.get('acceptanceCriteria')?.hasError('noLetter')"
+        >
+          Acceptance Criteria must include at least one letter
+        </mat-error>
+        <mat-error
+          *ngIf="
+            Taskcreate.get('acceptanceCriteria')?.hasError('minlength') &&
+            Taskcreate.get('acceptanceCriteria')?.touched
+          "
+        >
+          Minimum 2 characters required
+        </mat-error> -->
+      </mat-form-field>
+
 
      <mat-form-field appearance="outline" class="full-width">
   <mat-label>Assigned To</mat-label>

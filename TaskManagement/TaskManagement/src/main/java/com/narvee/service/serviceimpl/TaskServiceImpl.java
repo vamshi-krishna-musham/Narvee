@@ -49,7 +49,7 @@ import com.narvee.entity.TmsTicketTracker;
 import com.narvee.repository.ProjectRepository;
 import com.narvee.repository.StatusTrackerRepo;
 import com.narvee.repository.TaskRepository;
-import com.narvee.repository.fileUploadRepository;
+import com.narvee.repository.FileUploadRepository;
 import com.narvee.service.service.TaskService;
 
 @Service
@@ -73,7 +73,7 @@ public class TaskServiceImpl implements TaskService {
 	private ProjectRepository projectRepository;
 
 	@Autowired
-	private fileUploadRepository fileUploadRepository;
+	private FileUploadRepository fileUploadRepository;
 	
 
 

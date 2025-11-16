@@ -157,5 +157,35 @@ getSubtaskuploadfile(id: any) {
   return this.apiServ.get(`task/fileUpload/get-files?subTaskId=${id}`);
 }
 
+  updateTaskComment(commentId: number, comments: string, updatedby: number) {
+  return this.apiServ.put(
+    `task/comment-tms/${commentId}`,
+    { comments, description: comments, updatedby }
+  );
+  }
+
+
+  deleteTaskComment(commentId: number, updatedby?: number) {
+  const url = updatedby != null
+    ? `task/comment-tms/${commentId}?updatedby=${updatedby}`
+    : `task/comment-tms/${commentId}`;
+  return this.apiServ.delete(url);
+  }
+  // Added by Manoj Madiraju for editing a single SUBTASK comment by its unique commentId (trackid).
+  updateSubTaskComment(commentId: number, comments: string, updatedby: number) {
+  return this.apiServ.put(
+    `task/subTask/comment-tms/${commentId}`,
+    { comments, description: comments, updatedby }
+  );
+  }
+
+  // Added by Manoj Madiraju for deleting a single SUBTASK comment by its unique commentId (trackid).
+  deleteSubTaskComment(commentId: number, updatedby?: number) {
+  const url = updatedby != null
+    ? `task/subTask/comment-tms/${commentId}?updatedby=${updatedby}`
+    : `task/subTask/comment-tms/${commentId}`;
+  return this.apiServ.delete(url);
+  }
+
 
 }

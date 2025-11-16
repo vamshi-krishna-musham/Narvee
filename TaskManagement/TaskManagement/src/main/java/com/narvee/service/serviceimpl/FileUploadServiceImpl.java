@@ -27,7 +27,7 @@ import com.narvee.entity.TmsTask;
 import com.narvee.repository.ProjectRepository;
 import com.narvee.repository.SubTaskRepository;
 import com.narvee.repository.TaskRepository;
-import com.narvee.repository.fileUploadRepository;
+import com.narvee.repository.FileUploadRepository;
 import com.narvee.service.service.FileUploadService;
 import com.narvee.service.serviceimpl.ProjectServiceImpl;
 
@@ -37,7 +37,7 @@ public class FileUploadServiceImpl implements FileUploadService {
 	private static final Logger logger = LoggerFactory.getLogger(ProjectServiceImpl.class);
 	
 	@Autowired
-	private fileUploadRepository fileUploadRepository;
+	private FileUploadRepository fileUploadRepository;
 	
 	@Autowired 
 	private ProjectRepository projectRepository;

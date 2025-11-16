@@ -74,19 +74,19 @@ td a {
 .project-container {
 display: flex;
 flex-direction: column;
-min-height: 85vh; 
+min-height: 85vh;
 }
 
 .table-wrapper {
-flex: 1; 
+flex: 1;
 overflow: auto;
 }
 
 .paginator {
 padding: 0px;
-text-align: right; 
+text-align: right;
 background-color: #fff;
-box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.1); 
+box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.1);
 }
 .search {
   padding: 8px 12px;
@@ -508,3 +508,24 @@ text-decoration: underline;
     }
   }
 }
+/* Style only the header row */
+.custom-header-row {
+  background-color: #0000ffc7 !important; /* blue header background */
+  color: white !important;                /* white text */
+  z-index: 1000;                          /* keep it above tbody rows */
+}
+// Added by Manoj Madiraju for Inline styling for the comment icon and count next to it.
+.comment-icon-btn {
+  vertical-align: middle;
+}
+
+.comment-count-inline {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 4px;
+  font-weight: 600;
+  color: #2f5bff;
+  min-width: 18px;
+  text-align: center;
+}
+

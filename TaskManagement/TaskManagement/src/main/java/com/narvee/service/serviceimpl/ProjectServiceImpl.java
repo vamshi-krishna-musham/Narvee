@@ -25,6 +25,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import com.narvee.service.serviceimpl.EmailServiceImpl;
+import com.narvee.service.serviceimpl.TmsEmailServiceImpl;
 
 import com.narvee.dto.EmailConfigResponseDto;
 import com.narvee.dto.GetUsersDTO;
@@ -36,7 +38,7 @@ import com.narvee.entity.TmsFileUpload;
 import com.narvee.entity.TmsProject;
 import com.narvee.repository.ProjectRepository;
 import com.narvee.repository.TaskRepository;
-import com.narvee.repository.fileUploadRepository;
+import com.narvee.repository.FileUploadRepository;
 import com.narvee.service.service.ProjectService;
 
 @Service
@@ -48,7 +50,7 @@ public class ProjectServiceImpl implements ProjectService {
 	private EmailServiceImpl emailService;
 
 	@Autowired
-	private TmsEmailServiceImpl TmsEmailService;
+	private TmsEmailServiceImpl tmsEmailService;
 
 	@Autowired
 	private TaskRepository repository;
@@ -57,7 +59,7 @@ public class ProjectServiceImpl implements ProjectService {
 	private ProjectRepository projectrepository;
 
 	@Autowired
-	private fileUploadRepository fileUploadRepository;
+	private FileUploadRepository fileUploadRepository;
 
 	private static final int DIGIT_PADDING = 4;
 
@@ -240,7 +242,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 				List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
 						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
-				TmsEmailService.sendCreateProjectEmail(project, user, true, subject, ccList, bccList);
+				tmsEmailService.sendCreateProjectEmail(project, user, true, subject, ccList, bccList);
 			}
 		}
 		} catch (UnsupportedEncodingException e) {
@@ -402,7 +404,7 @@ public class ProjectServiceImpl implements ProjectService {
 
 				List<String> bccList = Arrays.stream(Optional.ofNullable(dto.getBccMails()).orElse("").split(","))
 						.map(String::trim).filter(str -> !str.isEmpty()).collect(Collectors.toList());
-				TmsEmailService.sendCreateProjectEmail(project, user, false, subject, ccList, bccList);
+				tmsEmailService.sendCreateProjectEmail(project, user, false, subject, ccList, bccList);
 			}
 		}
 		} catch (UnsupportedEncodingException e) {

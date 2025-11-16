@@ -48,7 +48,7 @@ import com.narvee.entity.TmsTicketTracker;
 import com.narvee.repository.ProjectRepository;
 import com.narvee.repository.SubTaskRepository;
 import com.narvee.repository.TaskRepository;
-import com.narvee.repository.fileUploadRepository;
+import com.narvee.repository.FileUploadRepository;
 import com.narvee.service.service.SubTaskService;
 
 @Service
@@ -73,7 +73,7 @@ public class SubTaskServiceImpl implements SubTaskService {
 
 	
 	@Autowired
-    private fileUploadRepository fileUploadRepository;
+    private FileUploadRepository fileUploadRepository;
 	
 	
 	private static final int DIGIT_PADDING = 6;

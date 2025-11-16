@@ -26,6 +26,7 @@ import { CommonDeleteComponent } from '../common-delete/common-delete.component'
 import { MatDialogModule } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { ApiserviceService } from '../../PathService/apiservice.service';
+import { MatBadgeModule } from '@angular/material/badge'; // Added by Manoj Madiraju for Comment Count
 
 @Component({
   selector: 'app-add-subtask',
@@ -45,7 +46,8 @@ import { ApiserviceService } from '../../PathService/apiservice.service';
     FormsModule,
     MatSelectModule,
     MatOptionModule,
-    MatDialogModule
+    MatDialogModule,
+    MatBadgeModule // Added by Manoj Madiraju for comment count
   ],
   templateUrl: './add-subtask.component.html',
   styleUrl: './add-subtask.component.scss'
@@ -63,6 +65,7 @@ export class AddSubtaskComponent {
   sortField = 'updateddate';
   sortOrder = 'desc';
   field = "";
+  debugShowActions = true; // Added by Manoj Madiraju for subtask comment edit/delete actions
   canAddProject: boolean = true;
   canEditProject: boolean = false;
   canDeleteProject: boolean = false;
@@ -143,7 +146,7 @@ export class AddSubtaskComponent {
     });
   }
     previewDialogRef!: MatDialogRef<any>;
-  
+
   selectedFiles: any[] = [];
   @ViewChild('filesDialog') filesDialog!: TemplateRef<any>;
 
@@ -199,8 +202,8 @@ export class AddSubtaskComponent {
           panelClass: 'custom-image-dialog'
         });
 
-      } else if (fileType === 'text/plain') {
-        const newWindow = window.open(blobUrl, '_blank');
+      } else if (fileType.startsWith('text/')) {
+        window.open(blobUrl, '_blank');
       } else {
         const newWindow = window.open();
         newWindow?.document.write(`
@@ -233,15 +236,22 @@ export class AddSubtaskComponent {
     });
   }
   projectId!: string;
-  pid!: any
-  taskid!: any
-  ticketid: any
-  targetdate: any
-  startdate:any
-  status:any
-  projectStatus:any
-  taskname:any
-  projectname:any
+  pid!: any;
+  taskid!: any;
+  ticketid: any;
+  targetdate: any;
+  startdate:any;
+  status:any;
+  projectStatus:any;
+  taskname:any;
+  projectname:any;
+  // Added by manoj madiraju for comment ownership and editing
+  currentUserId: string | number = '';
+  /** ✅ Holds the resolved, full display name for the current user */
+  currentUserDisplayName: string = '';
+  editingComment?: any;
+  // prevent accidental double submit
+  isSubmitting = false;
   ngOnInit() {
     const privileges = JSON.parse(localStorage.getItem('rolePrivileges') || '[]');
     this.canAddProject = privileges.includes('CREATE_SUB_TASK');
@@ -267,16 +277,19 @@ export class AddSubtaskComponent {
       this.taskid = params['taskid'];
       this.projectId = params['projectId'];
       this.pid = params['pid'];
-      this.ticketid = params['ticketid']
-      this.targetdate = params['targetdate']
-      this.status =params['status']
-       this.projectStatus=params['projectStatus']
-       this.taskname = params['taskName']
-       this.projectname = params['projectname']
-this.startdate=params['startdate']
+      this.ticketid = params['ticketid'];
+      this.targetdate = params['targetdate'];
+      this.status =params['status'];
+      this.projectStatus=params['projectStatus'];
+      this.taskname = params['taskName'];
+      this.projectname = params['projectname'];
+      this.startdate=params['startdate'];
+      // Added by manoj madiraju to set current user id once
+      this.currentUserId = this.getCurrentUserId();
+      /** ✅ Resolve once and reuse everywhere so we never fall back to "You" */
+      this.currentUserDisplayName = this.resolveCurrentUserDisplayName();
       console.log(this.targetdate, 'this.targetdatengOnInit');
       console.log(this.startdate, 'this.startdatedatengOnInit');
-
       console.log(this.taskid, 'taskid from route');
       console.log(this.projectId, 'projectId from route');
       console.log(this.pid, 'pid from route');
@@ -284,12 +297,8 @@ this.startdate=params['startdate']
       console.log(this.projectStatus,'projectStatus');
       console.log(this.taskname,'taskname');
       console.log(this.projectname,'projectname');
-      
-      
-      
     });
-    this.getsubTaskDetailsAll()
-
+  this.getsubTaskDetailsAll();
   }
 addsubtaskview() {
   if (this.projectStatus === 'Completed') {
@@ -353,7 +362,6 @@ addsubtaskview() {
       }
 
     });
-    console.log();
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
@@ -416,7 +424,6 @@ addsubtaskview() {
     });
   }
   getsubTaskDetailsAll(pagIdx = 1) {
-    const profileId = localStorage.getItem('profileId');
     const pagObj = {
       pageNumber: pagIdx,
       pageSize: this.itemsPerPage,
@@ -433,6 +440,7 @@ addsubtaskview() {
           this.totalItems = response.data.subtasks.totalElements || 0;
           this.dataSource.data = response.data.subtasks.content.map((x: any, i: number) => ({
             ...x,
+            commentCount: x.commentCount ?? 0, // Added by Manoj Madiraju for Comment Count chip
             serialNum: (pagIdx - 1) * this.itemsPerPage + i + 1
           }));
         },
@@ -444,7 +452,7 @@ addsubtaskview() {
         }
       });
   }
-  
+
 
   projects: { assignUsers: { fullname: string }[] }[] = [];
 
@@ -508,8 +516,8 @@ addsubtaskview() {
         };
 
         this.snackBarServ.openSnackBarFromComponent(snackBarData);
-    this.getsubTaskDetailsAll()
-       
+    this.getsubTaskDetailsAll();
+
       },
       error: (err: any) => {
         const snackBarData: ISnackBarData = {
@@ -564,14 +572,39 @@ addsubtaskview() {
   commentText: string = '';
   selectedStatus: any
   commentsList: any[] = [];
+  // Added by Manoj Madiraju for inline edit state
+  editingCommentId: number | null = null;
+  editCommentText = '';
 
   showComments(row: any): void {
     this.selectedTaskId = row.subTaskId;
     this.selectedTicketId = row.ticketid;
     this.selectedStatus = row.status; // store status here
 
-    this.getcommentTask();
+    this.getcommentSubTask();
     this.dialog.open(this.commentsDialog);
+  }
+
+  // Added the helper by Manoj Madiraju
+  private bumpCommentCount(subtaskId: number, delta: number): void {
+    const rows = this.dataSource.data;
+    const idx = rows.findIndex((r: any) => String(r.subTaskId ?? r.subtaskId) === String(subtaskId));
+    if (idx > -1) {
+      const curr = Number(rows[idx].commentCount || 0);
+      rows[idx] = { ...rows[idx], commentCount: Math.max(0, curr + delta) };
+      // reassign to trigger mat-table change detection
+      this.dataSource.data = [...rows];
+    }
+  }
+
+  // Sets the exact count (used after fetching comments fresh)
+  private setCommentCountExact(subtaskId: number, count: number): void {
+    const rows = this.dataSource.data;
+    const idx = rows.findIndex((r: any) => String(r.subTaskId ?? r.subtaskId) === String(subtaskId));
+    if (idx > -1) {
+      rows[idx] = { ...rows[idx], commentCount: Math.max(0, Number(count) || 0) };
+      this.dataSource.data = [...rows];
+    }
   }
 
   submitComment(): void {
@@ -579,9 +612,12 @@ addsubtaskview() {
 
     if (!this.commentText || this.commentText.trim() === '') {
       // mark the field as touched to trigger mat-error
-      commentTextarea.dispatchEvent(new Event('blur'));
+      if (commentTextarea) commentTextarea.dispatchEvent(new Event('blur'));
       return;
     }
+
+    if (this.isSubmitting) return;
+    this.isSubmitting = true;
 
     const userId = localStorage.getItem('profileId');
     const payload = {
@@ -595,6 +631,18 @@ addsubtaskview() {
 
     this.projectServ.commentAddSubtask(payload).subscribe({
       next: () => {
+        // Code Added by Manoj Madiraju - For immediate UX feedback (optimistic insert)
+        const optimistic = {
+          temp: true,
+          id: `tmp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          fullname: this.currentUserDisplayName || '',
+          createddate: this.formatDate(new Date()),
+          description: this.commentText.trim(),
+          userId: Number(userId),
+        };
+        this.pushNewCommentToTop(optimistic);
+        // ✅ Immediately update the count beside the icon
+        this.bumpCommentCount(Number(this.selectedTaskId), +1);
         this.snackBarServ.openSnackBarFromComponent({
           message: 'Comment added successfully!',
           duration: 2500,
@@ -603,9 +651,12 @@ addsubtaskview() {
           panelClass: ['custom-snack-success']
         });
         this.commentText = '';
-        this.getcommentTask();
+        this.isSubmitting = false;
+        // Code Added by Manoj Madiraju For authoritative refresh from server to avoid duplicates
+        this.getcommentSubTask();
       },
       error: (err: any) => {
+        this.isSubmitting = false;
         this.snackBarServ.openSnackBarFromComponent({
           message: err?.error?.message || 'Failed to add comment.',
           duration: 2500,
@@ -617,19 +668,101 @@ addsubtaskview() {
     });
   }
 
-  getcommentTask(): void {
+  // Normalizers used by signature/dedup (fixes temp vs server duplicates)
+  private normalizeUserId(raw: any): string {
+    const n = Number(raw);
+    return Number.isFinite(n) ? String(n) : String(raw ?? '').trim();
+  }
+  private normalizeDate(raw: any): string {
+    if (!raw) return '';
+    const s = String(raw).trim();
+    // If ISO or contains time, take Y-M-D
+    const isoHead = s.match(/^\d{4}-\d{2}-\d{2}/);
+    if (isoHead) return isoHead[0];
+    // Try Date parsing (fallback)
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) return this.formatDate(d);
+    return s;
+  }
+  private normalizeText(raw: any): string {
+    return String(raw ?? '')
+     .replace(/\s+/g, ' ')
+     .trim();
+  }
+
+  // Build a stable signature for de-duping across optimistic vs server items
+  private commentSig(c: any): string {
+    const ownerId =
+      c?.userId ??
+      c?.userid ??
+      c?.updatedby ??
+      c?.updatedBy ??
+      c?.createdBy ??
+      c?.createdby ??
+      '';
+
+    const normId = this.normalizeUserId(ownerId);
+    const normDate = this.normalizeDate(c?.createddate);
+    const normText = this.normalizeText(c?.description);
+
+    return `${normId}|${normDate}|${normText}`;
+  }
+
+/** 🔎 Safely extract a numeric comment id (the one used by task/comment-tms/{id}) */
+  private extractNumericCommentId(x: any): number | null {
+    const raw =
+      x?.commentId ??
+      x?.commentid ??
+      x?.id ??
+      x?.subTaskCommentId ??
+      x?.subtaskCommentId ??
+      x?.trackid ??
+      x?.trackId ??
+      null;
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }
+
+  getcommentSubTask(): void {
     this.projectServ.getCommentsubTask(this.selectedTaskId).subscribe({
       next: (res: any) => {
-        console.log(res.data, 'Fetched Comments');
+        const mapped = (res?.data || []).map((x: any) => {
+          const numericId = this.extractNumericCommentId(x) // <-- prefer trackid
 
-        this.commentsList = res.data.map((x: any) => ({
-          fullname: x.fullname,
+          // Try to read a user id from API fields first
+          const ownerId =
+            x.updatedby ?? x.updatedBy ?? x.userid ?? x.userId ??
+            x.createdby ?? x.createdBy ?? x.profileId ?? x.profileid ?? null;
+
+            // ✅ Prefer API fullname; if it's me and empty, use the resolved full name (NOT "You")
+            const displayName =
+              x.fullname ||
+              (String(ownerId) === String(this.currentUserId) ? this.currentUserDisplayName : '');
+
+        return {
+          // UI fields
+          id: numericId, // ← store numeric id or null,
+          fullname: displayName,
           createddate: x.createddate,
-          description: x.description
-
-        }));
+          description: x.description,
+          userId: ownerId,
+        };
+      });
         console.log(this.commentsList, 'fullname')
+        // Added by Manoj Madiraju to show exactly what the server has (sorted, no merge with local)
+        // const serverOnly = (mapped || []).sort(
+        // (a: any, b: any) => String(b.createddate).localeCompare(String(a.createddate)));
 
+        // this.commentsList = serverOnly;
+
+        // Show server items newest-first
+        this.commentsList = (mapped || []).sort(
+          (a: any, b: any) => String(b.createddate).localeCompare(String(a.createddate)));
+        // ✅ Keep count accurate in table
+        this.setCommentCountExact(Number(this.selectedTaskId), this.commentsList.length);
+
+        // debug
+        console.log('✅ Comments mapped:', this.commentsList);
       },
 
       error: (err: any) => {
@@ -639,13 +772,41 @@ addsubtaskview() {
     });
   }
 
+  // 🔧 Unique-ify by stable id; else by composite signature (server-first ordering preferred)
+  private dedupeComments(arr: any[]): any[] {
+    const seenIds = new Set<string>();
+    const seenSigs = new Set<string>();
+    const out: any[] = [];
+
+    for (const c of arr) {
+      const id = c?.id != null ? `id:${String(c.id)}` : null;
+      const sig = `sig:${this.commentSig(c)}`;
+
+      if (id) {
+        if (!seenIds.has(id)) {
+          seenIds.add(id);
+          seenSigs.add(sig); // also mark signature so temp twin won't be added later
+          out.push(c);
+        }
+      continue;
+      }
+
+      if (!seenSigs.has(sig)) {
+        seenSigs.add(sig);
+        out.push(c);
+      }
+    }
+
+    return out.sort((a, b) => String(b.createddate).localeCompare(String(a.createddate)));
+  }
+
 
   closeCommentsDialog(): void {
     this.dialog.closeAll();
     this.commentText = '';
     this.commentsList = [];
   }
-  
+
  openTemplateDialog(templateRef: TemplateRef<any>, row?: any) {
   this.selectedFilesReport = []; // 🔁 Clear previously selected files
 
@@ -663,23 +824,23 @@ addsubtaskview() {
 
   selectedFilesdata: File[] = [];
   selectedFilesReport: File[] = [];
-existingFiles: any[] = []; // from API or database
+  existingFilesReport: any[] = []; // from API or database
 
 onFileSelectedReport(event: Event): void {
-  const input = event.target as HTMLInputElement;
-  if (input.files && input.files.length > 0) {
+  const input = event.target as HTMLInputElement | null;
+  if (input && input.files && input.files.length > 0) {
     const fileArray = Array.from(input.files);
     this.selectedFilesReport = [...this.selectedFilesReport, ...fileArray];
   }
 }
 
 removeSelectedFile(index: number): void {
-  this.selectedFilesdata.splice(index, 1);
+  this.selectedFilesReport.splice(index, 1);
 }
 
-submitFiles() {
+submitFiles(): void {
   console.log(this.selectedTaskId,'selectedTaskIdselectedTaskId');
-  
+
   if (!this.selectedFilesReport || this.selectedFilesReport.length === 0 || !this.selectedTaskId) {
     this.snackBarServ.openSnackBarFromComponent({
       message: 'No files selected or task ID missing.',
@@ -693,7 +854,7 @@ submitFiles() {
 
   const formData = new FormData();
 
-  for (let file of this.selectedFilesReport) {
+  for (const file of this.selectedFilesReport) {
     formData.append('files', file);
   }
 
@@ -730,9 +891,9 @@ submitFiles() {
   });
 }
 
-existingFilesReport: any[] = [];
+//existingFilesReport: any[] = [];
 
-getSubuploadfiles() {
+getSubuploadfiles(): void {
   console.log(this.selectedTaskId, 'selectedtaskid');
 
   this.projectServ.getSubtaskuploadfile(this.selectedTaskId).subscribe((res: any) => {
@@ -740,12 +901,14 @@ getSubuploadfiles() {
 
     if (Array.isArray(res.data)) {
       this.existingFilesReport = res.data;
+      } else if (res.data) {
+        this.existingFilesReport = [res.data];
     } else {
-      this.existingFilesReport = [res.data]; // in case it's a single object
+      this.existingFilesReport = []; // in case it's a single object
     }
   });
 }
-DeleteUploadfile(fileId: number) {
+DeleteUploadfile(fileId: number): void {
   this.projectServ.deleteuploadfile(fileId).subscribe({
     next: (res: any) => {
       const isSuccess = res?.status === 'success';
@@ -777,4 +940,282 @@ DeleteUploadfile(fileId: number) {
     }
   });
 }
+
+ // Added by Manoj Madiraju for helpers for comments
+
+  // Used in template: *ngIf="isOwner(c)"
+  isOwner(c: any): boolean {
+    const ownerId = c && (c.userId || c.userid || c.updatedby || c.updatedBy || c.createdBy || c.createdby);
+    return String(ownerId) === String(this.currentUserId);
+  }
+
+  // 🔢 Helpers to ensure we never call APIs with a temp string id
+  private toNumericId(id: any): number | null {
+    const n = Number(id);
+    return Number.isFinite(n) ? n : null;
+  }
+  isNumericId(id: any): boolean {
+    return this.toNumericId(id) != null;
+  }
+
+  /** ✅ Valid numeric id (> 0) required by backend */
+  private validNumericId(id: any): number | null {
+    const n = Number(id);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }
+
+  // Click "✏️" → switch a single row into edit mode
+  onEditComment(c: any): void {
+    // Guard: don't allow editing until the real numeric id is known
+    const numericId = this.validNumericId(c?.id);
+    if (numericId == null) {
+      this.snackBarServ.openSnackBarFromComponent({
+      message: 'Syncing your comment… please try again in a moment.',
+      duration: 2000,
+      verticalPosition: 'top',
+      horizontalPosition: 'center',
+      panelClass: ['custom-snack-failure'],
+    });
+    this.getcommentSubTask(); // fetch to get real id
+    return;
+    }
+    this.editingCommentId = numericId; // requires id in commentsList (you added it)
+    this.editCommentText = c.description || '';   // seed with current text
+  }
+
+  // Save edited comment
+  saveEditedComment(c: any): void {
+    const text = (this.editCommentText || '').trim();
+    if (!text) {
+    // if (!this.editCommentText.trim()) {
+      this.snackBarServ.openSnackBarFromComponent({
+        message: 'Comment cannot be empty.',
+        duration: 2000,
+        verticalPosition: 'top',
+        horizontalPosition: 'center',
+        panelClass: ['custom-snack-failure'],
+      });
+      return;
+    }
+
+    const updatedby = Number(localStorage.getItem('profileId'));
+    const numericId = this.validNumericId(c?.id);
+    if (numericId == null) {
+      this.snackBarServ.openSnackBarFromComponent({
+        message: 'One moment… syncing this comment before editing.',
+        duration: 2000,
+        verticalPosition: 'top',
+        horizontalPosition: 'center',
+        panelClass: ['custom-snack-failure'],
+      });
+    this.getcommentSubTask(); // fetch to get real id
+    return;
+    }
+
+    this.projectServ.updateSubTaskComment(numericId, text, updatedby).subscribe({
+      next: (res: any) => {
+        this.snackBarServ.openSnackBarFromComponent({
+          message: res?.message || 'Comment updated.',
+          duration: 2500,
+          verticalPosition: 'top',
+          horizontalPosition: 'center',
+          panelClass: ['custom-snack-success'],
+        });
+
+        // update local list so UI reflects immediately
+        const idx = this.commentsList.findIndex((x: any) => String(x.id) === String(numericId));
+        if (idx > -1) {
+          this.commentsList[idx] = {
+            ...this.commentsList[idx],
+            description: text,
+          };
+        }
+
+        this.editingCommentId = null;
+        this.editCommentText = '';
+      },
+      error: (err: any) => {
+        this.snackBarServ.openSnackBarFromComponent({
+          message: err?.error?.message || 'Failed to update comment.',
+          duration: 2500,
+          verticalPosition: 'top',
+          horizontalPosition: 'center',
+          panelClass: ['custom-snack-failure'],
+        });
+      }
+    });
+  }
+
+  // Cancel edit
+  cancelEdit(): void {
+    this.editingCommentId = null;
+    this.editCommentText = '';
+  }
+
+  // Click "🗑️" → confirm, then delete
+  onDeleteComment(c: any): void {
+    const dataToBeSentToDailog = {
+      title: 'Delete Comment',
+      message: 'Are you sure you want to delete this comment?',
+      confirmText: 'Yes',
+      cancelText: 'No',
+      actionName: 'delete-Project'
+    };
+
+    const dialogConfig = this.getDialogConfigData(dataToBeSentToDailog, { delete: true, edit: false, add: false });
+    const dialogRef = this.dialogServ.openDialogWithComponent(CommonDeleteComponent, dialogConfig);
+
+    dialogRef.afterClosed().subscribe({
+      next: () => {
+        if (dialogRef.componentInstance.allowAction) {
+          const updatedby = Number(localStorage.getItem('profileId'));
+          const numericId = this.validNumericId(c?.id);
+          if (numericId == null) {
+            this.snackBarServ.openSnackBarFromComponent({
+              message: 'Syncing comment… try again in a second.',
+              duration: 2000,
+              verticalPosition: 'top',
+              horizontalPosition: 'center',
+              panelClass: ['custom-snack-failure'],
+            });
+            this.getcommentSubTask();
+            return;
+          }
+          this.projectServ.deleteSubTaskComment(numericId, updatedby).subscribe({
+            next: (res: any) => {
+              const ok = String(res?.status || '').toLowerCase() === 'success';
+
+              if (!ok) {
+                this.snackBarServ.openSnackBarFromComponent({
+                message: res?.message || 'Delete failed.',
+                duration: 2500,
+                verticalPosition: 'top',
+                horizontalPosition: 'center',
+                panelClass: ['custom-snack-failure'],
+                });
+                return;
+              }
+              this.snackBarServ.openSnackBarFromComponent({
+                message: res?.message || 'Comment deleted.',
+                duration: 2500,
+                verticalPosition: 'top',
+                horizontalPosition: 'center',
+                panelClass: ['custom-snack-success'],
+              });
+              // remove from UI
+              this.commentsList = this.commentsList.filter((x: any) => String(x.id) !== String(numericId));
+              this.bumpCommentCount(Number(this.selectedTaskId), -1);
+              this.getcommentSubTask(); // authoritative resync (keeps count exact)
+            },
+            error: (err: any) => {
+              this.snackBarServ.openSnackBarFromComponent({
+                message: err?.error?.message || 'Failed to delete comment.',
+                duration: 2500,
+                verticalPosition: 'top',
+                horizontalPosition: 'center',
+                panelClass: ['custom-snack-failure'],
+              });
+            }
+          });
+        }
+      }
+    });
+  }
+
+  // Ensures a just-posted comment shows buttons immediately
+  private pushNewCommentToTop(newComment: any): void {
+    const hasOwnerField =
+      'userId' in newComment ||
+      'userid' in newComment ||
+      'updatedby' in newComment ||
+      'updatedBy' in newComment ||
+      'createdBy' in newComment ||
+      'createdby' in newComment;
+
+    if (!hasOwnerField) {
+      (newComment as any).userId = this.currentUserId;
+    }
+
+    // ✅ Guarantee a visible FULL NAME for optimistic entries (never "You")
+    if (!newComment.fullname || !String(newComment.fullname).trim()) {
+      newComment.fullname = this.currentUserDisplayName || '';
+    }
+
+    this.commentsList = [newComment, ...(this.commentsList || [])];
+  }
+
+  // Read current user id (adjust claim names if your token differs)
+  private getCurrentUserId(): string | number {
+    const token = localStorage.getItem('token');
+    if (!token) return localStorage.getItem('profileId') || '';
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return (
+        payload.userId ||
+        payload.userid ||
+        payload.id ||
+        payload.sub ||
+        localStorage.getItem('profileId') ||
+        ''
+      );
+    } catch {
+      return localStorage.getItem('profileId') || '';
+    }
+  }
+
+  // Tries many common localStorage/sessionStorage keys and JWT claims.
+  private resolveCurrentUserDisplayName(): string {
+    const tryKeys = (store: Storage, keys: string[]) => {
+      for (const k of keys) {
+        const v = (store.getItem(k) || '').trim();
+        if (v) return v;
+      }
+      return '';
+    };
+
+    // 1) Direct single-field names commonly used in apps
+    const direct = tryKeys(localStorage, [
+      'fullName', 'fullname', 'profileName', 'displayName',
+      'userFullName', 'user_full_name', 'userfullname',
+      'name', 'username', 'userName'
+    ]) || tryKeys(sessionStorage, [
+      'fullName', 'fullname', 'profileName', 'displayName',
+      'userFullName', 'user_full_name', 'userfullname',
+      'name', 'username', 'userName'
+    ]);
+    if (direct) return direct;
+
+    // 2) First/Last combos from storage
+    const first =
+      tryKeys(localStorage, ['firstName', 'firstname', 'given_name']) ||
+      tryKeys(sessionStorage, ['firstName', 'firstname', 'given_name']);
+    const last =
+      tryKeys(localStorage, ['lastName', 'lastname', 'family_name']) ||
+      tryKeys(sessionStorage, ['lastName', 'lastname', 'family_name']);
+    const combo = [first, last].filter(Boolean).join(' ').trim();
+    if (combo) return combo;
+
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const jwtDirect =
+          (payload.fullName && String(payload.fullName).trim()) ||
+          (payload.name && String(payload.name).trim()) ||
+          [payload.given_name, payload.family_name].filter(Boolean).join(' ').trim();
+        if (jwtDirect) return String(jwtDirect).trim();
+      } catch { /* ignore */ }
+    }
+    return '';
+  }
+
+  // Small util to format yyyy-MM-dd (to match your UI)
+  private formatDate(d: Date): string {
+    const yyyy = d.getFullYear();
+    const mm = (d.getMonth() + 1).toString().padStart(2, '0');
+    const dd = d.getDate().toString().padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+
 }

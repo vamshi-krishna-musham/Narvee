@@ -94,7 +94,7 @@
         <ng-container matColumnDef="Status">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
           <td mat-cell *matCellDef="let element">
-            <ng-container *ngIf="editingStatusId === element.id; else displayStatus">
+            <ng-container *ngIf="editingStatusId === element.subtaskId; else displayStatus"> <!-- Added by Manoj Madiraju where I changed element.id → element.subTaskId as subtask rows use subTaskId as their unique key, not id for preventing undefined references during edit/status actions. -->
               <mat-form-field appearance="fill" class="custom-status-field">
                 <mat-select [(value)]="element.status"
                   (selectionChange)="onStatusChange(element.subTaskId, element.status)" class="statustable">
@@ -113,7 +113,7 @@
 
             <ng-template #displayStatus>
               <span class="status-badge" [ngStyle]="{ 'background-color': getStatusColor(element.status) }"
-                (click)="setEditingRow(element.id)" style="cursor: pointer;">
+                (click)="setEditingRow(element.subTaskId)" style="cursor: pointer;"> <!-- Added by Manoj Madiraju where I changed element.id → element.subTaskId as subtask rows use subTaskId as their unique key, not id for preventing undefined references during edit/status actions. -->
                 {{ element.status }}
               </span>
             </ng-template>
@@ -153,6 +153,13 @@
             {{ element.duration ? element.duration + ' Day(s)' : '-' }}
           </td>
         </ng-container>
+           <ng-container matColumnDef="addedByFullname">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by addedByFullname" class="nowrap sticky-header"> <!-- Added by Manoj Madiraju to merge duplicate class attributes into one (class="nowrap sticky-header") since HTML only allows one class per tag to ensure both styles apply correctly. -->
+            AddedBy </th>
+          <td mat-cell *matCellDef="let element"> {{ element.addedbyfullname ? (element.addedbyfullname |
+            titlecase) : '-' }}
+          </td>
+        </ng-container>
         <ng-container matColumnDef="UpdatedBy">
           <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by Duration" class="nowrap">
             Last UpdatedBy</th>
@@ -186,9 +193,18 @@
             <button mat-icon-button matTooltipPosition="above" (click)="showDescription(row)">
               <mat-icon style="color: blue;">info</mat-icon>
             </button>
-            <button mat-icon-button (click)="showComments(row)">
-              <mat-icon style="color: blue;">comment</mat-icon>
-            </button>
+            <!-- Added by Manoj Madiraju to Update Comment Button with count -->
+            <span class="comment-inline">
+              <button
+                mat-icon-button
+                matTooltip="Comment"
+                matTooltipPosition="above"
+                (click)="showComments(row)"
+                class="comment-icon-btn">
+                <mat-icon style="color: blue;">comment</mat-icon>
+              </button>
+              <span class="comment-count-inline">({{ row.commentCount || 0 }})</span>
+            </span>
              <button mat-icon-button matTooltip="Attachments" matTooltipPosition="above" (click)="openTemplateDialog(attachmentsTemplate,row)">
               <mat-icon style="color: blue;">attach_file</mat-icon>
             </button>
@@ -249,7 +265,7 @@
             <button mat-icon-button color="accent" matTooltip="Download" (click)="downloadFile(file)">
               <mat-icon>cloud_download</mat-icon>
             </button>
-           
+
           </td>
         </ng-container>
 
@@ -306,11 +322,35 @@
             <p class="commentdata">
               <strong>{{ comment.fullname | titlecase }}</strong> - {{ comment.createddate }}
             </p>
+            </span>
+
+          <!-- Added by Manoj Madiraju for allowing owner only to control edit/delete -->
+          <span class="actions" *ngIf="isOwner(comment) || debugShowActions" style="margin-left: 12px; display:inline-flex; gap:8px; align-items: center;">
+            <button mat-icon-button color="primary" aria-label="Edit comment" (click)="onEditComment(comment)">
+            <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" aria-label="Delete comment" (click)="onDeleteComment(comment)">
+            <mat-icon>delete</mat-icon>
+            </button>
           </span>
         </span>
 
-        <!-- Second line: description -->
-        <p class="usercomment">{{ comment.description }}</p>
+        <!-- Added by Manoj Madiraju for View vs Edit mode for the description -->
+        <ng-container *ngIf="editingCommentId !== null && editingCommentId !== undefined && editingCommentId  === comment.id; else viewComment">
+          <mat-form-field appearance="outline" class="w-100" style="max-width: 100%;">
+            <mat-label>Edit comment</mat-label>
+            <textarea matInput rows="2" [(ngModel)]="editCommentText"></textarea>
+          </mat-form-field>
+
+          <div style="display:flex; gap:8px; margin-top:4px;">
+            <button mat-stroked-button color="primary" (click)="saveEditedComment(comment)">Save</button>
+            <button mat-button (click)="cancelEdit()">Cancel</button>
+          </div>
+        </ng-container>
+
+        <ng-template #viewComment>
+          <p class="usercomment">{{ comment.description }}</p>
+        </ng-template>
       </div>
     </div>
 

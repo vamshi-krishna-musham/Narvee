@@ -88,7 +88,9 @@ export class AddTaskviewComponent {
     this.Taskcreate = this.fb.group({
       taskName: ['', [Validators.required, this.NameValidator, Validators.minLength(2),
       Validators.maxLength(50),]],
-      taskDescription: ['', [Validators.required, this.NameValidator, Validators.minLength(2)]],
+      taskDescription: ['', [Validators.required, this.NameValidator,this.noLeadingTrailingOrOnlyWhitespaceValidator, Validators.minLength(2)]],
+      // acceptanceCriteria: ['', [Validators.required, this.NameValidator, Validators.minLength(2), Validators.maxLength(2000)]], // New field for Acceptance Criteria - Added by Manoj Madiraju
+      acceptanceCriteria: [null, [this.optionalAcceptanceValidator]], // New optional field for Acceptance Criteria valid when empty; validate only if text present- Added by Manoj Madiraju
       assignedTo: [[]], // <-- default as array
       status: [null, [Validators.required]],
       startDate: [''],
@@ -104,6 +106,33 @@ export class AddTaskviewComponent {
 
   }
 
+  // Added by Manoj Madiraju - Optional validator for Acceptance Criteria ONLY
+  // - Empty/whitespace-only => VALID (field is optional)
+  // - If text is provided => must contain a letter and length between 2 and 2000
+  optionalAcceptanceValidator(control: AbstractControl): ValidationErrors | null {
+    const raw = control.value ?? '';
+    const v = String(raw).trim();
+
+    if (v.length === 0) return null; // optional & empty is valid
+
+    if (!/[A-Za-z]/.test(v)) return { noLetter: true };
+    if (v.length < 2) return { minlength: { requiredLength: 2, actualLength: v.length } };
+    if (v.length > 2000) return { maxlength: { requiredLength: 2000, actualLength: v.length } };
+    return null;
+  }
+
+noLeadingTrailingOrOnlyWhitespaceValidator(control: AbstractControl): ValidationErrors | any {
+  const value = control.value || '';
+
+  if (value.trim() === '') {
+    return { whitespace: true }; // only whitespace
+  }
+
+  // Check for leading/trailing spaces
+  if (value !== value.trim()) {
+    return { whitespace: true };
+  }
+}
   noWhitespaceOrInvalidCharsValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value || '';
 
@@ -368,6 +397,7 @@ onAssignedDropdownOpen(opened: boolean) {
     this.Taskcreate.patchValue({
       taskName: task.taskname,
       taskDescription: task.description,
+      acceptanceCriteria: task.acceptanceCriteria ?? null, // Patch for acceptance criteria on edit - Added by Manoj Madiraju
       status: task.status,
       startDate: taskStartDate,
       dueDate: taskDueDate,

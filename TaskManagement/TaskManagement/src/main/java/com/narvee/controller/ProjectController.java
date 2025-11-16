@@ -32,7 +32,7 @@ import com.narvee.commons.RestAPIResponse;
 import com.narvee.dto.RequestDTO;
 import com.narvee.entity.TmsFileUpload;
 import com.narvee.entity.TmsProject;
-import com.narvee.repository.fileUploadRepository;
+import com.narvee.repository.FileUploadRepository;
 import com.narvee.service.service.ProjectService;
 
 
@@ -48,7 +48,7 @@ public class ProjectController {
 
 	
 	@Autowired
-	private fileUploadRepository fileUploadRepository;
+	private FileUploadRepository fileUploadRepository;
 	
 	@Value("${AppFilesDir}")
     private String UPLOAD_DIR;

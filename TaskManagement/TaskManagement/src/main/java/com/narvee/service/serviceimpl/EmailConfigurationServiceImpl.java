@@ -103,11 +103,11 @@ public class EmailConfigurationServiceImpl implements EmailConfigurationService 
 	    return emailConfigRepo.save(config);
 	}
 
-	@Override
+	/*@Override
 	public void sendTaskReminderEmail(TmsTask task, List<GetUsersDTO> userdetails, boolean overdue) {
 		// TODO Auto-generated method stub
 		
-	}
+	}*/
 
 
 }
