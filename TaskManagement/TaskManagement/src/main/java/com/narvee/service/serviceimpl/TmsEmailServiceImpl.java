@@ -820,5 +820,166 @@ public class TmsEmailServiceImpl {
 
 		mailSender.send(message);
 	}
+	@Async
+	public void sendLeaveDecisionEmail(LeaveUserDTO user, TmsLeave leave, String decision)
+			throws MessagingException, UnsupportedEncodingException {
 
+		MimeMessage message = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+		helper.setFrom(narveemail, shortMessage);
+		helper.setTo(user.getEmail());
+		helper.setCc(ccmail);
+
+		String subject = "Leave " + decision + " - " + leave.getLeaveCategory();
+
+		String formattedStart = leave.getFromDate() != null
+				? leave.getFromDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
+				: "Not available";
+		String formattedEnd = leave.getToDate() != null
+				? leave.getToDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
+				: "Not available";
+
+		String color = decision.equalsIgnoreCase("Approved") ? "#28a745" : "#dc3545";
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("<!DOCTYPE html><html><head><meta charset='UTF-8'></head>");
+		sb.append("<body style='margin:0; padding:0; font-family:Arial, sans-serif; background-color:#f4f4f4;'>");
+
+		sb.append("<table width='100%' cellpadding='0' cellspacing='0' style='padding:20px;'>");
+		sb.append("<tr><td align='center'>");
+		sb.append("<table width='600' cellpadding='0' cellspacing='0' style='background-color:#ffffff; border-radius:8px;'>");
+
+		// Header
+		sb.append("<tr><td style='background-color:" + color + "; padding:20px; text-align:center;'>");
+		sb.append("<h1 style='color:#ffffff; font-size:22px; margin:0;'>Leave " + decision + "</h1>");
+		sb.append("</td></tr>");
+
+		// Greeting
+		sb.append("<tr><td style='padding:20px 40px; color:#333333; font-size:15px;'>");
+		sb.append("<p>Hello ").append(user.getFirstname()).append(",</p>");
+		sb.append("<p>Your leave request has been <b style='color:" + color + ";'>")
+		.append(decision.toUpperCase())
+		.append("</b>.</p>");
+		sb.append("</td></tr>");
+
+		// Leave details
+		sb.append("<tr><td style='padding:10px 40px;'>");
+		sb.append("<table width='100%' cellpadding='5' cellspacing='0' style='border-collapse:collapse;'>");
+		sb.append("<tr><td><b>Type:</b></td><td>").append(leave.getLeaveCategory()).append("</td></tr>");
+		sb.append("<tr><td><b>From:</b></td><td>").append(formattedStart).append("</td></tr>");
+		sb.append("<tr><td><b>To:</b></td><td>").append(formattedEnd).append("</td></tr>");
+		sb.append("<tr><td><b>Reason:</b></td><td>").append(leave.getReason()).append("</td></tr>");
+		sb.append("<tr><td><b>Admin Comment:</b></td><td>").append(leave.getAdminComment()).append("</td></tr>");
+		sb.append("</table></td></tr>");
+
+		// Footer
+		sb.append("<tr><td style='background-color:#f4f4f4; text-align:center; padding:20px; font-size:12px; color:#888;'>");
+		sb.append("<p style='margin:0;'>Task Management System</p>");
+		sb.append("</td></tr>");
+
+		sb.append("</table></td></tr></table>");
+		sb.append("</body></html>");
+
+		helper.setSubject(subject);
+		helper.setText(sb.toString(), true);
+		mailSender.send(message);
+
+		logger.info("✅ Leave " + decision + " email sent successfully to {}", user.getEmail());
+	}
+	
+	@Async
+	public void sendLeaveUpdatedEmail(LeaveUserDTO user, TmsLeave leave)
+			throws MessagingException, UnsupportedEncodingException {
+
+		MimeMessage message = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+		helper.setFrom(narveemail, shortMessage);  // same as sendLeaveAppliedEmail
+		helper.setTo(user.getEmail());
+
+		String subject = "Leave Updated - " + leave.getLeaveCategory();
+
+		String formattedStart = leave.getFromDate() != null
+				? leave.getFromDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
+				: "Not available";
+
+		String formattedEnd = leave.getToDate() != null
+				? leave.getToDate().format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
+				: "Not available";
+
+		String duration = leave.getDuration() != null
+				? String.valueOf(leave.getDuration())
+				: "Not provided";
+
+		String reason = leave.getReason() != null
+				? leave.getReason()
+				: "Not provided";
+
+		String status = leave.getStatus() != null
+				? leave.getStatus()
+				: "PENDING";
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("<!DOCTYPE html>");
+		sb.append("<html>");
+		sb.append("<head><meta charset='UTF-8'><title>Leave Updated</title></head>");
+		sb.append("<body style='font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;'>");
+
+		sb.append("<table width='100%' cellpadding='0' cellspacing='0' style='padding: 30px 0;'>");
+		sb.append("<tr><td align='center'>");
+
+		sb.append("<table width='600' cellpadding='0' cellspacing='0' ")
+		.append("style='background-color: #ffffff; border-radius: 6px;'>");
+
+		// Header
+		sb.append("<tr><td style='background-color: #0468b4; padding: 20px; color: #ffffff; ")
+		.append("text-align: center; border-top-left-radius: 6px; border-top-right-radius: 6px;'>");
+		sb.append("<h2 style='margin: 0;'>Task Management System</h2>");
+		sb.append("</td></tr>");
+
+		// Body
+		sb.append("<tr><td style='padding: 30px; color: #333;'>");
+
+		sb.append("<p style='font-size: 16px;'>Hi ")
+		.append(user.getFirstname())
+		.append(",</p>");
+
+		sb.append("<p style='font-size: 15px;'>Your leave request has been updated. Here are your latest leave details:</p>");
+
+		sb.append("<table cellpadding='6' cellspacing='0' style='font-size: 14px;'>");
+		sb.append("<tr><td style='font-weight: bold;'>Leave Type:</td><td>")
+		.append(leave.getLeaveCategory()).append("</td></tr>");
+		sb.append("<tr><td style='font-weight: bold;'>From Date:</td><td>")
+		.append(formattedStart).append("</td></tr>");
+		sb.append("<tr><td style='font-weight: bold;'>To Date:</td><td>")
+		.append(formattedEnd).append("</td></tr>");
+		sb.append("<tr><td style='font-weight: bold;'>Duration (working days):</td><td>")
+		.append(duration).append("</td></tr>");
+		sb.append("<tr><td style='font-weight: bold;'>Reason:</td><td>")
+		.append(reason).append("</td></tr>");
+		sb.append("<tr><td style='font-weight: bold;'>Status:</td><td>")
+		.append(status).append("</td></tr>");
+		sb.append("</table>");
+
+		sb.append("</td></tr>");
+
+		// Footer
+		sb.append("<tr><td style='background-color: #f0f0f0; padding: 20px; text-align: center; color: #555; ")
+		.append("border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;'>");
+		sb.append("<p style='margin: 0; font-size: 13px;'>Best Regards,<br/>Task Management Team</p>");
+		sb.append("</td></tr>");
+
+		sb.append("</table>");
+		sb.append("</td></tr>");
+		sb.append("</table>");
+
+		sb.append("</body></html>");
+
+		helper.setSubject(subject);
+		helper.setText(sb.toString(), true);
+
+		mailSender.send(message);
+	}
 }
