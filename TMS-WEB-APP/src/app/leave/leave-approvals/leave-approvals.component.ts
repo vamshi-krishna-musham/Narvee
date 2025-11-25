@@ -33,6 +33,7 @@ export class LeaveApprovalsComponent implements OnInit {
     const roleRaw =
       localStorage.getItem('profileRole') ||
       localStorage.getItem('Role') || '';
+      
     const role = (roleRaw || '').toUpperCase().trim();
     this.isAdminOrSuperAdmin =
       role === 'ADMIN' || role === 'SUPER ADMIN' || role === 'SUPER_ADMIN' || role === 'SUPERADMIN';
@@ -47,8 +48,11 @@ export class LeaveApprovalsComponent implements OnInit {
 
   load(): void {
     this.loading = true;
-    const managerId = Number(localStorage.getItem('profileId'));
-    this.leave.listPending(managerId).subscribe({
+    const body = {
+      managerId: Number(localStorage.getItem('profileId')),
+      organisationName: localStorage.getItem('organizationName') || ''
+    };
+    this.leave.listPending(body).subscribe({
       next: (res) => { this.pending = res || []; this.loading = false; },
       error: () => { this.loading = false; this.snack.open('Failed to load pending leaves', 'OK', { duration: 3000 }); }
     });

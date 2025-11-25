@@ -1,6 +1,8 @@
 package com.narvee.controller;
 import com.narvee.entity.TmsLeave;
 import com.narvee.service.service.TmsLeaveService;
+
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,11 @@ import java.util.Map;
 public class TmsLeaveController {
 
     private final TmsLeaveService service;
+    @Data
+    public class PendingRequest {
+        private Long managerId;
+        private String organisationName;
+    }
 
     // health check
     @GetMapping("/ping")
@@ -38,10 +45,13 @@ public class TmsLeaveController {
     public TmsLeave update(@PathVariable Long id, @RequestBody TmsLeave leave) {
         return service.update(id, leave);
     }
-    @GetMapping("/pending/{managerId}")
-    public List<TmsLeave> pendingLeavesForManager(@PathVariable Long managerId) {
-        return service.findPending(managerId);
+    @GetMapping("/pending")
+    public List<TmsLeave> getPending(
+        @RequestParam Long managerId,
+        @RequestParam String organisationName) {
+        return service.getPending(organisationName, managerId);
     }
+
     @GetMapping("/approved/{managerId}")
     public List<TmsLeave> approvedLeavesForManager(@PathVariable Long managerId) {
         return service.findApproved(managerId);

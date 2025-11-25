@@ -78,22 +78,26 @@ getById(id: number) {
   }
 
   // ----- Admin / Super Admin APIs -----
-  listPending(managerId: number): Observable<LeaveRequest[]> {
+listPending(body: { managerId: number; organisationName: string }): Observable<LeaveRequest[]> {
+  const params = {
+    managerId: body.managerId?.toString(),
+    organisationName: body.organisationName
+  };
+  return this.http.get<any[]>(`${this.base}/task/leaves/pending`, { params }).pipe(
+    map(res => res.map(r => ({
+      id: r.id,
+      userName: r.userName,
+      startDate: r.fromDate,
+      endDate: r.toDate,
+      leaveType: r.leaveCategory,
+      reason: r.reason,
+      status: r.status,
+      adminComment: r.adminComment,
+      duration: r.duration
+    })))
+  );
+}
 
-    return this.http.get<any[]>(`${this.base}/task/leaves/pending/${managerId}`).pipe(
-      map(res => res.map(r => ({
-        id: r.id,
-        userName: r.userName,
-        startDate: r.fromDate,
-        endDate: r.toDate,
-        leaveType: r.leaveCategory,
-        reason: r.reason,
-        status: r.status,
-        adminComment: r.adminComment,
-        duration: r.duration  // ✅ include this too
-      })))
-    );
-  }
 
   approve(id: number) {
     const body: any = { status: 'APPROVED' };
