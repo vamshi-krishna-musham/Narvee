@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -139,7 +140,7 @@ public class TmsLeaveService {
 
             TmsLeave saved = repo.save(existing);
 
-            // ✅ Fetch user details for email
+            // Fetch user details for email
             List<LeaveUserDTO> userDetails = repo.getLeaveUser(saved.getUserId());
             if (!userDetails.isEmpty()) {
                 LeaveUserDTO user = userDetails.get(0);
@@ -156,6 +157,29 @@ public class TmsLeaveService {
 
     public List<TmsLeave> findByUserId(Long userId) {
       return repo.findByUserId(userId);
+    }
+    @Scheduled(cron = "0 0 9 * * *", zone = "America/Chicago")
+    public void sendDailyAdminSummary() {
+
+        logger.info("Starting daily summary cron...");
+
+        List<LeaveUserDTO> admins = repo.getSuperAdmins();
+        if (admins.isEmpty()) {
+            logger.warn("No super admins found!");
+            return;
+        }
+
+        List<TmsLeave> pending = repo.findAllPendingLeaves();
+        long count = pending.size();
+
+        for (LeaveUserDTO admin : admins) {
+            try {
+                tmsEmailService.sendSuperAdminPendingSummaryEmail(admin, count);
+                logger.info("Summary email sent to {}", admin.getEmail());
+            } catch (Exception e) {
+                logger.error("Error sending summary to {}: {}", admin.getEmail(), e.getMessage());
+            }
+        }
     }
 
 }

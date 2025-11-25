@@ -982,4 +982,54 @@ public class TmsEmailServiceImpl {
 
 		mailSender.send(message);
 	}
+	@Async
+	public void sendSuperAdminPendingSummaryEmail(LeaveUserDTO user, long totalCount)
+			throws MessagingException, UnsupportedEncodingException {
+
+		MimeMessage message = mailSender.createMimeMessage();
+		MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+		helper.setFrom(narveemail, shortMessage);
+		helper.setTo(user.getEmail());
+
+		String subject = "Daily Pending Leave Summary";
+
+		String html =
+				"<!DOCTYPE html>"
+				+ "<html><head><meta charset='UTF-8'><title>Pending Summary</title></head>"
+				+ "<body style='font-family:Arial,sans-serif; background:#f4f4f4; margin:0; padding:0;'>"
+
+				+ "<table width='100%' cellpadding='0' cellspacing='0' style='padding:30px 0;'>"
+				+ "<tr><td align='center'>"
+
+				+ "<table width='600' cellpadding='0' cellspacing='0' style='background:#ffffff; border-radius:6px;'>"
+
+				// Header
+				+ "<tr><td style='background:#00466a; padding:20px; text-align:center; color:#ffffff;'>"
+				+ "<h2 style='margin:0;'>Daily Pending Leave Summary</h2>"
+				+ "</td></tr>"
+
+				// Message Body
+				+ "<tr><td style='padding:30px; color:#333;'>"
+				+ "<p style='font-size:16px;'>Hi " + user.getFirstname() + ",</p>"
+				+ "<p style='font-size:15px;'>You currently have "
+				+ "<b style='color:#00466a; font-size:18px;'>" + totalCount + "</b>"
+				+ " pending leave requests.</p>"
+				+ "<p style='font-size:14px; color:#555;'>Please review them at your earliest convenience.</p>"
+				+ "</td></tr>"
+
+				// Footer
+				+ "<tr><td style='background:#f0f0f0; padding:20px; text-align:center; color:#555; border-bottom-left-radius:6px; border-bottom-right-radius:6px;'>"
+				+ "<p style='margin:0; font-size:13px;'>Best Regards,<br/>Task Management System</p>"
+				+ "</td></tr>"
+
+				+ "</table></td></tr></table></body></html>";
+
+		helper.setSubject(subject);
+		helper.setText(html, true);
+
+		mailSender.send(message);
+	}
+
+
 }
