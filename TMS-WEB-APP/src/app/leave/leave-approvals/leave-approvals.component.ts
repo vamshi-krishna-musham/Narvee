@@ -36,7 +36,7 @@ export class LeaveApprovalsComponent implements OnInit {
       
     const role = (roleRaw || '').toUpperCase().trim();
     this.isAdminOrSuperAdmin =
-      role === 'ADMIN' || role === 'SUPER ADMIN' || role === 'SUPER_ADMIN' || role === 'SUPERADMIN';
+      role === 'ADMIN' || role === 'SUPER ADMIN' || role === 'SUPER_ADMIN' || role === 'SUPERADMIN' || role ==='PROJECT MANAGER';
 
     if (!this.isAdminOrSuperAdmin) {
       this.snack.open('Access denied', 'OK', { duration: 2500 });

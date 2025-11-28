@@ -28,7 +28,7 @@ export class LeaveHistoryComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   // role check flag
-  isManager = ['ADMIN', 'SUPER ADMIN'].includes(
+  isManager = ['ADMIN', 'SUPER ADMIN', 'PROJECT MANAGER'].includes(
     (localStorage.getItem('profileRole') || '').toUpperCase()
   );
 
