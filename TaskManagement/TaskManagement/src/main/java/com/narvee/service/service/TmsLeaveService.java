@@ -114,11 +114,16 @@ public class TmsLeaveService {
         }).orElse(null);                      // return null if not found
     }
 
-    public List<TmsLeave> findPending(Long managerId) {
-    return repo.findByStatusAndUserIdNot("PENDING", managerId);
+    public List<TmsLeave> getPending(String orgName, Long managerId, String profileRole) {
+    if ("ADMIN".equals(profileRole.toUpperCase())) {
+            return repo.findPendingLeavesForAdmin(orgName, managerId);
+        }
+    else if ("PROJECT MANAGER".equals(profileRole.toUpperCase())){
+        return repo.findPendingByOrganisationForProjectManager(orgName, managerId);
     }
-    public List<TmsLeave> getPending(String orgName, Long managerId) {
-        return repo.findPendingByOrganisation(orgName, managerId);
+    else{
+            return repo.findPendingByOrganisationForSuperAdmin(orgName, managerId);
+        }
     }
 
     public List<TmsLeave> findApproved(Long managerId) {
@@ -161,7 +166,7 @@ public class TmsLeaveService {
     public List<TmsLeave> findByUserId(Long userId) {
       return repo.findByUserId(userId);
     }
-    @Scheduled(cron = "0 0 9 * * *", zone = "America/Chicago")
+    //@Scheduled(cron = "*/10 * * * * *", zone = "America/Chicago")
     public void sendDailyAdminSummary() {
 
         logger.info("Starting daily summary cron...");
@@ -173,6 +178,7 @@ public class TmsLeaveService {
         }
 
         List<TmsLeave> pending = repo.findAllPendingLeaves();
+        logger.info("Pending leaves: {}", pending);
         long count = pending.size();
 
         for (LeaveUserDTO admin : admins) {

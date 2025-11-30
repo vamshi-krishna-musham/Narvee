@@ -48,8 +48,9 @@ public class TmsLeaveController {
     @GetMapping("/pending")
     public List<TmsLeave> getPending(
         @RequestParam Long managerId,
-        @RequestParam String organisationName) {
-        return service.getPending(organisationName, managerId);
+        @RequestParam String organisationName,
+        @RequestParam String profileRole) {
+        return service.getPending(organisationName, managerId, profileRole);
     }
 
     @GetMapping("/approved/{managerId}")

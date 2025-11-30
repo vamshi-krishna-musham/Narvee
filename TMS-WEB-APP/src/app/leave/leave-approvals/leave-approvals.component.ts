@@ -50,7 +50,8 @@ export class LeaveApprovalsComponent implements OnInit {
     this.loading = true;
     const body = {
       managerId: Number(localStorage.getItem('profileId')),
-      organisationName: localStorage.getItem('organizationName') || ''
+      organisationName: localStorage.getItem('organizationName') || '',
+      profileRole: localStorage.getItem('profileRole') || ''
     };
     this.leave.listPending(body).subscribe({
       next: (res) => { this.pending = res || []; this.loading = false; },

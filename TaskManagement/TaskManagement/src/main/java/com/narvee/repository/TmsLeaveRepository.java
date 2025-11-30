@@ -17,20 +17,53 @@ public interface TmsLeaveRepository extends JpaRepository<TmsLeave, Long> {
     List<TmsLeave> findByStatusAndUserIdNot(String status, Long userId);
     @Query(value = "SELECT user_id AS userid, first_name, email FROM tms_users WHERE user_id = :userId", nativeQuery = true)
     List<LeaveUserDTO> getLeaveUser(@Param("userId") Long userId);
-    @Query(value = "SELECT user_id AS userid, first_name AS firstname, email FROM tms_users WHERE is_super_admin = 1", 
+    @Query(value = "SELECT user_id AS userid, first_name AS firstname, email,organisation_name as organisation FROM tms_users WHERE is_super_admin = 1", 
         nativeQuery = true)
     List<LeaveUserDTO> getSuperAdmins();
     @Query(value = """
-        SELECT l.*
+        SELECT l.*,u.position
         FROM tms_leaves l
         JOIN tms_users u ON l.user_id = u.user_id
         WHERE u.organisation_name = :orgName
         AND l.status = 'PENDING'
         AND l.user_id <> :managerId
         """, nativeQuery = true)
-    List<TmsLeave> findPendingByOrganisation(
+    List<TmsLeave> findPendingByOrganisationForSuperAdmin(
         @Param("orgName") String orgName,
         @Param("managerId") Long managerId
     );
+    @Query(value = """
+        select l.* 
+        from tms_leaves l 
+        join tms_users u on l.user_id=u.user_id 
+        where is_super_admin=false and position!='Admin' 
+        and l.user_id <> :managerId 
+        and u.organisation_name = :orgName
+        """, nativeQuery = true)
+    List<TmsLeave> findPendingLeavesForAdmin(
+        @Param("orgName") String orgName,
+        @Param("managerId") Long managerId
+    );
+    @Query(value = """
+        select l.* 
+        from tms_leaves l 
+        join tms_users u on l.user_id=u.user_id 
+        where u.is_super_admin=false 
+        and u.position!='Admin' 
+        and u.position!='Project Manager' 
+        and l.user_id <> :managerId 
+        and u.organisation_name = :orgName
+        """, nativeQuery = true)
+    List<TmsLeave> findPendingByOrganisationForProjectManager(
+        @Param("orgName") String orgName,
+        @Param("managerId") Long managerId
+    );
+    @Query(value = """
+        SELECT l.* 
+        FROM tms_leaves l 
+        JOIN tms_users u ON l.user_id = u.user_id
+        WHERE LOWER(u.position) = 'admin'
+        """, nativeQuery = true)
+    List<TmsLeave> findAllPending();
 
 }

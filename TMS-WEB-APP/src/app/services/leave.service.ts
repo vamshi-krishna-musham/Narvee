@@ -78,10 +78,11 @@ getById(id: number) {
   }
 
   // ----- Admin / Super Admin APIs -----
-listPending(body: { managerId: number; organisationName: string }): Observable<LeaveRequest[]> {
+listPending(body: { managerId: number; organisationName: string; profileRole: string}): Observable<LeaveRequest[]> {
   const params = {
     managerId: body.managerId?.toString(),
-    organisationName: body.organisationName
+    organisationName: body.organisationName,
+    profileRole: body.profileRole?.toString()
   };
   return this.http.get<any[]>(`${this.base}/task/leaves/pending`, { params }).pipe(
     map(res => res.map(r => ({
