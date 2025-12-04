@@ -4,10 +4,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { LeaveService, LeaveRequest } from '../../services/leave.service';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
-export const LEAVE_TYPES = ['Sick', 'Casual', 'Emergency'] as const;
+export const LEAVE_TYPES = ['Sick', 'Casual', 'Emergency', 'Long Leave'] as const;
 export type LeaveType = typeof LEAVE_TYPES[number];
 
-type UpdateLeaveData = { id: number; balance?: number };
+type UpdateLeaveData = { id: number; balance?: number; };
 
 @Component({
   selector: 'app-update-leave',
@@ -28,7 +28,7 @@ export class UpdateLeaveComponent implements OnInit {
   existingleaves: LeaveRequest[] = [];
   durationDays = 0;
   leaveId!: number;
-
+  originalReason: string | null = null;
   private holidaysYMD: string[] = [];
   private holidaySet = new Set(this.holidaysYMD);
   minDate = this.toDateOnly(new Date());
@@ -71,6 +71,7 @@ export class UpdateLeaveComponent implements OnInit {
         this.originalLeaveType = res.leaveCategory ?? null;
         this.originalStartDateYMD = start ? this.toYMD(this.toDateOnly(start)) : null;
         this.originalEndDateYMD = end ? this.toYMD(this.toDateOnly(end)) : null;
+        this.originalReason = res.reason ?? '';
 
         // Min date policy (Casual requires 2-week notice) but never invalidate preloaded start
         const today = this.toDateOnly(new Date());
@@ -142,6 +143,9 @@ export class UpdateLeaveComponent implements OnInit {
     return count;
   }
   getMaxEndDate(): Date | null {
+    const type = this.form.get('leaveType')?.value;
+    if (type === 'Long Leave') return null;  // ← allow long leave duration
+
     const start = this.form.get('startDate')?.value as Date | null;
     if (!start) return null;
 
@@ -152,8 +156,10 @@ export class UpdateLeaveComponent implements OnInit {
       const origEnd = this.normalizeDateInput(this.originalEndDateYMD)!;
       if (origEnd > max) return origEnd;
     }
+
     return max;
   }
+
 
   loadLeaves(): void {
     const profileId = Number(localStorage.getItem('profileId'));
@@ -194,12 +200,15 @@ export class UpdateLeaveComponent implements OnInit {
     const currentStartYMD = s ? this.toYMD(this.toDateOnly(s)) : null;
     const currentEndYMD = e ? this.toYMD(this.toDateOnly(e)) : null;
 
+    const reasonChanged = (this.form.get('reason')?.value ?? '') !== this.originalReason;
+
     const typeChanged = currentType !== this.originalLeaveType;
     const startChanged = currentStartYMD !== this.originalStartDateYMD;
     const endChanged = currentEndYMD !== this.originalEndDateYMD;
 
-    return !!(typeChanged || startChanged || endChanged);
+    return !!(typeChanged || startChanged || endChanged || reasonChanged);
   }
+
 
   // ----------------- actions -----------------
 
@@ -221,15 +230,19 @@ export class UpdateLeaveComponent implements OnInit {
     const changedDates = currentStartYMD !== this.originalStartDateYMD || currentEndYMD !== this.originalEndDateYMD;
 
     // Enforce max 7 working days ONLY if user changed dates (preloaded values are always allowed)
-    if (changedDates && this.durationDays > 7) {
-      this.snack.open('You cannot modify leave for more than 7 working days.', 'OK', {
-        duration: 3000,
-        horizontalPosition: 'center',
-        verticalPosition: 'top',
-        panelClass: ['custom-snack-failure'],
-      });
-      return;
-    }
+// Allow Long Leave to exceed 7 days
+  const isLongLeave = this.form.get('leaveType')?.value === 'Long Leave';
+
+  if (!isLongLeave && changedDates && this.durationDays > 7) {
+    this.snack.open('You cannot modify leave for more than 7 working days.', 'OK', {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'top',
+      panelClass: ['custom-snack-failure'],
+    });
+    return;
+  }
+
 
     // Block completely if no balance
     if (this.leaveBalance <= 0) {
