@@ -166,29 +166,50 @@ public class TmsLeaveService {
     public List<TmsLeave> findByUserId(Long userId) {
       return repo.findByUserId(userId);
     }
-    //@Scheduled(cron = "*/10 * * * * *", zone = "America/Chicago")
-    public void sendDailyAdminSummary() {
+    @Scheduled(cron = "0 0 10 * * MON-FRI", zone = "America/Chicago")
+    public void sendDailyEmailForAllAdmins() {
 
-        logger.info("Starting daily summary cron...");
+    logger.info("Starting daily summary cron...");
 
-        List<LeaveUserDTO> admins = repo.getSuperAdmins();
-        if (admins.isEmpty()) {
-            logger.warn("No super admins found!");
-            return;
+    List<LeaveUserDTO> admins = repo.getAllAdminTypes();
+    if (admins.isEmpty()) {
+        logger.warn("No admin users found!");
+        return;
+    }
+
+    for (LeaveUserDTO admin : admins) {
+
+        String role = (admin.getPosition() == null ? "SUPER ADMIN" : admin.getPosition().toUpperCase());
+        String orgName = admin.getOrganisation();
+        Long adminId = admin.getUserid();
+
+        List<TmsLeave> pending;
+
+        switch (role) {
+            case "ADMIN":
+                pending = repo.findPendingLeavesForAdmin(orgName, adminId);
+                break;
+
+            case "PROJECT MANAGER":
+                pending = repo.findPendingByOrganisationForProjectManager(orgName, adminId);
+                break;
+
+            default:
+                // Super Admin (position = null or not Admin/PM)
+                pending = repo.findPendingByOrganisationForSuperAdmin(orgName, adminId);
+                break;
         }
 
-        List<TmsLeave> pending = repo.findAllPendingLeaves();
-        logger.info("Pending leaves: {}", pending);
         long count = pending.size();
+        logger.info("Sending {} pending leaves to {} ({})", count, admin.getEmail(), role);
 
-        for (LeaveUserDTO admin : admins) {
-            try {
-                tmsEmailService.sendSuperAdminPendingSummaryEmail(admin, count);
-                logger.info("Summary email sent to {}", admin.getEmail());
-            } catch (Exception e) {
-                logger.error("Error sending summary to {}: {}", admin.getEmail(), e.getMessage());
-            }
+        try {
+            tmsEmailService.sendSuperAdminPendingSummaryEmail(admin, count);
+        } catch (Exception e) {
+            logger.error("Failed to send email to {} - {}", admin.getEmail(), e.getMessage());
         }
     }
+}
+
 
 }

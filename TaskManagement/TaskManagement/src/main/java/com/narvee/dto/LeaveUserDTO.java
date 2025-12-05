@@ -7,4 +7,6 @@ public interface LeaveUserDTO {
     String getFirstname();
     String getEmail();
     String getOrganisation();
+    String getPosition();
+
 }

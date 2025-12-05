@@ -17,9 +17,19 @@ public interface TmsLeaveRepository extends JpaRepository<TmsLeave, Long> {
     List<TmsLeave> findByStatusAndUserIdNot(String status, Long userId);
     @Query(value = "SELECT user_id AS userid, first_name, email FROM tms_users WHERE user_id = :userId", nativeQuery = true)
     List<LeaveUserDTO> getLeaveUser(@Param("userId") Long userId);
-    @Query(value = "SELECT user_id AS userid, first_name AS firstname, email,organisation_name as organisation FROM tms_users WHERE is_super_admin = 1", 
-        nativeQuery = true)
-    List<LeaveUserDTO> getSuperAdmins();
+    @Query(value = """
+    SELECT user_id AS userid, 
+        first_name AS firstname, 
+        email,
+        organisation_name AS organisation,
+        position
+    FROM tms_users 
+    WHERE is_super_admin = 1 
+    OR LOWER(position) = 'admin'
+    OR LOWER(position) = 'project manager'
+    """, nativeQuery = true)
+    List<LeaveUserDTO> getAllAdminTypes();
+
     @Query(value = """
         SELECT l.*,u.position
         FROM tms_leaves l
