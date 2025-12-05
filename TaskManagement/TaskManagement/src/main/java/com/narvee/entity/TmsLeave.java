@@ -22,7 +22,10 @@ public class TmsLeave {
 
     @Column(name="user_name", nullable=false, length=100)
     private String userName;
-
+    
+    @Column(name = "position", length = 255)
+    private String position;
+    
     @Column(name="from_date", nullable=false)
     private LocalDate fromDate;
 
@@ -54,7 +57,7 @@ public class TmsLeave {
     public void setDuration(Long duration) {
         this.duration = duration;
     }
-
+    
     // Optional: default status if not set
     @PrePersist
     public void prePersist() {

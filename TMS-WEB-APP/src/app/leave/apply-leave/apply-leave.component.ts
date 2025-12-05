@@ -245,6 +245,7 @@ private normalizeDateInput(v: Date | string | undefined | null): Date | null {
       reason: (this.form.value.reason || '').trim(),
       status: 'PENDING',
       duration: this.durationDays,
+      position: localStorage.getItem('profileRole')
     };
 
     this.leave.apply(payload as any).subscribe({

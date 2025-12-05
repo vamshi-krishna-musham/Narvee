@@ -88,6 +88,7 @@ listPending(body: { managerId: number; organisationName: string; profileRole: st
     map(res => res.map(r => ({
       id: r.id,
       userName: r.userName,
+      position: r.position,
       startDate: r.fromDate,
       endDate: r.toDate,
       leaveType: r.leaveCategory,
